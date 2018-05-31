@@ -123,3 +123,55 @@ func BindingListOneByDN(w http.ResponseWriter, r *http.Request) {
 	utils.RespondOk(w, 200, binding)
 
 }
+
+// BindingUpdate updates a binding
+func BindingUpdate(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	var ok bool
+	var serviceType servicetypes.ServiceType
+	var originalBinding bindings.Binding
+	var updatedBinding bindings.Binding
+
+	//context references
+	store := context.Get(r, "stores").(stores.Store)
+
+	// url vars
+	vars := mux.Vars(r)
+
+	// check if the service exists
+	if serviceType, err = servicetypes.FindServiceTypeByName(vars["service-type"], store); err != nil {
+		utils.RespondError(w, err)
+		return
+	}
+
+	// check if the provided host is associated with the given service type
+	if ok = serviceType.HasHost(vars["host"]); ok == false {
+		err = utils.APIErrNotFound("Host")
+		utils.RespondError(w, err)
+		return
+	}
+
+	if originalBinding, err = bindings.FindBindingByDN(vars["dn"], serviceType.UUID, vars["host"], store); err != nil {
+		utils.RespondError(w, err)
+		return
+	}
+
+	// copy the original binding and then change its contents
+	updatedBinding = originalBinding
+
+	// check the validity of the JSON
+	if err = json.NewDecoder(r.Body).Decode(&updatedBinding); err != nil {
+		err := utils.APIErrBadRequest(err.Error())
+		utils.RespondError(w, err)
+		return
+	}
+
+	if updatedBinding, err = bindings.UpdateBinding(originalBinding, updatedBinding, store); err != nil {
+		utils.RespondError(w, err)
+		return
+	}
+
+	utils.RespondOk(w, 200, updatedBinding)
+
+}

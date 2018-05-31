@@ -254,7 +254,7 @@ paths:
         201:
           description: Returns the newly created binding
           schema:
-            $ref: '#/definitions/Bindings'
+            $ref: '#/definitions/Binding'
         400:
           $ref: "#/responses/400"
         401:
@@ -269,7 +269,162 @@ paths:
           $ref: '#/responses/422'
         500:
           $ref: "#/responses/500"
+    get:
+      summary: Get all bindings
+      description: |
+        Get all Bindings in the service
+      parameters:
+        - $ref: '#/parameters/ApiKey'
+      tags:
+        - Bindings
+      responses:
+        200:
+          description: Returns all the bindings
+          schema:
+            $ref: '#/definitions/Bindings'
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        500:
+          $ref: "#/responses/500"
 
+  /service-types/{Name}/hosts/{Host}/bindings:
+    get:
+      summary: Retrieve all bindings of a specific service type and host
+      description: |
+        Retrieve all the bindings of a specific service type and host
+      parameters:
+        - name: Name
+          in: path
+          description: Name of the service type
+          required: true
+          type: string
+        - name: Host
+          in: path
+          description: Name of the host
+          required: true
+          type: string
+        - $ref: '#/parameters/ApiKey'
+      tags:
+        - Bindings
+      responses:
+        200:
+          description: Returns all the bidnings of a specific service type and host
+          schema:
+            $ref: '#/definitions/Bindings'
+        400:
+          $ref: "#/responses/400"
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        404:
+          $ref: '#/responses/404'
+        500:
+          $ref: "#/responses/500"
+
+  /service-types/{Name}/hosts/{Host}/bindings/{DN}:
+    get:
+      summary: Return the binding's information associated with the dn,service type and host given
+      description: |
+        Retrieve information about a specific binding
+      parameters:
+        - name: Name
+          in: path
+          description: Name of the service type
+          required: true
+          type: string
+        - name: Host
+          in: path
+          description: Name of the host
+          required: true
+          type: string
+        - name: DN
+          in: path
+          description: Binding's dn
+          required: true
+          type: string
+        - $ref: '#/parameters/ApiKey'
+      tags:
+        - Bindings
+      responses:
+        200:
+          description: Return the binding's information associated with the dn,service type and host provided
+          schema:
+            $ref: '#/definitions/Binding'
+        400:
+          $ref: "#/responses/400"
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        404:
+          $ref: '#/responses/404'
+        500:
+          $ref: "#/responses/500"
+    put:
+      summary: Updates a binding
+      description: |
+        Update a binding
+      parameters:
+        - name: Name
+          in: path
+          description: Name of the service type
+          required: true
+          type: string
+        - name: Host
+          in: path
+          description: Name of the host
+          required: true
+          type: string
+        - name: DN
+          in: path
+          description: Binding's dn
+          required: true
+          type: string
+        - name: binding information
+          in: body
+          description: Required binding information - The request body can contain one or more fields that need to be updated.
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              service_uuid:
+                type: string
+              host:
+                type: string
+              dn:
+                type: string
+              oidc_token:
+                type: string
+              unique_key:
+                type: string
+        - $ref: '#/parameters/ApiKey'
+
+      tags:
+        - Bindings
+      responses:
+        201:
+          description: Returns the updated binding
+          schema:
+            $ref: '#/definitions/Binding'
+        400:
+          $ref: "#/responses/400"
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        404:
+          $ref: "#/responses/404"
+        409:
+          $ref: "#/responses/409"
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: "#/responses/500"
 
 parameters:
   ApiKey:
@@ -317,7 +472,7 @@ responses:
 
 definitions:
 
-  Bindings:
+  Binding:
     type: object
     properties:
       name:
@@ -340,6 +495,15 @@ definitions:
         type: string
       last_auth:
         type: string
+
+  Bindings:
+    type: object
+    properties:
+      bindings:
+        type: array
+        items:
+          $ref: '#/definitions/Binding'
+
 
   ServiceType:
     type: object
