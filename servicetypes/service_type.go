@@ -127,23 +127,23 @@ func FindServiceTypeByUUID(uuid string, store stores.Store) (ServiceType, error)
 func FindAllServiceTypes(store stores.Store) (ServiceList, error) {
 
 	var qServices []stores.QServiceType
-	var services []ServiceType
+	var services = []ServiceType{}
 	var err error
 
 	if qServices, err = store.QueryServiceTypes(""); err != nil {
-		return ServiceList{}, err
+		return ServiceList{ServiceTypes:services}, err
 	}
 
 	for _, qs := range qServices {
 		_service := &ServiceType{}
 		if err := utils.CopyFields(qs, _service); err != nil {
 			err = utils.APIGenericInternalError(err.Error())
-			return ServiceList{}, err
+			return ServiceList{ServiceTypes:services}, err
 		}
 		services = append(services, *_service)
 	}
 
-	return ServiceList{services}, err
+	return ServiceList{ServiceTypes:services}, err
 
 }
 

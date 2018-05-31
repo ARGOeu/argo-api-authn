@@ -471,7 +471,7 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeListAll() {
 func (suite *ServiceTypeHandlersSuite) TestServiceTypeListAllEmptyList() {
 
 	expResJSON := `{
- "service_types": null
+ "service_types": []
 }`
 
 	req, err := http.NewRequest("GET", "http://localhost:8080/service-types", nil)
@@ -481,6 +481,7 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeListAllEmptyList() {
 
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
+
 	// empty the store
 	mockstore.ServiceTypes = []stores.QServiceType{}
 

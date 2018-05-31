@@ -131,7 +131,7 @@ func (suite *ServiceTestSuite) TestFindAllServiceTypes() {
 	serAll1, err1 := FindAllServiceTypes(mockstore)
 
 	// normal case outcome - empty list
-	var empServ ServiceList
+	var empServ = ServiceList{ServiceTypes:[]ServiceType{}}
 	mockstore.ServiceTypes = []stores.QServiceType{}
 	serAll2, err2 := FindAllServiceTypes(mockstore)
 
