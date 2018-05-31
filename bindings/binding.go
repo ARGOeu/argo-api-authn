@@ -33,6 +33,13 @@ func CreateBinding(binding Binding, store stores.Store) (Binding, error) {
 		return binding, err
 	}
 
+	// check if a binding with same dn already exists under the same service type and host
+	if err := ExistsWithDN(binding.DN, binding.ServiceUUID, binding.Host, store); err != nil {
+		return binding, err
+	}
+
+	//TODO check for same oidc token
+
 	if qBinding, err = store.InsertBinding(binding.Name, binding.ServiceUUID, binding.Host, binding.DN, binding.OIDCToken, binding.UniqueKey); err != nil {
 		return binding, err
 	}
@@ -45,6 +52,32 @@ func CreateBinding(binding Binding, store stores.Store) (Binding, error) {
 	return binding, err
 }
 
+// ExistsWithDN checks if a binding with the same dn already exists under the same service type and host
+func ExistsWithDN(dn string, serviceUUID string, host string, store stores.Store) error {
+
+	var err error
+
+	// check if the given dn doesn't already exist under the given service type and host
+	// first check for all the other errors regrading bindings
+	if _, err = FindBindingByDN(dn, serviceUUID, host, store); err != nil {
+		log.Info(err)
+		if err.Error() != "Binding was not found" {
+			return err
+		}
+	}
+
+	// if the error is nil, it means the function found and returned a binding
+	if err == nil {
+		err = utils.APIErrConflict(Binding{}, "dn", dn)
+		return err
+	}
+
+	return nil
+}
+
+//TODO ExistsWithOIDCToken
+
+// Validate performs various checks on the fields of a binding
 func (binding *Binding) Validate(store stores.Store) error {
 
 	var err error
@@ -73,23 +106,6 @@ func (binding *Binding) Validate(store stores.Store) error {
 		err = utils.APIErrNotFound("Host")
 		return err
 	}
-
-	// check if the given dn doesn't already exist under the given service type and host
-	// first check for all the other errors regrading bindings
-	if _, err = FindBindingByDN(binding.DN, binding.ServiceUUID, binding.Host, store); err != nil {
-		log.Info(err)
-		if err.Error() != "Binding was not found" {
-			return err
-		}
-	}
-
-	// if the error is nil, it means the function found and returned a binding
-	if err == nil {
-		err = utils.APIErrConflict(*binding, "dn", binding.DN)
-		return err
-	}
-
-	//TODO check if the given OIDC token already exists
 
 	return nil
 }
@@ -137,7 +153,7 @@ func FindAllBindings(store stores.Store) (BindingList, error) {
 	var bindings = []Binding{}
 
 	if qBindings, err = store.QueryBindings("", ""); err != nil {
-		return BindingList{Bindings:[]Binding{}}, err
+		return BindingList{Bindings: []Binding{}}, err
 	}
 
 	// convert the QBindings to Bindings
@@ -145,35 +161,101 @@ func FindAllBindings(store stores.Store) (BindingList, error) {
 		_binding := &Binding{}
 		if err := utils.CopyFields(qb, _binding); err != nil {
 			err = utils.APIGenericInternalError(err.Error())
-			return BindingList{Bindings:[]Binding{}}, err
+			return BindingList{Bindings: []Binding{}}, err
 		}
 		bindings = append(bindings, *_binding)
 	}
 
-	return BindingList{Bindings:bindings}, err
+	return BindingList{Bindings: bindings}, err
 
 }
 
-//FindBindingsByServiceTypeAndHost returns all the bindings of a specific service type and host
+// FindBindingsByServiceTypeAndHost returns all the bindings of a specific service type and host
 func FindBindingsByServiceTypeAndHost(serviceUUID string, host string, store stores.Store) (BindingList, error) {
 
 	var qBindings []stores.QBinding
-	 var bindings = []Binding{}
+	var bindings = []Binding{}
 	var err error
 
 	if qBindings, err = store.QueryBindings(serviceUUID, host); err != nil {
-		return BindingList{Bindings:[]Binding{}}, err
+		return BindingList{Bindings: []Binding{}}, err
 	}
 
 	for _, qb := range qBindings {
 		_binding := &Binding{}
 		if err := utils.CopyFields(qb, _binding); err != nil {
 			err = utils.APIGenericInternalError(err.Error())
-			return BindingList{Bindings:[]Binding{}}, err
+			return BindingList{Bindings: []Binding{}}, err
 		}
 		bindings = append(bindings, *_binding)
 	}
 
-	return BindingList{Bindings:bindings}, err
+	return BindingList{Bindings: bindings}, err
 }
 
+// UpdateBinding updates a binding after validating its context
+func UpdateBinding(original Binding, updated Binding, store stores.Store) (Binding, error) {
+
+	var err error
+	var qOriginalBinding stores.QBinding
+	var qUpdatedBinding stores.QBinding
+
+	// validate the updated binding
+	if err = updated.Validate(store); err != nil {
+		return updated, err
+	}
+
+	// if there is a new dn provided, check whether or not it already exists
+	if original.DN != updated.DN {
+
+		// check if a binding with same dn already exists under the same service type and host
+		if err := ExistsWithDN(updated.DN, updated.ServiceUUID, updated.Host, store); err != nil {
+			return Binding{}, err
+		}
+
+	}
+
+	//TODO check for the
+	//
+	// same oidc token
+
+	// convert the original binding to a QBinding
+	if err := utils.CopyFields(original, &qOriginalBinding); err != nil {
+		err = utils.APIGenericInternalError(err.Error())
+		return Binding{}, err
+	}
+
+	// convert the updated binding to a QBinding
+	if err := utils.CopyFields(updated, &qUpdatedBinding); err != nil {
+		err = utils.APIGenericInternalError(err.Error())
+		return Binding{}, err
+	}
+
+	// update the binding
+	if _, err = store.UpdateBinding(qOriginalBinding, qUpdatedBinding); err != nil {
+		err = &utils.APIError{Status: "INTERNAL SERVER ERROR", Code: 500, Message: err.Error()}
+		return Binding{}, err
+	}
+
+	return updated, err
+}
+
+// DeleteBinding deletes the given binding from the source
+func DeleteBinding(resource Binding, store stores.Store) error {
+
+	var err error
+	var qResource stores.QBinding
+
+	// convert the resource Binding to a QBinding
+	if err = utils.CopyFields(resource, &qResource); err != nil {
+		err = utils.APIGenericInternalError(err.Error())
+		return err
+	}
+
+	if err = store.DeleteBinding(qResource); err != nil {
+		return err
+	}
+
+	return err
+
+}

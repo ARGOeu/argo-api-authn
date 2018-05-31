@@ -160,3 +160,16 @@ func (mock *Mockstore) UpdateBinding(original QBinding, updated QBinding) (QBind
 
 	return updated, nil
 }
+
+func (mock *Mockstore) DeleteBinding(resource QBinding) error {
+
+	// find the  binding in the list and replace it
+	for idx, qb := range mock.Bindings {
+		if qb == resource {
+			mock.Bindings = append(mock.Bindings[:idx], mock.Bindings[idx+1:]...)
+			break
+		}
+	}
+
+	return nil
+}

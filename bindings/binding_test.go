@@ -148,6 +148,94 @@ func (suite *BindingTestSuite) TestFindBindingsByServiceTypeAndHost() {
 
 }
 
+func (suite *BindingTestSuite) TestupdateBinding() {
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	// insert a binding
+	b1_ins := stores.QBinding{Name: "bins", ServiceUUID: "uuid1", Host: "host1", DN: "dn_ins", OIDCToken: "", UniqueKey: "key"}
+	mockstore.Bindings = append(mockstore.Bindings, b1_ins)
+
+	b1 := Binding{Name: "bins", ServiceUUID: "uuid1", Host: "host1", DN: "dn_ins", OIDCToken: "", UniqueKey: "key"}
+
+	// test the normal case
+	b1_upd := Binding{Name: "bins_tmp", ServiceUUID: "uuid1", Host: "host1", DN: "dn_ins_tmp", OIDCToken: "", UniqueKey: "key_tmp"}
+	_, err1 := UpdateBinding(b1, b1_upd, mockstore)
+	res1, _ := mockstore.QueryBindingsByDN("dn_ins_tmp", "uuid1", "host1")
+
+	// tests the case of providing an empty name
+	b2 := Binding{Name: "", ServiceUUID: "uuid1", Host: "host1", DN: "dn_ins", OIDCToken: "", UniqueKey: "key"}
+	_, err2 := UpdateBinding(b1, b2, mockstore)
+
+	// tests the case of providing an empty serviceUUID
+	b3 := Binding{Name: "bins", ServiceUUID: "", Host: "host1", DN: "dn_ins", OIDCToken: "", UniqueKey: "key"}
+	_, err3 := UpdateBinding(b1, b3, mockstore)
+
+	// tests the case of providing an empty host
+	b4 := Binding{Name: "bins", ServiceUUID: "uuid1", Host: "", DN: "dn_ins", OIDCToken: "", UniqueKey: "key"}
+	_, err4 := UpdateBinding(b1, b4, mockstore)
+
+	// tests the case of providing an empty unique key
+	b5 := Binding{Name: "bins", ServiceUUID: "uuid1", Host: "host1", DN: "dn_ins", OIDCToken: "", UniqueKey: ""}
+	_, err5 := UpdateBinding(b1, b5, mockstore)
+
+	// tests the case with missing field dn and oidctoken
+	b6 := Binding{Name: "bins", ServiceUUID: "uuid1", Host: "host1", UniqueKey: "key", DN: "", OIDCToken: ""}
+	_, err6 := UpdateBinding(b1, b6, mockstore)
+
+	// tests the case with unknown service uuid
+	b7 := Binding{Name: "bins", ServiceUUID: "unknown", Host: "host1", DN: "dn_ins", OIDCToken: "", UniqueKey: "key"}
+	_, err7 := UpdateBinding(b1, b7, mockstore)
+
+	// tests the case with unknown host
+	b8 := Binding{Name: "bins", ServiceUUID: "uuid1", Host: "unknown", DN: "dn_ins", OIDCToken: "", UniqueKey: "key"}
+	_, err8 := UpdateBinding(b1, b8, mockstore)
+
+	// tests the case where a binding with the given dn already exists
+	b9 := Binding{Name: "bins", ServiceUUID: "uuid1", Host: "host1", DN: "test_dn_1", OIDCToken: "", UniqueKey: "key"}
+	_, err9 := UpdateBinding(b1, b9, mockstore)
+
+	suite.Equal(b1_upd.Name, res1[0].Name)
+	suite.Equal(b1_upd.ServiceUUID, res1[0].ServiceUUID)
+	suite.Equal(b1_upd.Host, res1[0].Host)
+	suite.Equal(b1_upd.OIDCToken, res1[0].OIDCToken)
+	suite.Equal(b1_upd.UniqueKey, res1[0].UniqueKey)
+
+	suite.Nil(err1)
+	suite.Equal("bindings.Binding object contains an empty value for field: Name", err2.Error())
+	suite.Equal("bindings.Binding object contains an empty value for field: ServiceUUID", err3.Error())
+	suite.Equal("bindings.Binding object contains an empty value for field: Host", err4.Error())
+	suite.Equal("bindings.Binding object contains an empty value for field: UniqueKey", err5.Error())
+	suite.Equal("Both DN and OIDC Token fields are empty", err6.Error())
+	suite.Equal("ServiceType was not found", err7.Error())
+	suite.Equal("Host was not found", err8.Error())
+	suite.Equal("bindings.Binding object with dn: test_dn_1 already exists", err9.Error())
+
+}
+
+func (suite *BindingTestSuite) TestDeleteBinding() {
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	b_del := Binding{Name: "b1", ServiceUUID: "uuid1", Host: "host1", DN: "test_dn_1", OIDCToken: "", UniqueKey: "unique_key_1", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
+
+	err1 := DeleteBinding(b_del, mockstore)
+
+	// tests the normal case
+	expectedBL := BindingList{}
+	binding1 := Binding{Name: "b2", ServiceUUID: "uuid1", Host: "host1", DN: "test_dn_2", OIDCToken: "", UniqueKey: "unique_key_2", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
+	expectedBL.Bindings = append(expectedBL.Bindings, binding1)
+
+	bL1, _ := FindBindingsByServiceTypeAndHost("uuid1", "host1", mockstore)
+
+	suite.Equal(expectedBL, bL1)
+
+	suite.Nil(err1)
+
+}
+
 func TestBindingTestSuite(t *testing.T) {
 	suite.Run(t, new(BindingTestSuite))
 }
