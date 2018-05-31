@@ -205,3 +205,20 @@ func (mongo *MongoStore) UpdateBinding(original QBinding, updated QBinding) (QBi
 
 	return updated, err
 }
+
+func (mongo *MongoStore) DeleteBinding(resource QBinding) error {
+
+	var err error
+
+	db := mongo.Session.DB(mongo.Database)
+	c := db.C("bindings")
+
+	if err := c.Remove(resource); err != nil {
+
+		log.Fatal("STORE", "\t", err.Error())
+		err = utils.APIErrDatabase(err.Error())
+		return err
+	}
+
+	return err
+}

@@ -1153,6 +1153,117 @@ func (suite *BindingHandlersSuite) TestBindingUpdateUnknownServiceTypeInPATH() {
 	suite.Equal(expRespJSON, w.Body.String())
 }
 
+// TestBindingDelete tests the normal case
+func (suite *BindingHandlersSuite) TestBindingDelete() {
+
+	req, err := http.NewRequest("DELETE", "http://localhost:8080/service-types/s1/hosts/host1/bindings/test_dn_1", nil)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	cfg := &config.Config{}
+	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
+
+	router := mux.NewRouter().StrictSlash(true)
+	w := httptest.NewRecorder()
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}/bindings/{dn}", WrapConfig(BindingDelete, mockstore, cfg))
+	router.ServeHTTP(w, req)
+	suite.Equal(204, w.Code)
+}
+
+// TestBindingDeleteUnknownServiceType tests the case where the given service type is unknown
+func (suite *BindingHandlersSuite) TestBindingDeleteUnknownServiceType() {
+
+	expRespJSON := `{
+ "error": {
+  "message": "ServiceType was not found",
+  "code": 404,
+  "status": "NOT FOUND"
+ }
+}`
+
+	req, err := http.NewRequest("DELETE", "http://localhost:8080/service-types/unknown/hosts/host1/bindings/test_dn_1", nil)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	cfg := &config.Config{}
+	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
+
+	router := mux.NewRouter().StrictSlash(true)
+	w := httptest.NewRecorder()
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}/bindings/{dn}", WrapConfig(BindingDelete, mockstore, cfg))
+	router.ServeHTTP(w, req)
+	suite.Equal(404, w.Code)
+	suite.Equal(expRespJSON, w.Body.String())
+}
+
+// TestBindingDeleteUnknownHost tests the case where the given host is unknown
+func (suite *BindingHandlersSuite) TestBindingDeleteUnknownHost() {
+
+	expRespJSON := `{
+ "error": {
+  "message": "Host was not found",
+  "code": 404,
+  "status": "NOT FOUND"
+ }
+}`
+
+	req, err := http.NewRequest("DELETE", "http://localhost:8080/service-types/s1/hosts/unknown/bindings/test_dn_1", nil)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	cfg := &config.Config{}
+	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
+
+	router := mux.NewRouter().StrictSlash(true)
+	w := httptest.NewRecorder()
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}/bindings/{dn}", WrapConfig(BindingDelete, mockstore, cfg))
+	router.ServeHTTP(w, req)
+	suite.Equal(404, w.Code)
+	suite.Equal(expRespJSON, w.Body.String())
+}
+
+// TestBindingDeleteUnknownHost tests the case where the given dn is unknown
+func (suite *BindingHandlersSuite) TestBindingDeleteUnknownDN() {
+
+	expRespJSON := `{
+ "error": {
+  "message": "Binding was not found",
+  "code": 404,
+  "status": "NOT FOUND"
+ }
+}`
+
+	req, err := http.NewRequest("DELETE", "http://localhost:8080/service-types/s1/hosts/host1/bindings/unknown", nil)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	cfg := &config.Config{}
+	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
+
+	router := mux.NewRouter().StrictSlash(true)
+	w := httptest.NewRecorder()
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}/bindings/{dn}", WrapConfig(BindingDelete, mockstore, cfg))
+	router.ServeHTTP(w, req)
+	suite.Equal(404, w.Code)
+	suite.Equal(expRespJSON, w.Body.String())
+}
+
 func TestBindingHandlersSuite(t *testing.T) {
 	suite.Run(t, new(BindingHandlersSuite))
 }

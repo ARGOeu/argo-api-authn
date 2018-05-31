@@ -228,3 +228,22 @@ This request updates binding.
   
 ### Errors
 Please refer to section [Errors](api_errors.md) to see all possible Errors
+
+## [DELETE] Manage Bindings - Delete a Binding
+
+This request updates binding.
+
+#### Request
+
+`PATCH /v1/service-types/{service-type}/hosts/{host}/bindings/{dn}`
+
+ ### Response
+ 
+ If the request is successful, the response is empty.
+ 
+ Success Response
+ 
+ `204 No Content`
+   
+### Errors
+Please refer to section [Errors](api_errors.md) to see all possible Errors

@@ -175,3 +175,44 @@ func BindingUpdate(w http.ResponseWriter, r *http.Request) {
 	utils.RespondOk(w, 200, updatedBinding)
 
 }
+
+// BindingDelete deletes the specified binding from the store
+func BindingDelete(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	var ok bool
+	var serviceType servicetypes.ServiceType
+	var resourceBinding bindings.Binding
+
+	//context references
+	store := context.Get(r, "stores").(stores.Store)
+
+	// url vars
+	vars := mux.Vars(r)
+
+	// check if the service exists
+	if serviceType, err = servicetypes.FindServiceTypeByName(vars["service-type"], store); err != nil {
+		utils.RespondError(w, err)
+		return
+	}
+
+	// check if the provided host is associated with the given service type
+	if ok = serviceType.HasHost(vars["host"]); ok == false {
+		err = utils.APIErrNotFound("Host")
+		utils.RespondError(w, err)
+		return
+	}
+
+	// check if the binding exists
+	if resourceBinding, err = bindings.FindBindingByDN(vars["dn"], serviceType.UUID, vars["host"], store); err != nil {
+		utils.RespondError(w, err)
+		return
+	}
+
+	if err = bindings.DeleteBinding(resourceBinding, store); err != nil {
+		utils.RespondError(w, err)
+		return
+	}
+
+	utils.RespondOk(w, 204, "")
+}

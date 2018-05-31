@@ -214,6 +214,28 @@ func (suite *BindingTestSuite) TestupdateBinding() {
 
 }
 
+func (suite *BindingTestSuite) TestDeleteBinding() {
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	b_del := Binding{Name: "b1", ServiceUUID: "uuid1", Host: "host1", DN: "test_dn_1", OIDCToken: "", UniqueKey: "unique_key_1", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
+
+	err1 := DeleteBinding(b_del, mockstore)
+
+	// tests the normal case
+	expectedBL := BindingList{}
+	binding1 := Binding{Name: "b2", ServiceUUID: "uuid1", Host: "host1", DN: "test_dn_2", OIDCToken: "", UniqueKey: "unique_key_2", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
+	expectedBL.Bindings = append(expectedBL.Bindings, binding1)
+
+	bL1, _ := FindBindingsByServiceTypeAndHost("uuid1", "host1", mockstore)
+
+	suite.Equal(expectedBL, bL1)
+
+	suite.Nil(err1)
+
+}
+
 func TestBindingTestSuite(t *testing.T) {
 	suite.Run(t, new(BindingTestSuite))
 }

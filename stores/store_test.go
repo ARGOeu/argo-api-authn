@@ -269,6 +269,26 @@ func (suite *StoreTestSuite) TestUpdateBinding() {
 	suite.Nil(err1)
 }
 
+func (suite *StoreTestSuite) TestDeleteBinding() {
+
+	suite.SetUpStoreTestSuite()
+
+	resource := QBinding{Name: "b1", ServiceUUID: "uuid1", Host: "host1", DN: "test_dn_1", OIDCToken: "", UniqueKey: "unique_key_1", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
+
+	err1 := suite.Mockstore.DeleteBinding(resource)
+
+	// check the slice containing the bindings to see if the resource was removed
+	expBindings := []QBinding{
+		{Name: "b2", ServiceUUID: "uuid1", Host: "host1", DN: "test_dn_2", OIDCToken: "", UniqueKey: "unique_key_2", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""},
+		{Name: "b3", ServiceUUID: "uuid1", Host: "host2", DN: "test_dn_3", OIDCToken: "", UniqueKey: "unique_key_3", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""},
+	}
+	qBindings, _ := suite.Mockstore.QueryBindings("", "")
+
+	suite.Equal(expBindings, qBindings)
+
+	suite.Nil(err1)
+}
+
 func TestStoreTestSuite(t *testing.T) {
 	suite.Run(t, new(StoreTestSuite))
 }

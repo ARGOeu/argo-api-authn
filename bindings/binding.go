@@ -170,7 +170,7 @@ func FindAllBindings(store stores.Store) (BindingList, error) {
 
 }
 
-//FindBindingsByServiceTypeAndHost returns all the bindings of a specific service type and host
+// FindBindingsByServiceTypeAndHost returns all the bindings of a specific service type and host
 func FindBindingsByServiceTypeAndHost(serviceUUID string, host string, store stores.Store) (BindingList, error) {
 
 	var qBindings []stores.QBinding
@@ -193,7 +193,7 @@ func FindBindingsByServiceTypeAndHost(serviceUUID string, host string, store sto
 	return BindingList{Bindings: bindings}, err
 }
 
-//UpdateBinding updates a binding after validating its context
+// UpdateBinding updates a binding after validating its context
 func UpdateBinding(original Binding, updated Binding, store stores.Store) (Binding, error) {
 
 	var err error
@@ -238,4 +238,24 @@ func UpdateBinding(original Binding, updated Binding, store stores.Store) (Bindi
 	}
 
 	return updated, err
+}
+
+// DeleteBinding deletes the given binding from the source
+func DeleteBinding(resource Binding, store stores.Store) error {
+
+	var err error
+	var qResource stores.QBinding
+
+	// convert the resource Binding to a QBinding
+	if err = utils.CopyFields(resource, &qResource); err != nil {
+		err = utils.APIGenericInternalError(err.Error())
+		return err
+	}
+
+	if err = store.DeleteBinding(qResource); err != nil {
+		return err
+	}
+
+	return err
+
 }

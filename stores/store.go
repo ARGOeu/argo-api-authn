@@ -12,4 +12,5 @@ type Store interface {
 	InsertAuthMethod(authM map[string]interface{}) error
 	InsertBinding(name string, serviceUUID string, host string, dn string, oidcToken string, uniqueKey string) (QBinding, error)
 	UpdateBinding(original QBinding, updated QBinding) (QBinding, error)
+	DeleteBinding(resource QBinding) error
 }
