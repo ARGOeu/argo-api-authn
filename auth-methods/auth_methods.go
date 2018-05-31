@@ -2,7 +2,6 @@ package auth_methods
 
 import (
 	"github.com/ARGOeu/argo-api-authn/stores"
-	"github.com/Sirupsen/logrus"
 )
 
 type AuthMethod struct{}
@@ -23,17 +22,15 @@ var AuthMethodCreators = map[string]AuthMethodCreator{
 	"api-key": CreateApiKeyAuthMethod,
 }
 
-func FindAllAuthMethods(store stores.Store) ([]map[string]interface{}, error) {
+func FindAllAuthMethods(store stores.Store) (AuthMethodsList, error) {
 
 	var err error
-	var authMs []map[string]interface{}
+	var authMs = []map[string]interface{}{}
 
 	if authMs, err = store.QueryAuthMethods("", "", ""); err != nil {
-		return authMs, err
+		return AuthMethodsList{AuthMethods: authMs}, err
 	}
 
-	logrus.Info(authMs)
-
-	return authMs, err
+	return AuthMethodsList{AuthMethods: authMs}, err
 
 }

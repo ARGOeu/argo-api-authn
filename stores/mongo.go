@@ -74,7 +74,7 @@ func (mongo *MongoStore) QueryServiceTypesByUUID(uuid string) ([]QServiceType, e
 
 func (mongo *MongoStore) QueryAuthMethods(serviceUUID string, host string, typeName string) ([]map[string]interface{}, error) {
 
-	var qAuthMethods []map[string]interface{}
+	var qAuthMethods = []map[string]interface{}{}
 	var err error
 
 	query := bson.M{}

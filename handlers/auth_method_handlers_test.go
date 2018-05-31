@@ -257,6 +257,34 @@ func (suite *AuthMethodHandlersTestSuite) TestAuthMethodListAll() {
 	suite.Equal(expRespJSON, w.Body.String())
 }
 
+// TestAuthMethodListAllEmptyList tests case of an empty list
+func (suite *AuthMethodHandlersTestSuite) TestAuthMethodListAllEmptyList() {
+
+	expRespJSON := `{
+ "auth_methods": []
+}`
+	req, err := http.NewRequest("GET", "http://localhost:8080/authM", nil)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	cfg := &config.Config{}
+	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
+
+	// empty the store
+	mockstore.AuthMethods = []map[string]interface{}{}
+
+	router := mux.NewRouter().StrictSlash(true)
+	w := httptest.NewRecorder()
+	router.HandleFunc("/authM", WrapConfig(AuthMethodListAll, mockstore, cfg))
+	router.ServeHTTP(w, req)
+	suite.Equal(200, w.Code)
+	suite.Equal(expRespJSON, w.Body.String())
+}
+
 // TestAuthMethodCreate tests the normal case of creating an auth method
 func (suite *AuthMethodHandlersTestSuite) TestAuthMethodCreate() {
 

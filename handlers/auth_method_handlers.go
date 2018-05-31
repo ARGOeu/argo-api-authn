@@ -7,7 +7,6 @@ import (
 	"github.com/ARGOeu/argo-api-authn/servicetypes"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
-	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -165,20 +164,16 @@ func AuthMethodListOne(w http.ResponseWriter, r *http.Request) {
 
 func AuthMethodListAll(w http.ResponseWriter, r *http.Request) {
 
+	var authMList auth_methods.AuthMethodsList
+	var err error
+
 	//context references
 	store := context.Get(r, "stores").(stores.Store)
 
-	var authMs []map[string]interface{}
-	var err error
-
-	if authMs, err = auth_methods.FindAllAuthMethods(store); err != nil {
+	if authMList, err = auth_methods.FindAllAuthMethods(store); err != nil {
 		utils.RespondError(w, err)
 		return
 	}
 
-	logrus.Info(authMs)
-
-	aml := auth_methods.AuthMethodsList{authMs}
-
-	utils.RespondOk(w, 200, aml)
+	utils.RespondOk(w, 200, authMList)
 }
