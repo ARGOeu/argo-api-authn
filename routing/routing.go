@@ -68,6 +68,7 @@ var ApiRoutes = []APIRoute{
 	{"authMethod:ListOne", "GET", "/service-types/{service-type}/hosts/{host}/authM", handlers.AuthMethodListOne},
 	{"bindings:ListAllByServiceTypeAndHost", "GET", "/service-types/{service-type}/hosts/{host}/bindings", handlers.BindingListAllByServiceTypeAndHost},
 	{"bindings:ListOneByDN", "GET", "/service-types/{service-type}/hosts/{host}/bindings/{dn}", handlers.BindingListOneByDN},
+	{"bindings:update", "PATCH", "/service-types/{service-type}/hosts/{host}/bindings/{dn}", handlers.BindingUpdate},
 	{"authMethod:ListAll", "GET", "/authM", handlers.AuthMethodListAll},
 	{"authMethod:Create", "POST", "/authM", handlers.AuthMethodCreate},
 	{"bindings:create", "POST", "/bindings", handlers.BindingCreate},

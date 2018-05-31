@@ -184,3 +184,47 @@ This request retrieves the information of a binding associated with the provided
 ### Errors
 
 Please refer to section [Errors](api_errors.md) to see all possible Errors
+
+## [PATCH] Manage Bindings - Update a Binding
+
+This request updates binding.
+
+#### Request
+
+`PATCH /v1/service-types/{service-type}/hosts/{host}/bindings/{dn}`
+
+##### Request Body
+
+```json
+{
+	"name": "b1_updated",
+	"service_uuid": "b61030d9-bef3-4768-9a03-7b1ff36e8af4cc",
+	"host": "host1",
+	"dn":"dn",
+	"oidc_token": "token",
+	"unique_key": "key"
+}
+ ```
+ 
+ ### Response
+ 
+ If the request is successful, the response contains the updated binding.
+ 
+ Success Response
+ 
+ `200 OK`
+ 
+ ```json
+ {
+     "name": "b1_updated",
+     "service_uuid": "b61030d9-bef3-4768-9a03-7b1ff36e8af4cc",
+     "host": "host1",
+     "dn": "host1",
+     "oidc_token": "token",
+     "unique_key": "key",
+     "created_on": "2018-05-24T09:58:17Z"
+ }
+  ```
+  
+### Errors
+Please refer to section [Errors](api_errors.md) to see all possible Errors
