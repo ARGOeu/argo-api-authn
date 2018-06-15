@@ -885,6 +885,153 @@ func (suite *AuthMethodHandlersTestSuite) TestAuthMethodCreateAlreadyExists() {
 	suite.Equal(expRespJSON, w.Body.String())
 }
 
+// TestAuthMethodDelete tests the normal case
+func (suite *AuthMethodHandlersTestSuite) TestAuthMethodDelete() {
+
+	req, err := http.NewRequest("DELETE", "http://localhost:8080/service-types/s1/hosts/host1/authM", nil)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	cfg := &config.Config{}
+	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
+
+	router := mux.NewRouter().StrictSlash(true)
+	w := httptest.NewRecorder()
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}/authM", WrapConfig(AuthMethodDelete, mockstore, cfg))
+	router.ServeHTTP(w, req)
+	suite.Equal(204, w.Code)
+}
+
+// TestAuthMethodDeleteUnknownServiceType tests the case where the provided service type doesn't exist
+func (suite *AuthMethodHandlersTestSuite) TestAuthMethodDeleteUnknownServiceType() {
+
+	expRespJSON := `{
+ "error": {
+  "message": "Service-type was not found",
+  "code": 404,
+  "status": "NOT FOUND"
+ }
+}`
+
+	req, err := http.NewRequest("DELETE", "http://localhost:8080/service-types/unknown/hosts/host1/authM", nil)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	cfg := &config.Config{}
+	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
+
+	router := mux.NewRouter().StrictSlash(true)
+	w := httptest.NewRecorder()
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}/authM", WrapConfig(AuthMethodDelete, mockstore, cfg))
+	router.ServeHTTP(w, req)
+	suite.Equal(404, w.Code)
+	suite.Equal(expRespJSON, w.Body.String())
+}
+
+// TestAuthMethodDeleteUnknownHost tests the case where the provided host doesn't exist
+func (suite *AuthMethodHandlersTestSuite) TestAuthMethodDeleteUnknownHost() {
+
+	expRespJSON := `{
+ "error": {
+  "message": "Host was not found",
+  "code": 404,
+  "status": "NOT FOUND"
+ }
+}`
+
+	req, err := http.NewRequest("DELETE", "http://localhost:8080/service-types/s1/hosts/unknown/authM", nil)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	cfg := &config.Config{}
+	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
+
+	router := mux.NewRouter().StrictSlash(true)
+	w := httptest.NewRecorder()
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}/authM", WrapConfig(AuthMethodDelete, mockstore, cfg))
+	router.ServeHTTP(w, req)
+	suite.Equal(404, w.Code)
+	suite.Equal(expRespJSON, w.Body.String())
+}
+
+// TestAuthMethodDeleteInternalConflict tests the case where the provided host doesn't exist
+func (suite *AuthMethodHandlersTestSuite) TestAuthMethodDeleteInternalConflict() {
+
+	expRespJSON := `{
+ "error": {
+  "message": "Database Error: More than 1 auth methods found under the service type: uuid1 and host: host1",
+  "code": 500,
+  "status": "INTERNAL SERVER ERROR"
+ }
+}`
+
+	req, err := http.NewRequest("DELETE", "http://localhost:8080/service-types/s1/hosts/host1/authM", nil)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	cfg := &config.Config{}
+	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
+
+	// insert one more auth method under the same service type and host
+	mockstore.AuthMethods = append(mockstore.AuthMethods, map[string]interface{}{"service_uuid": "uuid1", "host": "host1", "port": 9000.0, "path": "test_path_1", "access_key": "key1", "type": "api-key"})
+
+	router := mux.NewRouter().StrictSlash(true)
+	w := httptest.NewRecorder()
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}/authM", WrapConfig(AuthMethodDelete, mockstore, cfg))
+	router.ServeHTTP(w, req)
+	suite.Equal(500, w.Code)
+	suite.Equal(expRespJSON, w.Body.String())
+}
+
+// TestAuthMethodDeleteUnknownAuthMethod tests the case where there is no auth method under the given service type and host
+func (suite *AuthMethodHandlersTestSuite) TestAuthMethodDeleteUnknownAuthMethod() {
+
+	expRespJSON := `{
+ "error": {
+  "message": "Auth method was not found",
+  "code": 404,
+  "status": "NOT FOUND"
+ }
+}`
+
+	req, err := http.NewRequest("DELETE", "http://localhost:8080/service-types/s_test/hosts/host_test/authM", nil)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	cfg := &config.Config{}
+	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
+
+	// append a service that has no associated auth method yet
+	mockstore.ServiceTypes = append(mockstore.ServiceTypes, stores.QServiceType{Name: "s_test", Hosts: []string{"host_test"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", RetrievalField: "token", CreatedOn: "2018-05-05T18:04:05Z"})
+
+	router := mux.NewRouter().StrictSlash(true)
+	w := httptest.NewRecorder()
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}/authM", WrapConfig(AuthMethodDelete, mockstore, cfg))
+	router.ServeHTTP(w, req)
+	suite.Equal(404, w.Code)
+	suite.Equal(expRespJSON, w.Body.String())
+}
+
 func TestAuthMethodHandlersTestSuite(t *testing.T) {
 	suite.Run(t, new(AuthMethodHandlersTestSuite))
 }

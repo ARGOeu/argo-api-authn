@@ -4,6 +4,8 @@ import (
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"net/http"
+	"github.com/ARGOeu/argo-api-authn/utils"
+	log "github.com/Sirupsen/logrus"
 )
 
 type AuthMethod struct{}
@@ -40,5 +42,36 @@ func FindAllAuthMethods(store stores.Store) (AuthMethodsList, error) {
 	}
 
 	return AuthMethodsList{AuthMethods: authMs}, err
+
+}
+
+// DeleteAuthMethod deletes the auth method associated with the provided service type
+func DeleteAuthMethod(serviceUUID string, host string, typeName string, store stores.Store) error {
+
+	var err error
+	var authMs []map[string]interface{}
+
+	if authMs, err = store.QueryAuthMethods(serviceUUID, host, typeName); err != nil {
+		return err
+	}
+
+	// check if there is an auth method registered for the given service type and host
+	if len(authMs) == 0 {
+		err := utils.APIErrNotFound("Auth method")
+		return err
+	}
+
+	// check if there is an internal conflict
+	if len(authMs) > 1 {
+		log.Warning("STORE", "\t", "More than 1 auth methods found under the service type: " + serviceUUID + " and host: " + host )
+		err = utils.APIErrDatabase("More than 1 auth methods found under the service type: " + serviceUUID + " and host: " + host )
+		return err
+	}
+
+	if err = store.DeleteAuthMethod(authMs[0]); err != nil {
+		return err
+	}
+
+	return err
 
 }

@@ -178,3 +178,35 @@ func AuthMethodListAll(w http.ResponseWriter, r *http.Request) {
 
 	utils.RespondOk(w, 200, authMList)
 }
+
+func AuthMethodDelete( w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	var serviceType servicetypes.ServiceType
+
+	//context references
+	store := context.Get(r, "stores").(stores.Store)
+
+	// url vars
+	vars := mux.Vars(r)
+
+	// check if the service type exists
+	if serviceType, err = servicetypes.FindServiceTypeByName(vars["service-type"], store); err != nil {
+		utils.RespondError(w, err)
+		return
+	}
+
+	// check if the host exists
+	if !serviceType.HasHost(vars["host"]) {
+		err = utils.APIErrNotFound("Host")
+		utils.RespondError(w, err)
+		return
+	}
+
+	if err = auth_methods.DeleteAuthMethod(serviceType.UUID, vars["host"], serviceType.AuthMethod, store); err != nil {
+		utils.RespondError(w, err)
+		return
+	}
+
+	utils.RespondOk(w, 204, nil)
+}

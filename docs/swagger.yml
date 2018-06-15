@@ -189,7 +189,7 @@ paths:
           type: string
         - $ref: '#/parameters/ApiKey'
       tags:
-        - Authentication Methods
+        - Service Types
       responses:
         200:
           description: Returns the information of the requested auth method
@@ -197,6 +197,35 @@ paths:
             $ref: '#/definitions/APIKeyAuthMethod'
         400:
           $ref: "#/responses/400"
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        404:
+          $ref: '#/responses/404'
+        500:
+          $ref: "#/responses/500"
+    delete:
+      summary: Deletes the authentication method for a specific service type and host
+      description: |
+        Deletes the authentication method for a specific service type and host
+      parameters:
+        - name: Name
+          in: path
+          description: Name of the service type
+          required: true
+          type: string
+        - name: Host
+          in: path
+          description: Name of the host
+          required: true
+          type: string
+        - $ref: '#/parameters/ApiKey'
+      tags:
+        - Service Types
+      responses:
+        204:
+          description: Empty response
         401:
           $ref: "#/responses/401"
         403:

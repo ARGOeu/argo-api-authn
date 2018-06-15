@@ -118,3 +118,19 @@ curl -X POST -H "Content-Type: application/json"
 }
 ```
   Please refer to section [Errors](api_errors.md) to see all possible Errors
+  
+  ## [DELETE] Manage Auth Methods - Delete an auth method
+  
+  This request deletes an auth method associated with the provided service-type and host.
+  
+  #### Request
+  
+  `DELETE /v1/service-types/{service-type}/hosts/{host}/authM`
+  
+   ### Response
+   
+   If the request is successful, the response is empty.
+   
+   Success Response
+   
+   `204 No Content`

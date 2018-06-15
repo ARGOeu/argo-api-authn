@@ -257,3 +257,21 @@ func (mongo *MongoStore) DeleteBinding(qBinding QBinding) error {
 
 	return err
 }
+
+// DeleteAuthMethod deletes the given auth method from the store
+func (mongo *MongoStore) DeleteAuthMethod(authM map[string]interface{}) error {
+
+	var err error
+
+	db := mongo.Session.DB(mongo.Database)
+	c := db.C("auth_methods")
+
+	if err := c.Remove(authM); err != nil {
+
+		log.Error("STORE", "\t", err.Error())
+		err = utils.APIErrDatabase(err.Error())
+		return err
+	}
+	return err
+
+}

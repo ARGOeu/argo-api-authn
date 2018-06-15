@@ -329,6 +329,25 @@ func (suite *StoreTestSuite) TestDeleteBinding() {
 	suite.Nil(err1)
 }
 
+func (suite *StoreTestSuite) TestDeleteAuthMethod() {
+
+	suite.SetUpStoreTestSuite()
+
+	amD := map[string]interface{}{"service_uuid": "uuid1", "host": "host1", "port": 9000.0, "path": "test_path_1", "access_key": "key1", "type": "api-key"}
+
+	err1 := suite.Mockstore.DeleteAuthMethod(amD)
+
+	// check the slice containing the auth methods to see if the auth method was removed
+	expAuthMs := []map[string]interface{}{{"host": "host2", "port": 9000.0, "path": "test_path_1", "type": "api-key", "service_uuid": "uuid1"},
+		{"access_key": "key1", "type": "api-key", "service_uuid": "uuid2", "host": "host3", "port": 9000.0},
+		{"path": "test_path_1", "access_key": "key1", "type": "api-key", "service_uuid": "uuid2", "host": "host4"}}
+
+	suite.Equal(expAuthMs, suite.Mockstore.AuthMethods)
+
+	suite.Nil(err1)
+}
+
+
 func TestStoreTestSuite(t *testing.T) {
 	suite.Run(t, new(StoreTestSuite))
 }

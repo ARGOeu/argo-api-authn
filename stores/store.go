@@ -15,4 +15,5 @@ type Store interface {
 	UpdateBinding(original QBinding, updated QBinding) (QBinding, error)
 	UpdateServiceType(original QServiceType, updated QServiceType) (QServiceType, error)
 	DeleteBinding(qBinding QBinding) error
+	DeleteAuthMethod(authM map[string]interface{}) error
 }

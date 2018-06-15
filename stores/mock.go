@@ -85,7 +85,6 @@ func (mock *Mockstore) QueryAuthMethods(serviceUUID string, host string, typeNam
 	for _, authM = range mock.AuthMethods {
 		if authM["service_uuid"] == serviceUUID && authM["host"] == host && authM["type"] == typeName {
 			qAuthMs = append(qAuthMs, authM)
-			break
 		}
 	}
 
@@ -195,6 +194,23 @@ func (mock *Mockstore) DeleteBinding(qBinding QBinding) error {
 	for idx, qb := range mock.Bindings {
 		if qb == qBinding {
 			mock.Bindings = append(mock.Bindings[:idx], mock.Bindings[idx+1:]...)
+			break
+		}
+	}
+
+	return nil
+}
+
+// DeleteAuthMethod removes the given auth method from the slice of auth methods
+func (mock *Mockstore) DeleteAuthMethod(authM map[string]interface{}) error {
+
+	// loop through the slice of auth methods
+	// find the authM that has a similar service_uuid and host(since each service can have only one auth method per host, this should be unique)
+	// and delete
+
+	for idx, am := range mock.AuthMethods {
+		if am["service_uuid"] == authM["service_uuid"] && am["host"] == authM["host"] {
+			mock.AuthMethods = append(mock.AuthMethods[:idx], mock.AuthMethods[idx+1:]...)
 			break
 		}
 	}
