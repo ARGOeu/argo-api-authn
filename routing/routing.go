@@ -6,7 +6,6 @@ import (
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/handlers"
 	"github.com/ARGOeu/argo-api-authn/stores"
-	"github.com/ARGOeu/argo-api-authn/utils"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	LOGGER "github.com/sirupsen/logrus"
