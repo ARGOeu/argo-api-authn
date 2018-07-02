@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"bytes"
+	LOGGER "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"
-	LOGGER "github.com/sirupsen/logrus"
 
 	"encoding/json"
 	"github.com/ARGOeu/argo-api-authn/config"
@@ -27,7 +27,8 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeCreate() {
 	"hosts": ["127.0.0.1"],
 	"auth_types": ["x509", "oidc"],
 	"auth_method": "api-key",
-	"retrieval_field": "token"
+	"retrieval_field": "token",
+	"type": "ams"
 }`
 
 	req, err := http.NewRequest("POST", "http://localhost:8080/service-types", bytes.NewBuffer([]byte(postJSON)))
@@ -65,7 +66,8 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeCreateInvalidName() {
 	"hosts": ["127.0.0.1"],
 	"auth_types": ["x509", "oidc"],
 	"auth_method": "api-key",
-	"retrieval_field": "token"
+	"retrieval_field": "token",
+    "type": "ams"
 }`
 
 	expRespJSON := `{
@@ -104,12 +106,93 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeCreateEmptyHosts() {
 	"hosts": [],
 	"auth_types": ["x509", "oidc"],
 	"auth_method": "api-key",
-	"retrieval_field": "token"
+	"retrieval_field": "token",
+    "type": "ams"
 }`
 
 	expRespJSON := `{
  "error": {
   "message": "service-type object contains empty fields. empty value for field: hosts",
+  "code": 422,
+  "status": "UNPROCESSABLE ENTITY"
+ }
+}`
+
+	req, err := http.NewRequest("POST", "http://localhost:8080/service-types", bytes.NewBuffer([]byte(postJSON)))
+	if err != nil {
+		LOGGER.Error(err.Error())
+	}
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	cfg := &config.Config{}
+	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
+
+	router := mux.NewRouter().StrictSlash(true)
+	w := httptest.NewRecorder()
+	router.HandleFunc("/service-types", WrapConfig(ServiceTypeCreate, mockstore, cfg))
+	router.ServeHTTP(w, req)
+	suite.Equal(422, w.Code)
+	suite.Equal(expRespJSON, w.Body.String())
+
+}
+
+// TestServiceTypeCreateEmptyType tests the case where the service type's type is empty
+func (suite *ServiceTypeHandlersSuite) TestServiceTypeCreateEmptyType() {
+
+	postJSON := `{
+	"name": "s1",
+	"hosts": ["host1", "host2"],
+	"auth_types": ["x509", "oidc"],
+	"auth_method": "api-key",
+	"retrieval_field": "token",
+    "type": ""
+}`
+
+	expRespJSON := `{
+ "error": {
+  "message": "service-type object contains empty fields. empty value for field: type",
+  "code": 422,
+  "status": "UNPROCESSABLE ENTITY"
+ }
+}`
+
+	req, err := http.NewRequest("POST", "http://localhost:8080/service-types", bytes.NewBuffer([]byte(postJSON)))
+	if err != nil {
+		LOGGER.Error(err.Error())
+	}
+
+	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
+	mockstore.SetUp()
+
+	cfg := &config.Config{}
+	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
+
+	router := mux.NewRouter().StrictSlash(true)
+	w := httptest.NewRecorder()
+	router.HandleFunc("/service-types", WrapConfig(ServiceTypeCreate, mockstore, cfg))
+	router.ServeHTTP(w, req)
+	suite.Equal(422, w.Code)
+	suite.Equal(expRespJSON, w.Body.String())
+
+}
+
+// TestServiceTypeCreateInvalidType tests the case where the service type's auth type is not supported
+func (suite *ServiceTypeHandlersSuite) TestServiceTypeCreateInvalidType() {
+
+	postJSON := `{
+	"name": "s1",
+	"hosts": ["127.0.0.1"],
+	"auth_types": ["x509", "oidc"],
+	"auth_method": "api-key",
+	"retrieval_field": "token",
+    "type": "unsup_type"
+}`
+
+	expRespJSON := `{
+ "error": {
+  "message": "type: unsup_type is not yet supported.Supported:[ams web-api custom]",
   "code": 422,
   "status": "UNPROCESSABLE ENTITY"
  }
@@ -143,7 +226,8 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeCreateInvalidAuthTypes() {
 	"hosts": ["127.0.0.1"],
 	"auth_types": ["unsup_type", "oidc"],
 	"auth_method": "api-key",
-	"retrieval_field": "token"
+	"retrieval_field": "token",
+    "type": "ams"
 }`
 
 	expRespJSON := `{
@@ -182,7 +266,8 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeCreateInvalidAuthMethod() 
 	"hosts": ["127.0.0.1"],
 	"auth_types": ["x509", "oidc"],
 	"auth_method": "unsup_method",
-	"retrieval_field": "token"
+	"retrieval_field": "token",
+    "type": "ams"
 }`
 
 	expRespJSON := `{
@@ -221,7 +306,8 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeCreateEmptyAuthTypes() {
 	"hosts": ["127.0.0.1"],
 	"auth_types": [],
 	"auth_method": "api-key",
-	"retrieval_field": "token"
+	"retrieval_field": "token",
+    "type": "ams"
 }`
 
 	expRespJSON := `{
@@ -344,7 +430,8 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeListOne() {
  "auth_method": "api-key",
  "uuid": "uuid1",
  "retrieval_field": "token",
- "created_on": "2018-05-05T18:04:05Z"
+ "created_on": "2018-05-05T18:04:05Z",
+ "type": "ams"
 }`
 
 	req, err := http.NewRequest("GET", "http://localhost:8080/service-types/s1", nil)
@@ -448,7 +535,8 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeListAll() {
    "auth_method": "api-key",
    "uuid": "uuid1",
    "retrieval_field": "token",
-   "created_on": "2018-05-05T18:04:05Z"
+   "created_on": "2018-05-05T18:04:05Z",
+   "type": "ams"
   },
   {
    "name": "s2",
@@ -462,7 +550,8 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeListAll() {
    "auth_method": "api-key",
    "uuid": "uuid2",
    "retrieval_field": "user_token",
-   "created_on": "2018-05-05T18:04:05Z"
+   "created_on": "2018-05-05T18:04:05Z",
+   "type": "ams"
   },
   {
    "name": "same_name",
@@ -471,7 +560,8 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeListAll() {
    "auth_method": "",
    "uuid": "",
    "retrieval_field": "",
-   "created_on": ""
+   "created_on": "",
+   "type": ""
   },
   {
    "name": "same_name",
@@ -480,7 +570,8 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeListAll() {
    "auth_method": "",
    "uuid": "",
    "retrieval_field": "",
-   "created_on": ""
+   "created_on": "",
+   "type": ""
   }
  ]
 }`
@@ -557,7 +648,8 @@ func (suite *BindingHandlersSuite) TestServiceTypeUpdate() {
  "auth_method": "api-key",
  "uuid": "uuid1",
  "retrieval_field": "token",
- "created_on": "2018-05-05T18:04:05Z"
+ "created_on": "2018-05-05T18:04:05Z",
+ "type": "ams"
 }`
 	req, err := http.NewRequest("PUT", "http://localhost:8080/service-types/s1", bytes.NewBuffer([]byte(postJSON)))
 	if err != nil {

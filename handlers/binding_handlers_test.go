@@ -3,10 +3,10 @@ package handlers
 import (
 	"bytes"
 	"github.com/ARGOeu/argo-api-authn/stores"
+	LOGGER "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"
-	LOGGER "github.com/sirupsen/logrus"
 
 	"encoding/json"
 	"github.com/ARGOeu/argo-api-authn/bindings"

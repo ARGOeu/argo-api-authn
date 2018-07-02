@@ -7,10 +7,10 @@ import (
 	"github.com/ARGOeu/argo-api-authn/servicetypes"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/gorilla/mux"
+	LOGGER "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
-	LOGGER "github.com/sirupsen/logrus"
 	"testing"
 )
 
@@ -65,7 +65,7 @@ func (suite *MapX509Suite) TestMapX509ToAuthItem() {
 			return w.Result(), err
 		}
 
-	serviceType1 := servicetypes.ServiceType{"s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "mock-api-key", "uuid1", "token", "2018-05-05T18:04:05Z"}
+	serviceType1 := servicetypes.ServiceType{"s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "mock-api-key", "uuid1", "token", "2018-05-05T18:04:05Z", "ams"}
 	b1 := bindings.Binding{Name: "bins", ServiceUUID: "uuid1", Host: "host1", DN: "dn_ins", OIDCToken: "", UniqueKey: "key"}
 
 	// tests the normal case
@@ -74,7 +74,7 @@ func (suite *MapX509Suite) TestMapX509ToAuthItem() {
 
 	// tests the case where a 500 error is produced
 	// add a mock auth method handler for the 500 case
-	serviceType2 := servicetypes.ServiceType{"s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "mock-api-key-500", "uuid1", "token", "2018-05-05T18:04:05Z"}
+	serviceType2 := servicetypes.ServiceType{"s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "mock-api-key-500", "uuid1", "token", "2018-05-05T18:04:05Z", "ams"}
 	auth_methods.AuthMethodHandlers["mock-api-key-500"] =
 		func(data map[string]interface{}, store stores.Store, config *config.Config) (*http.Response, error) {
 
@@ -94,7 +94,7 @@ func (suite *MapX509Suite) TestMapX509ToAuthItem() {
 	_, err2 := DeprecatedMapX509ToAuthItem(serviceType2, b1, "host1", mockstore, cfg)
 
 	// tests the case where the service type's retrieval field can't be found inside the response's body
-	serviceType3 := servicetypes.ServiceType{"s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "mock-api-key", "uuid1", "unknown", "2018-05-05T18:04:05Z"}
+	serviceType3 := servicetypes.ServiceType{"s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "mock-api-key", "uuid1", "unknown", "2018-05-05T18:04:05Z", "ams"}
 	_, err3 := DeprecatedMapX509ToAuthItem(serviceType3, b1, "host1", mockstore, cfg)
 
 	suite.Equal(expM1, m1)

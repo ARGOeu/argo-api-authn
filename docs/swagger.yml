@@ -53,6 +53,8 @@ paths:
               type: string
              retrieval_field:
               type: string
+             type:
+              type: string
       tags:
         - Service Types
       responses:
@@ -651,6 +653,9 @@ definitions:
       retrieval_field:
         type: string
         description: name of the response field which contains the value we are looking for
+      type:
+        type: string
+        description: service type's type, either ams or web-api
       created_on:
         type: string
         description: datetime of creation

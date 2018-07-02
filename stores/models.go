@@ -8,6 +8,7 @@ type QServiceType struct {
 	UUID           string   `json:"uuid" bson:"uuid"`
 	RetrievalField string   `json:"retrieval_field" bson:"retrieval_field"`
 	CreatedOn      string   `json:"created_on,omitempty" bson:"created_on,omitempty"`
+	Type           string   `json:"type" bson:"type"`
 }
 
 type QBinding struct {

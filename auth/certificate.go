@@ -123,15 +123,14 @@ func CertHasExpired(cert *x509.Certificate) error {
 	var err error
 
 	if time.Now().After(cert.NotAfter) {
-		err := &utils.APIError{Code:403, Message:"Your certificate has expired", Status:"ACCESS_FORBIDDEN"}
+		err := &utils.APIError{Code: 403, Message: "Your certificate has expired", Status: "ACCESS_FORBIDDEN"}
 		return err
 	}
 
 	if time.Now().Before(cert.NotBefore) {
-		err := &utils.APIError{Code:403, Message:"Your certificate is not active yet", Status:"ACCESS_FORBIDDEN"}
+		err := &utils.APIError{Code: 403, Message: "Your certificate is not active yet", Status: "ACCESS_FORBIDDEN"}
 		return err
 	}
-
 
 	return err
 }

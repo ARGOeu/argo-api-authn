@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"strings"
 	"time"
-
 )
 
 // ValidateRequired accepts an instance of any type and checks whether or not all fields are filled
