@@ -5,11 +5,11 @@ import (
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/gorilla/mux"
+	LOGGER "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	LOGGER "github.com/sirupsen/logrus"
 )
 
 type AuthMethodHandlersTestSuite struct {

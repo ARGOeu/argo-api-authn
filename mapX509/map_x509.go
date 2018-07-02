@@ -1,14 +1,14 @@
 package mapX509
 
 import (
-	"github.com/ARGOeu/argo-api-authn/auth-methods"
-	"github.com/ARGOeu/argo-api-authn/bindings"
-	"github.com/ARGOeu/argo-api-authn/servicetypes"
-	"github.com/ARGOeu/argo-api-authn/stores"
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ARGOeu/argo-api-authn/auth-methods"
+	"github.com/ARGOeu/argo-api-authn/bindings"
 	"github.com/ARGOeu/argo-api-authn/config"
+	"github.com/ARGOeu/argo-api-authn/servicetypes"
+	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
 	"net/http"
 )
