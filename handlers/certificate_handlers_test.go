@@ -8,16 +8,16 @@ import (
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/gorilla/mux"
+	LOGGER "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	LOGGER "github.com/sirupsen/logrus"
 
-	"net"
-	"time"
 	"crypto/x509/pkix"
 	"encoding/asn1"
+	"net"
+	"time"
 )
 
 type CertificateHandlerSuite struct {
@@ -102,8 +102,8 @@ lBlGGSW4gNfL1IYoakRwJiNiqZ+Gb7+6kHDSVneFeO/qJakXzlByjAA6quPbYzSf
 	mockstore = &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
 	// append a service type to be used only in auth via cert tests
-	qSt := stores.QServiceType{Name: "s_auth_cert", Hosts: []string{"h1_auth_cert"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "mock-api-key", UUID: "uuid_auth_cert", RetrievalField: "token", CreatedOn: "2018-05-05T18:04:05Z"}
-	qSt2 := stores.QServiceType{Name: "s_auth_cert_incorrect", Hosts: []string{"h1_auth_cert"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "mock-api-key", UUID: "uuid_auth_cert_incorrect", RetrievalField: "incorrect_field", CreatedOn: "2018-05-05T18:04:05Z"}
+	qSt := stores.QServiceType{Name: "s_auth_cert", Hosts: []string{"h1_auth_cert"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "mock-api-key", UUID: "uuid_auth_cert", CreatedOn: "2018-05-05T18:04:05Z"}
+	qSt2 := stores.QServiceType{Name: "s_auth_cert_incorrect", Hosts: []string{"h1_auth_cert"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "mock-api-key", UUID: "uuid_auth_cert_incorrect", CreatedOn: "2018-05-05T18:04:05Z"}
 	mockstore.ServiceTypes = append(mockstore.ServiceTypes, qSt, qSt2)
 	// append a binding to be used only in auth via cert tests
 	qB := stores.QBinding{Name: "b_auth_cert", ServiceUUID: "uuid_auth_cert", Host: "h1_auth_cert", DN: "CN=localhost,O=COMODO CA Limited,L=Salford,ST=Greater Manchester,C=GB", OIDCToken: "", UniqueKey: "unique_key_1", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
@@ -449,34 +449,6 @@ func (suite *CertificateHandlerSuite) TestAuthViaCertValidSubjectCommonName() {
 	suite.Equal(expRespJSON, w.Body.String())
 }
 
-
-// TestAuthViaCertIncorrectRetrievalField tests the case where the response from the service type didn't contain the specified retrieval field
-func (suite *CertificateHandlerSuite) TestAuthViaCertIncorrectRetrievalField() {
-
-	var err error
-	var mockstore *stores.Mockstore
-	var cfg *config.Config
-	var req *http.Request
-
-	expRespJSON := `{
- "error": {
-  "message": "Internal Error: The specified retrieval field: incorrect_field was not found in the response body of the service type",
-  "code": 500,
-  "status": "INTERNAL SERVER ERROR"
- }
-}`
-
-	if req, mockstore, cfg, err = AuthViaCertSetUp("http://localhost:8080/service-types/s_auth_cert_incorrect/hosts/h1_auth_cert:authX509"); err != nil {
-		LOGGER.Error(err.Error())
-	}
-
-	router := mux.NewRouter().StrictSlash(true)
-	w := httptest.NewRecorder()
-	router.HandleFunc("/service-types/{service-type}/hosts/{host}:authX509", WrapConfig(AuthViaCert, mockstore, cfg))
-	router.ServeHTTP(w, req)
-	suite.Equal(500, w.Code)
-	suite.Equal(expRespJSON, w.Body.String())
-}
 
 // TestAuthViaCertUnknownServiceType tests the case where the provided service type is unknown
 func (suite *CertificateHandlerSuite) TestAuthViaCertUnknownServiceType() {

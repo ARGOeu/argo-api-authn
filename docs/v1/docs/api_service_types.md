@@ -31,7 +31,6 @@ curl -X POST -H "Content-Type: application/json"
  	"hosts": ["host1", "host2"],
  	"auth_types": ["x509", "oidc"],
  	"auth_method": "api-key",
- 	"retrieval_field": "token",
  	"type": "ams"
  }
 ```
@@ -51,7 +50,6 @@ If the request is successful, the response contains the newly created service ty
   	"auth_types": ["x509", "oidc"],
   	"auth_method": "api-key",
   	"uuid": "da22b2d4-ba6c-43ca-b28d-400cd0a5d83e",
-  	"retrieval_field": "token",
   	"type": "ams",
   	"created_on": "2018-05-05T18:04:05Z" 
   }
@@ -91,7 +89,6 @@ GET/v1/service-types
             ],
             "auth_method": "api-key",
             "uuid": "da22b2d4-ba6c-43ca-b28d-400cd0a5d83e",
-            "retrieval_field": "token",
             "type": "ams",
             "created_on": ""
         },
@@ -107,7 +104,6 @@ GET/v1/service-types
             ],
             "auth_method": "api-key",
             "uuid": "da22b2d4-ba6c-43ca-b28d-400sd0a5d83e",
-            "retrieval_field": "token",
             "type": "ams",
             "created_on": "2018-05-13T21:52:58Z"
         }
@@ -140,7 +136,6 @@ If the request is successful, the response contains information for the requeste
     	"auth_types": ["x509", "oidc"],
     	"auth_method": "api-key",
     	"uuid": "da22b2d4-ba6c-43ca-b28d-400cd0a5d83e",
-    	"retrieval_field": "token",
     	"type": "ams",
     	"created_on": "2018-05-05T18:04:05Z" 
     }
@@ -153,7 +148,7 @@ Please refer to section [Errors](api_errors.md) to see all possible Errors
 This request updates a service type. You can specify one or more fields to update.
 The allowed to be updated fields are:
 
-`name, hosts, auth_types, auth_method, retrieval_field`.
+`name, hosts, auth_types, auth_method`.
 
 ### Request
 
@@ -184,7 +179,6 @@ If the request is successful, the response contains the updated service type.
     	"auth_types": ["x509", "oidc"],
     	"auth_method": "api-key",
     	"uuid": "da22b2d4-ba6c-43ca-b28d-400cd0a5d83e",
-    	"retrieval_field": "token",
     	"type": "ams",
     	"created_on": "2018-05-05T18:04:05Z" 
  }

@@ -4,12 +4,12 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"github.com/ARGOeu/argo-api-authn/utils"
+	LOGGER "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math/big"
 	"net/http"
 	"sync"
 	"time"
-	LOGGER "github.com/sirupsen/logrus"
 )
 
 // CRLCheckRevokedCert checks whether or not a certificate has been revoked
@@ -25,7 +25,7 @@ func CRLCheckRevokedCert(cert *x509.Certificate) error {
 
 	var wg = new(sync.WaitGroup)
 
-	 totalTime := time.Now()
+	totalTime := time.Now()
 
 	if len(cert.CRLDistributionPoints) == 0 {
 		err := &utils.APIError{Code: 403, Message: "Your certificate is invalid. No CRLDistributionPoints found on the certificate", Status: "ACCESS_FORBIDDEN"}

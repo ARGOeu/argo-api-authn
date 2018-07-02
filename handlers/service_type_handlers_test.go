@@ -54,8 +54,6 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeCreate() {
 	suite.Equal([]string{"127.0.0.1"}, createdSer.Hosts)
 	suite.Equal([]string{"x509", "oidc"}, createdSer.AuthTypes)
 	suite.Equal("api-key", createdSer.AuthMethod)
-	suite.Equal("token", createdSer.RetrievalField)
-
 }
 
 // TestServiceTypeCreateInvalidName tests the case where the service type's name already exists
@@ -429,7 +427,6 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeListOne() {
  ],
  "auth_method": "api-key",
  "uuid": "uuid1",
- "retrieval_field": "token",
  "created_on": "2018-05-05T18:04:05Z",
  "type": "ams"
 }`
@@ -534,7 +531,6 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeListAll() {
    ],
    "auth_method": "api-key",
    "uuid": "uuid1",
-   "retrieval_field": "token",
    "created_on": "2018-05-05T18:04:05Z",
    "type": "ams"
   },
@@ -549,7 +545,6 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeListAll() {
    ],
    "auth_method": "api-key",
    "uuid": "uuid2",
-   "retrieval_field": "user_token",
    "created_on": "2018-05-05T18:04:05Z",
    "type": "ams"
   },
@@ -559,7 +554,6 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeListAll() {
    "auth_types": null,
    "auth_method": "",
    "uuid": "",
-   "retrieval_field": "",
    "created_on": "",
    "type": ""
   },
@@ -569,7 +563,6 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeListAll() {
    "auth_types": null,
    "auth_method": "",
    "uuid": "",
-   "retrieval_field": "",
    "created_on": "",
    "type": ""
   }
@@ -647,7 +640,6 @@ func (suite *BindingHandlersSuite) TestServiceTypeUpdate() {
  ],
  "auth_method": "api-key",
  "uuid": "uuid1",
- "retrieval_field": "token",
  "created_on": "2018-05-05T18:04:05Z",
  "type": "ams"
 }`
@@ -812,39 +804,6 @@ func (suite *BindingHandlersSuite) TestServiceTypeUpdateEmptyAuthMethod() {
 	expRespJSON := `{
  "error": {
   "message": "service-type object contains empty fields. empty value for field: auth_method",
-  "code": 422,
-  "status": "UNPROCESSABLE ENTITY"
- }
-}`
-	req, err := http.NewRequest("PUT", "http://localhost:8080/service-type/s1", bytes.NewBuffer([]byte(postJSON)))
-	if err != nil {
-		LOGGER.Error(err.Error())
-	}
-
-	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
-	mockstore.SetUp()
-
-	cfg := &config.Config{}
-	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
-
-	router := mux.NewRouter().StrictSlash(true)
-	w := httptest.NewRecorder()
-	router.HandleFunc("/service-type/{service-type}", WrapConfig(ServiceTypeUpdate, mockstore, cfg))
-	router.ServeHTTP(w, req)
-	suite.Equal(422, w.Code)
-	suite.Equal(expRespJSON, w.Body.String())
-}
-
-// TestServiceTypeUpdateEmptyRetrievalField tests the case of updating the retrieval field an empty string
-func (suite *BindingHandlersSuite) TestServiceTypeUpdateEmptyRetrievalField() {
-
-	postJSON := `{
-	"retrieval_field": ""
-}`
-
-	expRespJSON := `{
- "error": {
-  "message": "service-type object contains empty fields. empty value for field: retrieval_field",
   "code": 422,
   "status": "UNPROCESSABLE ENTITY"
  }

@@ -5,6 +5,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"github.com/stretchr/testify/suite"
+	"net"
 	"testing"
 	"time"
 )
