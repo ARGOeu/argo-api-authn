@@ -4,7 +4,7 @@ import (
 	"github.com/ARGOeu/argo-api-authn/utils"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	LOGGER "github.com/sirupsen/logrus"
+	LOGGER  "github.com/sirupsen/logrus"
 )
 
 type MongoStore struct {
@@ -76,7 +76,8 @@ func (mongo *MongoStore) QueryServiceTypesByUUID(uuid string) ([]QServiceType, e
 	return qServices, err
 }
 
-func (mongo *MongoStore) QueryAuthMethods(serviceUUID string, host string, typeName string) ([]map[string]interface{}, error) {
+// Deprecated: QueryAuthMethods
+func (mongo *MongoStore) DeprecatedQueryAuthMethods(serviceUUID string, host string, typeName string) ([]map[string]interface{}, error) {
 
 	var qAuthMethods = []map[string]interface{}{}
 	var err error
@@ -175,8 +176,8 @@ func (mongo *MongoStore) InsertServiceType(name string, hosts []string, authType
 	return qService, err
 }
 
-// InsertAuthMethod inserts a new auth method to the database
-func (mongo *MongoStore) InsertAuthMethod(authM map[string]interface{}) error {
+// Deprecated: DeprecatedInsertAuthMethod inserts a new auth method to the database
+func (mongo *MongoStore) DeprecatedInsertAuthMethod(authM map[string]interface{}) error {
 
 	var err error
 
@@ -262,8 +263,8 @@ func (mongo *MongoStore) DeleteBinding(qBinding QBinding) error {
 	return err
 }
 
-// DeleteAuthMethod deletes the given auth method from the store
-func (mongo *MongoStore) DeleteAuthMethod(authM map[string]interface{}) error {
+// Deprecated: DeprecatedDeleteAuthMethod deletes the given auth method from the store
+func (mongo *MongoStore) DeprecatedDeleteAuthMethod(authM map[string]interface{}) error {
 
 	var err error
 

@@ -70,7 +70,7 @@ func (suite *MapX509Suite) TestMapX509ToAuthItem() {
 
 	// tests the normal case
 	expM1 := map[string]interface{}{"token": "some-value"}
-	m1, err1 := MapX509ToAuthItem(serviceType1, b1, "host1", mockstore, cfg)
+	m1, err1 := DeprecatedMapX509ToAuthItem(serviceType1, b1, "host1", mockstore, cfg)
 
 	// tests the case where a 500 error is produced
 	// add a mock auth method handler for the 500 case
@@ -91,11 +91,11 @@ func (suite *MapX509Suite) TestMapX509ToAuthItem() {
 			router.ServeHTTP(w, req2)
 			return w.Result(), err
 		}
-	_, err2 := MapX509ToAuthItem(serviceType2, b1, "host1", mockstore, cfg)
+	_, err2 := DeprecatedMapX509ToAuthItem(serviceType2, b1, "host1", mockstore, cfg)
 
 	// tests the case where the service type's retrieval field can't be found inside the response's body
 	serviceType3 := servicetypes.ServiceType{"s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "mock-api-key", "uuid1", "unknown", "2018-05-05T18:04:05Z"}
-	_, err3 := MapX509ToAuthItem(serviceType3, b1, "host1", mockstore, cfg)
+	_, err3 := DeprecatedMapX509ToAuthItem(serviceType3, b1, "host1", mockstore, cfg)
 
 	suite.Equal(expM1, m1)
 

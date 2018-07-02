@@ -13,7 +13,8 @@ import (
 	"net/http"
 )
 
-func MapX509ToAuthItem(serviceType servicetypes.ServiceType, binding bindings.Binding, host string, store stores.Store, config *config.Config) (map[string]interface{}, error) {
+// Deprecated:
+func DeprecatedMapX509ToAuthItem(serviceType servicetypes.ServiceType, binding bindings.Binding, host string, store stores.Store, config *config.Config) (map[string]interface{}, error) {
 
 	var err error
 	var ok bool

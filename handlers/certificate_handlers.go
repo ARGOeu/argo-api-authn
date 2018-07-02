@@ -62,7 +62,7 @@ func AuthViaCert(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// retrieve the resource from the serviceType type
-	if dataRes, err = mapX509.MapX509ToAuthItem(serviceType, binding, vars["host"], store, &cfg); err != nil {
+	if dataRes, err = mapX509.DeprecatedMapX509ToAuthItem(serviceType, binding, vars["host"], store, &cfg); err != nil {
 		utils.RespondError(w, err)
 		return
 	}

@@ -18,7 +18,7 @@ func FindApiKeyAuthMethod(serviceUUID string, host string, store stores.Store) (
 	var apiKeyAuthMaps []map[string]interface{}
 	var ok bool
 
-	if apiKeyAuthMaps, err = store.QueryAuthMethods(serviceUUID, host, "api-key"); err != nil {
+	if apiKeyAuthMaps, err = store.DeprecatedQueryAuthMethods(serviceUUID, host, "api-key"); err != nil {
 		return apiKeyAuthMap, err
 	}
 
@@ -68,7 +68,7 @@ func CreateApiKeyAuthMethod(authM map[string]interface{}, store stores.Store) (m
 		return authM, err
 	}
 
-	if err = store.InsertAuthMethod(authM); err != nil {
+	if err = store.DeprecatedInsertAuthMethod(authM); err != nil {
 		return authM, err
 	}
 

@@ -275,7 +275,7 @@ func (suite *AuthMethodHandlersTestSuite) TestAuthMethodListAllEmptyList() {
 	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
 
 	// empty the store
-	mockstore.AuthMethods = []map[string]interface{}{}
+	mockstore.DeprecatedAuthMethods = []map[string]interface{}{}
 
 	router := mux.NewRouter().StrictSlash(true)
 	w := httptest.NewRecorder()
@@ -989,7 +989,7 @@ func (suite *AuthMethodHandlersTestSuite) TestAuthMethodDeleteInternalConflict()
 	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
 
 	// insert one more auth method under the same service type and host
-	mockstore.AuthMethods = append(mockstore.AuthMethods, map[string]interface{}{"service_uuid": "uuid1", "host": "host1", "port": 9000.0, "path": "test_path_1", "access_key": "key1", "type": "api-key"})
+	mockstore.DeprecatedAuthMethods = append(mockstore.DeprecatedAuthMethods, map[string]interface{}{"service_uuid": "uuid1", "host": "host1", "port": 9000.0, "path": "test_path_1", "access_key": "key1", "type": "api-key"})
 
 	router := mux.NewRouter().StrictSlash(true)
 	w := httptest.NewRecorder()

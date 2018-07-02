@@ -6,12 +6,13 @@ import (
 )
 
 type Mockstore struct {
-	Session      bool
-	Server       string
-	Database     string
-	ServiceTypes []QServiceType
-	Bindings     []QBinding
-	AuthMethods  []map[string]interface{}
+	Session               bool
+	Server                string
+	Database              string
+	ServiceTypes          []QServiceType
+	Bindings              []QBinding
+	// Deprecated:
+	DeprecatedAuthMethods []map[string]interface{}
 }
 
 // SetUp is used to initialize the mock store
@@ -32,8 +33,8 @@ func (mock *Mockstore) SetUp() {
 	binding3 := QBinding{Name: "b3", ServiceUUID: "uuid1", Host: "host2", UUID: "b_uuid3", DN: "test_dn_3", OIDCToken: "", UniqueKey: "unique_key_3", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
 	mock.Bindings = append(mock.Bindings, binding1, binding2, binding3)
 
-	// Populate AuthMethods
-	mock.AuthMethods = []map[string]interface{}{{"service_uuid": "uuid1", "host": "host1", "port": 9000.0, "path": "test_path_1", "access_key": "key1", "type": "api-key"},
+	// Populate DeprecatedAuthMethods
+	mock.DeprecatedAuthMethods = []map[string]interface{}{{"service_uuid": "uuid1", "host": "host1", "port": 9000.0, "path": "test_path_1", "access_key": "key1", "type": "api-key"},
 		{"host": "host2", "port": 9000.0, "path": "test_path_1", "type": "api-key", "service_uuid": "uuid1"},
 		{"access_key": "key1", "type": "api-key", "service_uuid": "uuid2", "host": "host3", "port": 9000.0},
 		{"path": "test_path_1", "access_key": "key1", "type": "api-key", "service_uuid": "uuid2", "host": "host4"}}
@@ -73,16 +74,17 @@ func (mock *Mockstore) QueryServiceTypesByUUID(uuid string) ([]QServiceType, err
 	return qServices, nil
 }
 
-func (mock *Mockstore) QueryAuthMethods(serviceUUID string, host string, typeName string) ([]map[string]interface{}, error) {
+// Deprecated:
+func (mock *Mockstore) DeprecatedQueryAuthMethods(serviceUUID string, host string, typeName string) ([]map[string]interface{}, error) {
 
 	var qAuthMs []map[string]interface{}
 	var authM map[string]interface{}
 
 	if serviceUUID == "" && host == "" && typeName == "" {
-		return mock.AuthMethods, nil
+		return mock.DeprecatedAuthMethods, nil
 	}
 
-	for _, authM = range mock.AuthMethods {
+	for _, authM = range mock.DeprecatedAuthMethods {
 		if authM["service_uuid"] == serviceUUID && authM["host"] == host && authM["type"] == typeName {
 			qAuthMs = append(qAuthMs, authM)
 		}
@@ -144,9 +146,10 @@ func (mock *Mockstore) InsertServiceType(name string, hosts []string, authTypes 
 	return qService, nil
 }
 
-func (mock *Mockstore) InsertAuthMethod(authM map[string]interface{}) error {
+// Deprecated:
+func (mock *Mockstore) DeprecatedInsertAuthMethod(authM map[string]interface{}) error {
 
-	mock.AuthMethods = append(mock.AuthMethods, authM)
+	mock.DeprecatedAuthMethods = append(mock.DeprecatedAuthMethods, authM)
 
 	return nil
 }
@@ -201,16 +204,16 @@ func (mock *Mockstore) DeleteBinding(qBinding QBinding) error {
 	return nil
 }
 
-// DeleteAuthMethod removes the given auth method from the slice of auth methods
-func (mock *Mockstore) DeleteAuthMethod(authM map[string]interface{}) error {
+// Deprecated: DeprecatedDeleteAuthMethod removes the given auth method from the slice of auth methods
+func (mock *Mockstore) DeprecatedDeleteAuthMethod(authM map[string]interface{}) error {
 
 	// loop through the slice of auth methods
 	// find the authM that has a similar service_uuid and host(since each service can have only one auth method per host, this should be unique)
 	// and delete
 
-	for idx, am := range mock.AuthMethods {
+	for idx, am := range mock.DeprecatedAuthMethods {
 		if am["service_uuid"] == authM["service_uuid"] && am["host"] == authM["host"] {
-			mock.AuthMethods = append(mock.AuthMethods[:idx], mock.AuthMethods[idx+1:]...)
+			mock.DeprecatedAuthMethods = append(mock.DeprecatedAuthMethods[:idx], mock.DeprecatedAuthMethods[idx+1:]...)
 			break
 		}
 	}

@@ -36,7 +36,7 @@ func FindAllAuthMethods(store stores.Store) (AuthMethodsList, error) {
 	var err error
 	var authMs = []map[string]interface{}{}
 
-	if authMs, err = store.QueryAuthMethods("", "", ""); err != nil {
+	if authMs, err = store.DeprecatedQueryAuthMethods("", "", ""); err != nil {
 		return AuthMethodsList{AuthMethods: authMs}, err
 	}
 
@@ -44,13 +44,13 @@ func FindAllAuthMethods(store stores.Store) (AuthMethodsList, error) {
 
 }
 
-// DeleteAuthMethod deletes the auth method associated with the provided service type
+// DeprecatedDeleteAuthMethod deletes the auth method associated with the provided service type
 func DeleteAuthMethod(serviceUUID string, host string, typeName string, store stores.Store) error {
 
 	var err error
 	var authMs []map[string]interface{}
 
-	if authMs, err = store.QueryAuthMethods(serviceUUID, host, typeName); err != nil {
+	if authMs, err = store.DeprecatedQueryAuthMethods(serviceUUID, host, typeName); err != nil {
 		return err
 	}
 
@@ -66,7 +66,7 @@ func DeleteAuthMethod(serviceUUID string, host string, typeName string, store st
 		return err
 	}
 
-	if err = store.DeleteAuthMethod(authMs[0]); err != nil {
+	if err = store.DeprecatedDeleteAuthMethod(authMs[0]); err != nil {
 		return err
 	}
 
