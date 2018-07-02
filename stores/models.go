@@ -1,14 +1,13 @@
 package stores
 
 type QServiceType struct {
-	Name           string   `json:"name" bson:"name"`
-	Hosts          []string `json:"hosts" bson:"hosts"`
-	AuthTypes      []string `json:"auth_types" bson:"auth_types"`
-	AuthMethod     string   `json:"auth_method" bson:"auth_method"`
-	UUID           string   `json:"uuid" bson:"uuid"`
-	RetrievalField string   `json:"retrieval_field" bson:"retrieval_field"`
-	CreatedOn      string   `json:"created_on,omitempty" bson:"created_on,omitempty"`
-	Type           string   `json:"type" bson:"type"`
+	Name       string   `json:"name" bson:"name"`
+	Hosts      []string `json:"hosts" bson:"hosts"`
+	AuthTypes  []string `json:"auth_types" bson:"auth_types"`
+	AuthMethod string   `json:"auth_method" bson:"auth_method"`
+	UUID       string   `json:"uuid" bson:"uuid"`
+	CreatedOn  string   `json:"created_on,omitempty" bson:"created_on,omitempty"`
+	Type       string   `json:"type" bson:"type"`
 }
 
 type QBinding struct {

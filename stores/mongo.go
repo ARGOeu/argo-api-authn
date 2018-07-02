@@ -2,7 +2,6 @@ package stores
 
 import (
 	"github.com/ARGOeu/argo-api-authn/utils"
-	LOGGER "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	LOGGER  "github.com/sirupsen/logrus"
@@ -159,12 +158,12 @@ func (mongo *MongoStore) QueryBindings(serviceUUID string, host string) ([]QBind
 }
 
 //InsertServiceType inserts a new service into the datastore
-func (mongo *MongoStore) InsertServiceType(name string, hosts []string, authTypes []string, authMethod string, uuid string, retrievalField string, createdOn string, sType string) (QServiceType, error) {
+func (mongo *MongoStore) InsertServiceType(name string, hosts []string, authTypes []string, authMethod string, uuid string, createdOn string, sType string) (QServiceType, error) {
 
 	var qService QServiceType
 	var err error
 
-	qService = QServiceType{Name: name, Hosts: hosts, AuthTypes: authTypes, AuthMethod: authMethod, UUID: uuid, RetrievalField: retrievalField, CreatedOn: createdOn, Type:sType}
+	qService = QServiceType{Name: name, Hosts: hosts, AuthTypes: authTypes, AuthMethod: authMethod, UUID: uuid, CreatedOn: createdOn, Type: sType}
 	db := mongo.Session.DB(mongo.Database)
 	c := db.C("service_types")
 

@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ARGOeu/argo-api-authn/utils"
 	LOGGER "github.com/sirupsen/logrus"
 	"net"
-	"github.com/ARGOeu/argo-api-authn/utils"
 	"time"
 )
 
