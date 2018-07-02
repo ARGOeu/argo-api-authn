@@ -2,7 +2,6 @@ package stores
 
 import (
 	"github.com/ARGOeu/argo-api-authn/utils"
-	LOGGER "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	LOGGER  "github.com/sirupsen/logrus"
