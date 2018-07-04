@@ -5,8 +5,8 @@ import (
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
 	"github.com/gorilla/context"
-	"net/http"
 	LOGGER "github.com/sirupsen/logrus"
+	"net/http"
 	"time"
 )
 

@@ -5,6 +5,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"github.com/stretchr/testify/suite"
+	"net"
 	"testing"
 	"time"
 )
@@ -55,7 +56,7 @@ SoPmZKiBeb+2OQ2n7+FI8ftkqxWw6zjh651brAoy/0zqLTRPh+c=
 	suite.Equal("O=COMPANY,L=CITY,ST=TN,C=TC,DC=v2,DC=v1", ers2)
 }
 
-func (suite *CertificateTestSuite) TestCertHasExpired(){
+func (suite *CertificateTestSuite) TestCertHasExpired() {
 
 	commonCert := `-----BEGIN CERTIFICATE-----
 MIIC8jCCAdoCCQCdC824csOlXTANBgkqhkiG9w0BAQsFADA7MQswCQYDVQQGEwJU

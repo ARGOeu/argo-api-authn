@@ -2,9 +2,9 @@ package stores
 
 import (
 	"github.com/ARGOeu/argo-api-authn/utils"
+	LOGGER "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	LOGGER "github.com/sirupsen/logrus"
 )
 
 type MongoStore struct {
@@ -76,7 +76,43 @@ func (mongo *MongoStore) QueryServiceTypesByUUID(uuid string) ([]QServiceType, e
 	return qServices, err
 }
 
-func (mongo *MongoStore) QueryAuthMethods(serviceUUID string, host string, typeName string) ([]map[string]interface{}, error) {
+func (mongo *MongoStore) QueryApiKeyAuthMethods(serviceUUID string, host string) ([]QApiKeyAuthMethod, error) {
+
+	var err error
+	var qAuthms []QApiKeyAuthMethod
+
+	query := bson.M{"service_uuid": serviceUUID, "host": host}
+
+	c := mongo.Session.DB(mongo.Database).C("auth_methods")
+	err = c.Find(query).All(&qAuthms)
+
+	if err != nil {
+		LOGGER.Error("STORE", "\t", err.Error())
+		err = utils.APIErrDatabase(err.Error())
+		return qAuthms, err
+	}
+
+	return qAuthms, err
+}
+
+func(mongo *MongoStore)InsertAuthMethod(am QAuthMethod) (error) {
+
+	var err error
+
+	db := mongo.Session.DB(mongo.Database)
+	c := db.C("auth_methods")
+
+	if err := c.Insert(am); err != nil {
+		LOGGER.Error("STORE", "\t", err.Error())
+		err = utils.APIErrDatabase(err.Error())
+		return err
+	}
+
+	return err
+}
+
+// Deprecated: QueryAuthMethods
+func (mongo *MongoStore) DeprecatedQueryAuthMethods(serviceUUID string, host string, typeName string) ([]map[string]interface{}, error) {
 
 	var qAuthMethods = []map[string]interface{}{}
 	var err error
@@ -157,12 +193,12 @@ func (mongo *MongoStore) QueryBindings(serviceUUID string, host string) ([]QBind
 }
 
 //InsertServiceType inserts a new service into the datastore
-func (mongo *MongoStore) InsertServiceType(name string, hosts []string, authTypes []string, authMethod string, uuid string, retrievalField string, createdOn string) (QServiceType, error) {
+func (mongo *MongoStore) InsertServiceType(name string, hosts []string, authTypes []string, authMethod string, uuid string, createdOn string, sType string) (QServiceType, error) {
 
 	var qService QServiceType
 	var err error
 
-	qService = QServiceType{Name: name, Hosts: hosts, AuthTypes: authTypes, AuthMethod: authMethod, UUID: uuid, RetrievalField: retrievalField, CreatedOn: createdOn}
+	qService = QServiceType{Name: name, Hosts: hosts, AuthTypes: authTypes, AuthMethod: authMethod, UUID: uuid, CreatedOn: createdOn, Type: sType}
 	db := mongo.Session.DB(mongo.Database)
 	c := db.C("service_types")
 
@@ -175,8 +211,8 @@ func (mongo *MongoStore) InsertServiceType(name string, hosts []string, authType
 	return qService, err
 }
 
-// InsertAuthMethod inserts a new auth method to the database
-func (mongo *MongoStore) InsertAuthMethod(authM map[string]interface{}) error {
+// Deprecated: DeprecatedInsertAuthMethod inserts a new auth method to the database
+func (mongo *MongoStore) DeprecatedInsertAuthMethod(authM map[string]interface{}) error {
 
 	var err error
 
@@ -262,8 +298,23 @@ func (mongo *MongoStore) DeleteBinding(qBinding QBinding) error {
 	return err
 }
 
-// DeleteAuthMethod deletes the given auth method from the store
-func (mongo *MongoStore) DeleteAuthMethod(authM map[string]interface{}) error {
+func(mongo *MongoStore) DeleteAuthMethod(am QAuthMethod) error {
+
+	var err error
+
+	db := mongo.Session.DB(mongo.Database)
+	c := db.C("auth_methods")
+
+	if err := c.Remove(am); err != nil {
+		LOGGER.Error("STORE", "\t", err.Error())
+		err = utils.APIErrDatabase(err.Error())
+		return err
+	}
+	return err
+}
+
+// Deprecated: DeprecatedDeleteAuthMethod deletes the given auth method from the store
+func (mongo *MongoStore) DeprecatedDeleteAuthMethod(authM map[string]interface{}) error {
 
 	var err error
 

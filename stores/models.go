@@ -1,13 +1,13 @@
 package stores
 
 type QServiceType struct {
-	Name           string   `json:"name" bson:"name"`
-	Hosts          []string `json:"hosts" bson:"hosts"`
-	AuthTypes      []string `json:"auth_types" bson:"auth_types"`
-	AuthMethod     string   `json:"auth_method" bson:"auth_method"`
-	UUID           string   `json:"uuid" bson:"uuid"`
-	RetrievalField string   `json:"retrieval_field" bson:"retrieval_field"`
-	CreatedOn      string   `json:"created_on,omitempty" bson:"created_on,omitempty"`
+	Name       string   `json:"name" bson:"name"`
+	Hosts      []string `json:"hosts" bson:"hosts"`
+	AuthTypes  []string `json:"auth_types" bson:"auth_types"`
+	AuthMethod string   `json:"auth_method" bson:"auth_method"`
+	UUID       string   `json:"uuid" bson:"uuid"`
+	CreatedOn  string   `json:"created_on,omitempty" bson:"created_on,omitempty"`
+	Type       string   `json:"type" bson:"type"`
 }
 
 type QBinding struct {
@@ -28,5 +28,22 @@ type QApiKeyAuth struct {
 	Host      string `json:"host" bson:"host"`
 	Port      int    `json:"port" bson:"port"`
 	Path      string `json:"path" bson:"path"`
+	AccessKey string `json:"access_key" bson:"access_key"`
+}
+
+type QAuthMethod interface {}
+
+type QBasicAuthMethod struct {
+	ServiceUUID    string `json:"service_uuid" bson:"service_uuid"`
+	Port           int    `json:"port" bson:"port"`
+	Host           string `json:"host" bson:"host"`
+	RetrievalField string `json:"retrieval_field" bson:"retrieval_field"`
+	Path           string `json:"path" bson:"path"`
+	UUID           string `json:"uuid" bson:"uuid"`
+	CreatedOn      string `json:"created_on" bson:"created_on"`
+}
+
+type QApiKeyAuthMethod struct {
+	QBasicAuthMethod `bson:",inline"`
 	AccessKey string `json:"access_key" bson:"access_key"`
 }

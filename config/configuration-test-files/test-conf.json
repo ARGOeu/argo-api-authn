@@ -8,5 +8,6 @@
   "service_token": "token",
   "supported_auth_types": ["x509", "oidc"],
   "supported_auth_methods": ["api-key", "x-api-token"],
+  "supported_service_types": ["ams", "web-api", "custom"],
   "ssl_verify": false
 }

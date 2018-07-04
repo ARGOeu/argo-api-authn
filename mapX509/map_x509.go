@@ -1,19 +1,20 @@
 package mapX509
 
 import (
-	"github.com/ARGOeu/argo-api-authn/auth-methods"
-	"github.com/ARGOeu/argo-api-authn/bindings"
-	"github.com/ARGOeu/argo-api-authn/servicetypes"
-	"github.com/ARGOeu/argo-api-authn/stores"
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ARGOeu/argo-api-authn/auth-methods"
+	"github.com/ARGOeu/argo-api-authn/bindings"
 	"github.com/ARGOeu/argo-api-authn/config"
+	"github.com/ARGOeu/argo-api-authn/servicetypes"
+	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
 	"net/http"
 )
 
-func MapX509ToAuthItem(serviceType servicetypes.ServiceType, binding bindings.Binding, host string, store stores.Store, config *config.Config) (map[string]interface{}, error) {
+// Deprecated:
+func DeprecatedMapX509ToAuthItem(serviceType servicetypes.ServiceType, binding bindings.Binding, host string, store stores.Store, config *config.Config) (map[string]interface{}, error) {
 
 	var err error
 	var ok bool
@@ -45,8 +46,8 @@ func MapX509ToAuthItem(serviceType servicetypes.ServiceType, binding bindings.Bi
 	defer resp.Body.Close()
 
 	// check if the retrieval field that we need is present in the response
-	if rf, ok = dataRes[serviceType.RetrievalField]; !ok {
-		err = utils.APIGenericInternalError(fmt.Sprintf(`The specified retrieval field: %v was not found in the response body of the service type`, serviceType.RetrievalField))
+	if rf, ok = dataRes["token"]; !ok {
+		err = utils.APIGenericInternalError(fmt.Sprintf(`The specified retrieval field: %v was not found in the response body of the service type`, "token"))
 		return dataRes, err
 	}
 

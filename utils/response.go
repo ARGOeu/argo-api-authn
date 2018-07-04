@@ -3,10 +3,9 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	LOGGER "github.com/sirupsen/logrus"
+	"net/http"
 )
-
 
 const (
 	ContentType = "application/json"

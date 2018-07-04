@@ -5,11 +5,11 @@ import (
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/gorilla/mux"
+	LOGGER "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	LOGGER "github.com/sirupsen/logrus"
 )
 
 type AuthMethodHandlersTestSuite struct {
@@ -275,7 +275,7 @@ func (suite *AuthMethodHandlersTestSuite) TestAuthMethodListAllEmptyList() {
 	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
 
 	// empty the store
-	mockstore.AuthMethods = []map[string]interface{}{}
+	mockstore.DeprecatedAuthMethods = []map[string]interface{}{}
 
 	router := mux.NewRouter().StrictSlash(true)
 	w := httptest.NewRecorder()
@@ -989,7 +989,7 @@ func (suite *AuthMethodHandlersTestSuite) TestAuthMethodDeleteInternalConflict()
 	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
 
 	// insert one more auth method under the same service type and host
-	mockstore.AuthMethods = append(mockstore.AuthMethods, map[string]interface{}{"service_uuid": "uuid1", "host": "host1", "port": 9000.0, "path": "test_path_1", "access_key": "key1", "type": "api-key"})
+	mockstore.DeprecatedAuthMethods = append(mockstore.DeprecatedAuthMethods, map[string]interface{}{"service_uuid": "uuid1", "host": "host1", "port": 9000.0, "path": "test_path_1", "access_key": "key1", "type": "api-key"})
 
 	router := mux.NewRouter().StrictSlash(true)
 	w := httptest.NewRecorder()
@@ -1022,7 +1022,7 @@ func (suite *AuthMethodHandlersTestSuite) TestAuthMethodDeleteUnknownAuthMethod(
 	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
 
 	// append a service that has no associated auth method yet
-	mockstore.ServiceTypes = append(mockstore.ServiceTypes, stores.QServiceType{Name: "s_test", Hosts: []string{"host_test"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", RetrievalField: "token", CreatedOn: "2018-05-05T18:04:05Z"})
+	mockstore.ServiceTypes = append(mockstore.ServiceTypes, stores.QServiceType{Name: "s_test", Hosts: []string{"host_test"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", CreatedOn: "2018-05-05T18:04:05Z"})
 
 	router := mux.NewRouter().StrictSlash(true)
 	w := httptest.NewRecorder()

@@ -51,7 +51,7 @@ paths:
                   type: string
              auth_method:
               type: string
-             retrieval_field:
+             type:
               type: string
       tags:
         - Service Types
@@ -147,8 +147,7 @@ paths:
                   type: string
              auth_method:
               type: string
-             retrieval_field:
-              type: string
+
       tags:
         - Service Types
       responses:
@@ -648,9 +647,9 @@ definitions:
       uuid:
         type: string
         description: uuid assosiciatd with the service type
-      retrieval_field:
+      type:
         type: string
-        description: name of the response field which contains the value we are looking for
+        description: service type's type, either ams or web-api
       created_on:
         type: string
         description: datetime of creation
