@@ -30,3 +30,20 @@ type QApiKeyAuth struct {
 	Path      string `json:"path" bson:"path"`
 	AccessKey string `json:"access_key" bson:"access_key"`
 }
+
+type QAuthMethod interface {}
+
+type QBasicAuthMethod struct {
+	ServiceUUID    string `json:"service_uuid" bson:"service_uuid"`
+	Port           int    `json:"port" bson:"port"`
+	Host           string `json:"host" bson:"host"`
+	RetrievalField string `json:"retrieval_field" bson:"retrieval_field"`
+	Path           string `json:"path" bson:"path"`
+	UUID           string `json:"uuid" bson:"uuid"`
+	CreatedOn      string `json:"created_on" bson:"created_on"`
+}
+
+type QApiKeyAuthMethod struct {
+	QBasicAuthMethod `bson:",inline"`
+	AccessKey string `json:"access_key" bson:"access_key"`
+}
