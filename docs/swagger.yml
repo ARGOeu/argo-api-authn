@@ -170,6 +170,53 @@ paths:
         500:
           $ref: "#/responses/500"
 
+  /service-types/{Name}/authm:
+    post:
+      summary: Create an auth method for the given service-type
+      description: |
+        Retrieve information for a specific service type
+      parameters:
+        - name: Name
+          in: path
+          description: Name of the service type
+          required: true
+          type: string
+        - $ref: '#/parameters/ApiKey'
+        - name: Auth method information
+          in: body
+          description: The auth method will also automatically contain additional information based on the service-type that is associated with. The auth method will be created based on the service-type's auth_method and type fields. E.g. create an api-key auth method for an ams type of service.
+          required: true
+          schema:
+           type: object
+           properties:
+             host:
+               type: string
+             port:
+                type: integer
+             access_key:
+                type: string
+      tags:
+        - Service Types
+      responses:
+        201:
+          description: Returns the newly created auth method
+          schema:
+            $ref: '#/definitions/APIKeyAuthMethod'
+        400:
+          $ref: "#/responses/400"
+        401:
+          $ref: "#/responses/401"
+        403:
+          $ref: "#/responses/403"
+        404:
+          $ref: '#/responses/404'
+        409:
+          $ref: '#/responses/409'
+        422:
+          $ref: '#/responses/422'
+        500:
+          $ref: "#/responses/500"
+
   /service-types/{Name}/hosts/{Host}/authM:
     get:
       summary: Retrieve authentication method information for a specific service type and host
@@ -683,7 +730,13 @@ definitions:
         description: port of the service type host
       type:
         type: string
-        description: api-key, x-api-token (type of auth method)
+        description: the type of the auth method
+      uuid:
+        type: string
+        description: auth method's uuid
+      created_on:
+        type: string
+        description: time of creation
 
   TokenResponse:
     type: object

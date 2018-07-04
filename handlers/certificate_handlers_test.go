@@ -348,11 +348,10 @@ func (suite *CertificateHandlerSuite) TestAuthViaCertInvalidDNSNames() {
 		LOGGER.Error(err.Error())
 	}
 
-
 	req.TLS.PeerCertificates[0].DNSNames = []string{"COMODO RSA Domain Validation Secure Server CA"}
-	obj := asn1.ObjectIdentifier{2 ,5 ,29, 17}
-	e1 := pkix.Extension{Id:obj, Critical:false, Value:[]byte("")}
-	req.TLS.PeerCertificates[0].Extensions =  append(req.TLS.PeerCertificates[0].Extensions, e1)
+	obj := asn1.ObjectIdentifier{2, 5, 29, 17}
+	e1 := pkix.Extension{Id: obj, Critical: false, Value: []byte("")}
+	req.TLS.PeerCertificates[0].Extensions = append(req.TLS.PeerCertificates[0].Extensions, e1)
 
 	router := mux.NewRouter().StrictSlash(true)
 	w := httptest.NewRecorder()
@@ -381,7 +380,6 @@ func (suite *CertificateHandlerSuite) TestAuthViaCertInvalidHost() {
 	if req, mockstore, cfg, err = AuthViaCertSetUp("http://localhost:8080/service-types/s_auth_cert/hosts/h1_auth_cert:authX509"); err != nil {
 		LOGGER.Error(err.Error())
 	}
-
 
 	req.TLS.PeerCertificates[0].Subject.CommonName = "COMODO RSA Domain Validation Secure Server CA"
 
@@ -412,7 +410,6 @@ func (suite *CertificateHandlerSuite) TestAuthViaCertNoNames() {
 	if req, mockstore, cfg, err = AuthViaCertSetUp("http://localhost:8080/service-types/s_auth_cert/hosts/h1_auth_cert:authX509"); err != nil {
 		LOGGER.Error(err.Error())
 	}
-
 
 	req.TLS.PeerCertificates[0].Subject.CommonName = ""
 	router := mux.NewRouter().StrictSlash(true)
@@ -448,7 +445,6 @@ func (suite *CertificateHandlerSuite) TestAuthViaCertValidSubjectCommonName() {
 	suite.Equal(200, w.Code)
 	suite.Equal(expRespJSON, w.Body.String())
 }
-
 
 // TestAuthViaCertUnknownServiceType tests the case where the provided service type is unknown
 func (suite *CertificateHandlerSuite) TestAuthViaCertUnknownServiceType() {

@@ -1,5 +1,10 @@
 package stores
 
+import (
+	"github.com/ARGOeu/argo-api-authn/utils"
+	LOGGER "github.com/sirupsen/logrus"
+)
+
 type QServiceType struct {
 	Name       string   `json:"name" bson:"name"`
 	Hosts      []string `json:"hosts" bson:"hosts"`
@@ -31,7 +36,7 @@ type QApiKeyAuth struct {
 	AccessKey string `json:"access_key" bson:"access_key"`
 }
 
-type QAuthMethod interface {}
+type QAuthMethod interface{}
 
 type QBasicAuthMethod struct {
 	ServiceUUID    string `json:"service_uuid" bson:"service_uuid"`
@@ -39,11 +44,40 @@ type QBasicAuthMethod struct {
 	Host           string `json:"host" bson:"host"`
 	RetrievalField string `json:"retrieval_field" bson:"retrieval_field"`
 	Path           string `json:"path" bson:"path"`
+	Type           string `json:"type" bson:"type"`
 	UUID           string `json:"uuid" bson:"uuid"`
 	CreatedOn      string `json:"created_on" bson:"created_on"`
 }
 
 type QApiKeyAuthMethod struct {
 	QBasicAuthMethod `bson:",inline"`
-	AccessKey string `json:"access_key" bson:"access_key"`
+	AccessKey        string `json:"access_key" bson:"access_key"`
+}
+
+type QAuthMethodFactory struct{}
+
+func (f *QAuthMethodFactory) Create(amType string) (QAuthMethod, error) {
+
+	var err error
+	var ok bool
+	var am QAuthMethod
+	var qAmInit QAuthMethodInit
+
+	if qAmInit, ok = QAuthMethodsTypes[amType]; !ok {
+		err = utils.APIGenericInternalError("Type is supported but not found")
+		LOGGER.Errorf("Type: %v was requested, but was not found inside the source code(store) despite being supported", amType)
+		return am, err
+	}
+
+	return qAmInit(), err
+}
+
+type QAuthMethodInit func() QAuthMethod
+
+var QAuthMethodsTypes = map[string]QAuthMethodInit{
+	"api-key": NewQApiKeyAuthMethod,
+}
+
+func NewQApiKeyAuthMethod() QAuthMethod {
+	return new(QApiKeyAuthMethod)
 }

@@ -2,9 +2,9 @@ package stores
 
 import (
 	"github.com/ARGOeu/argo-api-authn/utils"
+	LOGGER "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	LOGGER  "github.com/sirupsen/logrus"
 )
 
 type MongoStore struct {
@@ -81,7 +81,7 @@ func (mongo *MongoStore) QueryApiKeyAuthMethods(serviceUUID string, host string)
 	var err error
 	var qAuthms []QApiKeyAuthMethod
 
-	query := bson.M{"service_uuid": serviceUUID, "host": host}
+	query := bson.M{"service_uuid": serviceUUID, "host": host, "type": "api-key"}
 
 	c := mongo.Session.DB(mongo.Database).C("auth_methods")
 	err = c.Find(query).All(&qAuthms)
@@ -95,7 +95,7 @@ func (mongo *MongoStore) QueryApiKeyAuthMethods(serviceUUID string, host string)
 	return qAuthms, err
 }
 
-func(mongo *MongoStore)InsertAuthMethod(am QAuthMethod) (error) {
+func (mongo *MongoStore) InsertAuthMethod(am QAuthMethod) error {
 
 	var err error
 
@@ -298,7 +298,7 @@ func (mongo *MongoStore) DeleteBinding(qBinding QBinding) error {
 	return err
 }
 
-func(mongo *MongoStore) DeleteAuthMethod(am QAuthMethod) error {
+func (mongo *MongoStore) DeleteAuthMethod(am QAuthMethod) error {
 
 	var err error
 

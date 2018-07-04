@@ -19,7 +19,7 @@ func (suite *ConfigTestSuite) TestConfigSetUp() {
 	// tests the case of a normal setup
 	cfg2 := &Config{}
 	err2 := cfg2.ConfigSetUp("./configuration-test-files/test-conf.json")
-	expCfg2 := &Config{9000, "test_mongo_host", "test_mongo_db", "/path/to/cas", "/path/to/cert", "/path/to/key", "token", []string{"x509", "oidc"}, []string{"api-key", "x-api-token"}, []string{"ams", "web-api", "custom"},false}
+	expCfg2 := &Config{9000, "test_mongo_host", "test_mongo_db", "/path/to/cas", "/path/to/cert", "/path/to/key", "token", []string{"x509", "oidc"}, []string{"api-key", "x-api-token"}, []string{"ams", "web-api", "custom"}, false}
 
 	//tests the case of a malformed json
 	cfg3 := &Config{}

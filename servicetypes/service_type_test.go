@@ -20,12 +20,12 @@ func (suite *ServiceTestSuite) TestCreateServiceType() {
 	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
 
 	// test the normal case with type ams
-	s1 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1",  "", "ams"}
+	s1 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "ams"}
 	_, err := CreateServiceType(s1, mockstore, *cfg)
 	res1, _ := mockstore.QueryServiceTypes("sCr")
 
 	// test the normal case with type web-api
-	sWb := ServiceType{"sCr_wb", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "token",  "web-api"}
+	sWb := ServiceType{"sCr_wb", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "token", "web-api"}
 	_, errWb := CreateServiceType(sWb, mockstore, *cfg)
 	res2, _ := mockstore.QueryServiceTypes("sCr_wb")
 

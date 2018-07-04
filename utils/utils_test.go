@@ -119,7 +119,7 @@ func (suite *UtilsTestSuite) TestSetFieldValueByName() {
 	s := "value"
 	err6 := SetFieldValueByName(&tt, "Field5", &s)
 
-	suite.Equal("value",tt.Field1)
+	suite.Equal("value", tt.Field1)
 	suite.Equal("value", *(tt.Field5))
 
 	suite.Nil(err1)

@@ -5,7 +5,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"github.com/stretchr/testify/suite"
-	"net"
 	"testing"
 	"time"
 )
@@ -165,9 +164,9 @@ lBlGGSW4gNfL1IYoakRwJiNiqZ+Gb7+6kHDSVneFeO/qJakXzlByjAA6quPbYzSf
 	//mismatch
 	crt = ParseCert(commonCert)
 	crt.DNSNames = []string{"COMODO RSA Domain Validation Secure Server CA"}
-	obj := asn1.ObjectIdentifier{2 ,5 ,29, 17}
-	e1 := pkix.Extension{Id:obj, Critical:false, Value:[]byte("")}
-	crt.Extensions =  append(crt.Extensions, e1)
+	obj := asn1.ObjectIdentifier{2, 5, 29, 17}
+	e1 := pkix.Extension{Id: obj, Critical: false, Value: []byte("")}
+	crt.Extensions = append(crt.Extensions, e1)
 	err4 := ValidateClientCertificate(crt, "127.0.0.1:8080")
 	suite.Equal("x509: certificate is valid for COMODO RSA Domain Validation Secure Server CA, not localhost", err4.Error())
 

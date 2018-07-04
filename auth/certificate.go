@@ -79,7 +79,7 @@ func ValidateClientCertificate(cert *x509.Certificate, clientIP string) error {
 	var ip string
 
 	if ip, _, err = net.SplitHostPort(clientIP); err != nil {
-		err := &utils.APIError{Code:403, Message:err.Error(), Status:"ACCESS_FORBIDDEN"}
+		err := &utils.APIError{Code: 403, Message: err.Error(), Status: "ACCESS_FORBIDDEN"}
 		return err
 	}
 

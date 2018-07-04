@@ -3,7 +3,6 @@ package stores
 import (
 	"github.com/ARGOeu/argo-api-authn/utils"
 	"reflect"
-	"fmt"
 )
 
 type Mockstore struct {
@@ -12,7 +11,7 @@ type Mockstore struct {
 	Database     string
 	ServiceTypes []QServiceType
 	Bindings     []QBinding
-	AuthMethods []QAuthMethod
+	AuthMethods  []QAuthMethod
 	// Deprecated:
 	DeprecatedAuthMethods []map[string]interface{}
 }
@@ -42,8 +41,8 @@ func (mock *Mockstore) SetUp() {
 		{"path": "test_path_1", "access_key": "key1", "type": "api-key", "service_uuid": "uuid2", "host": "host4"}}
 
 	// Populate AuthMethods
-	amb1 := QBasicAuthMethod{ServiceUUID:"uuid1", Host:"host1", Port:9000, Path:"test_path_1", UUID:"am_uuid_1", CreatedOn:""}
-	am1 := &QApiKeyAuthMethod{AccessKey:"access_key"}
+	amb1 := QBasicAuthMethod{ServiceUUID: "uuid1", Host: "host1", Port: 9000, Path: "test_path_1", Type: "api-key", UUID: "am_uuid_1", CreatedOn: ""}
+	am1 := &QApiKeyAuthMethod{AccessKey: "access_key"}
 	am1.QBasicAuthMethod = amb1
 	mock.AuthMethods = append(mock.AuthMethods, am1)
 }
@@ -90,10 +89,9 @@ func (mock *Mockstore) QueryApiKeyAuthMethods(serviceUUID string, host string) (
 	var qAuthm *QApiKeyAuthMethod
 
 	for _, am := range mock.AuthMethods {
-		fmt.Printf("\n%+v\n",am)
 		if qAuthm, ok = am.(*QApiKeyAuthMethod); ok {
 			if qAuthm.ServiceUUID == serviceUUID && qAuthm.Host == host {
-				qAuthms= append(qAuthms, *qAuthm)
+				qAuthms = append(qAuthms, *qAuthm)
 			}
 		}
 	}
@@ -165,7 +163,7 @@ func (mock *Mockstore) QueryBindings(serviceUUID string, host string) ([]QBindin
 	return qBindings, nil
 }
 
-func (mock *Mockstore) InsertAuthMethod(am QAuthMethod) (error){
+func (mock *Mockstore) InsertAuthMethod(am QAuthMethod) error {
 
 	mock.AuthMethods = append(mock.AuthMethods, am)
 
