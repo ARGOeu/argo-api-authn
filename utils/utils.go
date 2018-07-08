@@ -35,29 +35,39 @@ func ValidateRequired(instance interface{}) error {
 // GetFieldValueByName retrieves the value of a specified field from the provided instance
 func GetFieldValueByName(instance interface{}, fieldName string) (interface{}, error) {
 
+	var v reflect.Value
+	var flv reflect.Value
+
 	// Check if the field's name is capitalized to make sure its exported otherwise .Interface() will panic
 	if !IsCapitalized(fieldName) {
 		return nil, errors.New("you are trying to access an unexported field")
 	}
 
-	v := reflect.ValueOf(instance).FieldByName(fieldName)
+	v = reflect.ValueOf(instance)
+
+	// check if the provided argument is a pointer or not
+	if v.Kind() == reflect.Ptr {
+		flv = v.Elem().FieldByName(fieldName)
+	} else {
+		flv = v.FieldByName(fieldName)
+	}
 
 	// check if the field exists
-	zeroReflectValue := reflect.Zero(reflect.TypeOf(reflect.Value{})).Interface()
-	if reflect.DeepEqual(v, zeroReflectValue) {
+	zeroReflectValue := reflect.Value{}
+	if reflect.DeepEqual(flv, zeroReflectValue) {
 		return nil, errors.New("Field: " + fieldName + " has not been declared.")
 	}
 
-	// check if the field contains a value
-	fieldValue := v.Interface()
-	zeroFieldValue := reflect.Zero(reflect.TypeOf(v.Interface())).Interface()
+	// check if the field contains a value or its empty
+	fieldValue := flv.Interface()
+	zeroFieldValue := reflect.Zero(reflect.TypeOf(flv.Interface())).Interface()
 
 	if reflect.DeepEqual(fieldValue, zeroFieldValue) {
 		return nil, GenericEmptyRequiredField(fieldName)
 	}
 
 	// if everything is ok, return the value of the field
-	return v.Interface(), nil
+	return flv.Interface(), nil
 }
 
 // StructToMap converts a non nil struct to a map of map[string]interface{}
