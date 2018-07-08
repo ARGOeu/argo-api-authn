@@ -70,6 +70,45 @@ func GetFieldValueByName(instance interface{}, fieldName string) (interface{}, e
 	return flv.Interface(), nil
 }
 
+// SetFieldValueByName assigns a value to the specified field of the given interface
+func SetFieldValueByName(instance interface{}, fieldName string, value interface{}) error {
+
+	var v reflect.Value
+	var vf reflect.Value
+	var flv reflect.Value
+
+	// Check if the field's name is capitalized to make sure its exported otherwise .Interface() will panic
+	if !IsCapitalized(fieldName) {
+		return errors.New("you are trying to access an unexported field")
+	}
+
+	v = reflect.ValueOf(instance)
+	vf = reflect.ValueOf(value)
+
+	// it requires a pointer to a struct so its fields are addressable in order to be set through the Set() method
+	if v.Kind() != reflect.Ptr {
+		return errors.New("SetFieldValueByName needs a pointer to a struct")
+	}
+
+	flv = v.Elem().FieldByName(fieldName)
+
+	// check if the field exists
+	zeroReflectValue := reflect.Value{}
+	if reflect.DeepEqual(flv, zeroReflectValue) {
+		return errors.New("Field: " + fieldName + " has not been declared.")
+	}
+
+	// check if the field and value types match
+	if flv.Type() != vf.Type() {
+		return errors.New("type miss match between field and value")
+	}
+
+	// if everything is ok assign the value
+	flv.Set(vf)
+
+	return nil
+}
+
 // StructToMap converts a non nil struct to a map of map[string]interface{}
 func StructToMap(instance interface{}) map[string]interface{} {
 

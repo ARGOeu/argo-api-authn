@@ -96,6 +96,41 @@ func (suite *UtilsTestSuite) TestGetFieldByName() {
 
 }
 
+func (suite *UtilsTestSuite) TestSetFieldValueByName() {
+
+	tt := TestStruct{}
+
+	// normal case
+	err1 := SetFieldValueByName(&tt, "Field1", "value")
+
+	// non pointer argument
+	err2 := SetFieldValueByName(tt, "Field1", "value")
+
+	// non exported field
+	err3 := SetFieldValueByName(&tt, "field1", "value")
+
+	// type miss match between field and value
+	err4 := SetFieldValueByName(&tt, "Field1", 90)
+
+	// unknown field
+	err5 := SetFieldValueByName(&tt, "Unknown", "value")
+
+	// normal case - pointer value
+	s := "value"
+	err6 := SetFieldValueByName(&tt, "Field5", &s)
+
+	suite.Equal("value",tt.Field1)
+	suite.Equal("value", *(tt.Field5))
+
+	suite.Nil(err1)
+	suite.Equal("SetFieldValueByName needs a pointer to a struct", err2.Error())
+	suite.Equal("you are trying to access an unexported field", err3.Error())
+	suite.Equal("type miss match between field and value", err4.Error())
+	suite.Equal("Field: Unknown has not been declared.", err5.Error())
+	suite.Nil(err6)
+
+}
+
 func (suite *UtilsTestSuite) TestStructToMap() {
 
 	//tests the normal case with unexported field
