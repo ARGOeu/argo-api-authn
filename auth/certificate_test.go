@@ -55,7 +55,7 @@ SoPmZKiBeb+2OQ2n7+FI8ftkqxWw6zjh651brAoy/0zqLTRPh+c=
 	suite.Equal("O=COMPANY,L=CITY,ST=TN,C=TC,DC=v2,DC=v1", ers2)
 }
 
-func (suite *CertificateTestSuite) TestCertHasExpired(){
+func (suite *CertificateTestSuite) TestCertHasExpired() {
 
 	commonCert := `-----BEGIN CERTIFICATE-----
 MIIC8jCCAdoCCQCdC824csOlXTANBgkqhkiG9w0BAQsFADA7MQswCQYDVQQGEwJU
@@ -164,9 +164,9 @@ lBlGGSW4gNfL1IYoakRwJiNiqZ+Gb7+6kHDSVneFeO/qJakXzlByjAA6quPbYzSf
 	//mismatch
 	crt = ParseCert(commonCert)
 	crt.DNSNames = []string{"COMODO RSA Domain Validation Secure Server CA"}
-	obj := asn1.ObjectIdentifier{2 ,5 ,29, 17}
-	e1 := pkix.Extension{Id:obj, Critical:false, Value:[]byte("")}
-	crt.Extensions =  append(crt.Extensions, e1)
+	obj := asn1.ObjectIdentifier{2, 5, 29, 17}
+	e1 := pkix.Extension{Id: obj, Critical: false, Value: []byte("")}
+	crt.Extensions = append(crt.Extensions, e1)
 	err4 := ValidateClientCertificate(crt, "127.0.0.1:8080")
 	suite.Equal("x509: certificate is valid for COMODO RSA Domain Validation Secure Server CA, not localhost", err4.Error())
 

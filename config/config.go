@@ -3,9 +3,9 @@ package config
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
-	LOGGER "github.com/sirupsen/logrus"
 	"github.com/ARGOeu/argo-api-authn/utils"
+	LOGGER "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"reflect"
 )
 
@@ -19,6 +19,7 @@ type Config struct {
 	ServiceToken           string   `json:"service_token" required:"true"`
 	SupportedAuthTypes     []string `json:"supported_auth_types" required:"true"`
 	SupportedAuthMethods   []string `json:"supported_auth_methods" required:"true"`
+	SupportedServiceTypes  []string `json:"supported_service_types" required:"true"`
 	VerifySSL              bool     `json:"verify_ssl" `
 }
 

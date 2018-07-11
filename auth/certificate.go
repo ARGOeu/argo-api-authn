@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ARGOeu/argo-api-authn/utils"
 	LOGGER "github.com/sirupsen/logrus"
 	"net"
-	"github.com/ARGOeu/argo-api-authn/utils"
 	"time"
 )
 
@@ -79,7 +79,7 @@ func ValidateClientCertificate(cert *x509.Certificate, clientIP string) error {
 	var ip string
 
 	if ip, _, err = net.SplitHostPort(clientIP); err != nil {
-		err := &utils.APIError{Code:403, Message:err.Error(), Status:"ACCESS_FORBIDDEN"}
+		err := &utils.APIError{Code: 403, Message: err.Error(), Status: "ACCESS_FORBIDDEN"}
 		return err
 	}
 
@@ -123,15 +123,14 @@ func CertHasExpired(cert *x509.Certificate) error {
 	var err error
 
 	if time.Now().After(cert.NotAfter) {
-		err := &utils.APIError{Code:403, Message:"Your certificate has expired", Status:"ACCESS_FORBIDDEN"}
+		err := &utils.APIError{Code: 403, Message: "Your certificate has expired", Status: "ACCESS_FORBIDDEN"}
 		return err
 	}
 
 	if time.Now().Before(cert.NotBefore) {
-		err := &utils.APIError{Code:403, Message:"Your certificate is not active yet", Status:"ACCESS_FORBIDDEN"}
+		err := &utils.APIError{Code: 403, Message: "Your certificate is not active yet", Status: "ACCESS_FORBIDDEN"}
 		return err
 	}
-
 
 	return err
 }

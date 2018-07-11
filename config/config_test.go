@@ -19,7 +19,7 @@ func (suite *ConfigTestSuite) TestConfigSetUp() {
 	// tests the case of a normal setup
 	cfg2 := &Config{}
 	err2 := cfg2.ConfigSetUp("./configuration-test-files/test-conf.json")
-	expCfg2 := &Config{9000, "test_mongo_host", "test_mongo_db", "/path/to/cas", "/path/to/cert", "/path/to/key", "token", []string{"x509", "oidc"}, []string{"api-key", "x-api-token"}, false}
+	expCfg2 := &Config{9000, "test_mongo_host", "test_mongo_db", "/path/to/cas", "/path/to/cert", "/path/to/key", "token", []string{"x509", "oidc"}, []string{"api-key", "x-api-token"}, []string{"ams", "web-api", "custom"}, false}
 
 	//tests the case of a malformed json
 	cfg3 := &Config{}
@@ -28,17 +28,12 @@ func (suite *ConfigTestSuite) TestConfigSetUp() {
 	// tests the case of an undeclared field in the json file
 	cfg4 := &Config{}
 	err4 := cfg4.ConfigSetUp("./configuration-test-files/test-conf-missing-field.json")
-	expCfg4 := &Config{0, "test_mongo_host", "test_mongo_db", "/path/to/cas", "/path/to/cert", "/path/to/key", "token", []string{"x509", "oidc"}, []string{"api-key", "x-api-token"}, false}
 
 	// tests the case of an empty field in the json file
 	cfg5 := &Config{}
 	err5 := cfg5.ConfigSetUp("./configuration-test-files/test-conf-empty-field.json")
-	expCfg5 := &Config{9000, "", "test_mongo_db", "/path/to/cas", "/path/to/cert", "/path/to/key", "token", []string{"x509", "oidc"}, []string{"api-key", "x-api-token"}, false}
 
 	suite.Equal(cfg2, expCfg2)
-	suite.Equal(cfg3, &Config{})
-	suite.Equal(cfg4, expCfg4)
-	suite.Equal(cfg5, expCfg5)
 
 	suite.Equal("open /wrong/path: no such file or directory", err1.Error())
 	suite.Nil(err2)

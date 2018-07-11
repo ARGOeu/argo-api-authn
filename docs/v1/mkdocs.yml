@@ -16,7 +16,8 @@ pages:
 #    - API Authentication:
     - API Bindings: api_bindings.md
     - API Service Types: api_service_types.md
-    - API Auth Methods: api_auth_methods.md
+    - Deprecated API Auth Methods: api_auth_methods.md
+    - API Auth Methods: api_authmethods.md
     - API Certificate Functionality: auth_certificate.md
     - API Error Messages: api_errors.md
 theme: readthedocs

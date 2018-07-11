@@ -29,10 +29,11 @@ func (suite *StoreTestSuite) TestSetUp() {
 
 	var qServices []QServiceType
 	var qBindings []QBinding
+	var qAuthms []QAuthMethod
 
 	// Populate qServices
-	service1 := QServiceType{Name: "s1", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", RetrievalField: "token", CreatedOn: "2018-05-05T18:04:05Z"}
-	service2 := QServiceType{Name: "s2", Hosts: []string{"host3", "host4"}, AuthTypes: []string{"x509"}, AuthMethod: "api-key", UUID: "uuid2", RetrievalField: "user_token", CreatedOn: "2018-05-05T18:04:05Z"}
+	service1 := QServiceType{Name: "s1", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"}
+	service2 := QServiceType{Name: "s2", Hosts: []string{"host3", "host4"}, AuthTypes: []string{"x509"}, AuthMethod: "api-key", UUID: "uuid2", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"}
 	serviceSame1 := QServiceType{Name: "same_name"}
 	serviceSame2 := QServiceType{Name: "same_name"}
 	qServices = append(qServices, service1, service2, serviceSame1, serviceSame2)
@@ -45,17 +46,24 @@ func (suite *StoreTestSuite) TestSetUp() {
 	qBindings = append(qBindings, binding1, binding2, binding3)
 
 	// Populate DeprecatedAuthMethods
-	authMethods := []map[string]interface{}{{"service_uuid": "uuid1", "host": "host1", "port": 9000.0, "path": "test_path_1", "access_key": "key1", "type": "api-key"},
+	DeprecatedauthMethods := []map[string]interface{}{{"service_uuid": "uuid1", "host": "host1", "port": 9000.0, "path": "test_path_1", "access_key": "key1", "type": "api-key"},
 		{"host": "host2", "port": 9000.0, "path": "test_path_1", "type": "api-key", "service_uuid": "uuid1"},
 		{"access_key": "key1", "type": "api-key", "service_uuid": "uuid2", "host": "host3", "port": 9000.0},
 		{"path": "test_path_1", "access_key": "key1", "type": "api-key", "service_uuid": "uuid2", "host": "host4"}}
+
+	// Populate AuthMethods
+	amb1 := QBasicAuthMethod{ServiceUUID: "uuid1", Host: "host1", Port: 9000, Path: "test_path_1", Type: "api-key", UUID: "am_uuid_1", CreatedOn: ""}
+	am1 := &QApiKeyAuthMethod{AccessKey: "access_key"}
+	am1.QBasicAuthMethod = amb1
+	qAuthms = append(qAuthms, am1)
 
 	suite.Equal(mockstore.Session, true)
 	suite.Equal(mockstore.Database, "test_db")
 	suite.Equal(mockstore.Server, "localhost")
 	suite.Equal(mockstore.ServiceTypes, qServices)
 	suite.Equal(mockstore.Bindings, qBindings)
-	suite.Equal(mockstore.DeprecatedAuthMethods, authMethods)
+	suite.Equal(mockstore.DeprecatedAuthMethods, DeprecatedauthMethods)
+	suite.Equal(mockstore.AuthMethods, qAuthms)
 }
 
 func (suite *StoreTestSuite) TestClose() {
@@ -71,15 +79,15 @@ func (suite *StoreTestSuite) TestQueryServiceTypes() {
 	suite.SetUpStoreTestSuite()
 
 	// normal case outcome - 1 service
-	expQServices1 := []QServiceType{{Name: "s1", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", RetrievalField: "token", CreatedOn: "2018-05-05T18:04:05Z"}}
+	expQServices1 := []QServiceType{{Name: "s1", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"}}
 	qServices1, err1 := suite.Mockstore.QueryServiceTypes("s1")
-	expQServices2 := []QServiceType{{Name: "s2", Hosts: []string{"host3", "host4"}, AuthTypes: []string{"x509"}, AuthMethod: "api-key", UUID: "uuid2", RetrievalField: "user_token", CreatedOn: "2018-05-05T18:04:05Z"}}
+	expQServices2 := []QServiceType{{Name: "s2", Hosts: []string{"host3", "host4"}, AuthTypes: []string{"x509"}, AuthMethod: "api-key", UUID: "uuid2", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"}}
 	qServices2, err2 := suite.Mockstore.QueryServiceTypes("s2")
 
 	// normal case outcome - all services
 	expQServicesAll := []QServiceType{
-		{Name: "s1", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", RetrievalField: "token", CreatedOn: "2018-05-05T18:04:05Z"},
-		{Name: "s2", Hosts: []string{"host3", "host4"}, AuthTypes: []string{"x509"}, AuthMethod: "api-key", UUID: "uuid2", RetrievalField: "user_token", CreatedOn: "2018-05-05T18:04:05Z"},
+		{Name: "s1", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"},
+		{Name: "s2", Hosts: []string{"host3", "host4"}, AuthTypes: []string{"x509"}, AuthMethod: "api-key", UUID: "uuid2", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"},
 		{Name: "same_name"},
 		{Name: "same_name"},
 	}
@@ -109,7 +117,7 @@ func (suite *StoreTestSuite) TestQueryServiceTypesByUUID() {
 	suite.SetUpStoreTestSuite()
 
 	// normal case outcome
-	expQServices1 := []QServiceType{{Name: "s1", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", RetrievalField: "token", CreatedOn: "2018-05-05T18:04:05Z"}}
+	expQServices1 := []QServiceType{{Name: "s1", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"}}
 	qServices1, err1 := suite.Mockstore.QueryServiceTypesByUUID("uuid1")
 
 	// was not found
@@ -124,7 +132,28 @@ func (suite *StoreTestSuite) TestQueryServiceTypesByUUID() {
 
 }
 
-func (suite *StoreTestSuite) TestQueryAuthMethods() {
+func (suite *StoreTestSuite) TestQueryApiKeyAuthMethods() {
+
+	suite.SetUpStoreTestSuite()
+
+	// normal case
+	var expApiAms []QApiKeyAuthMethod
+	amb1 := QBasicAuthMethod{ServiceUUID: "uuid1", Host: "host1", Port: 9000, Path: "test_path_1", Type: "api-key", UUID: "am_uuid_1", CreatedOn: ""}
+	qapi := QApiKeyAuthMethod{amb1, "access_key"}
+	expApiAms = append(expApiAms, qapi)
+	apiAms, err1 := suite.Mockstore.QueryApiKeyAuthMethods("uuid1", "host1")
+
+	// not found - empty list
+	apiAms2, err2 := suite.Mockstore.QueryApiKeyAuthMethods("unknown", "unknown")
+
+	suite.Equal(expApiAms, apiAms)
+	suite.Equal(0, len(apiAms2))
+
+	suite.Nil(err1)
+	suite.Nil(err2)
+}
+
+func (suite *StoreTestSuite) TestDeprecatedQueryAuthMethods() {
 
 	suite.SetUpStoreTestSuite()
 
@@ -230,20 +259,39 @@ func (suite *StoreTestSuite) TestQueryBindings() {
 	suite.Nil(err3)
 }
 
+func (suite *StoreTestSuite) TestInsertAuthMethod() {
+
+	suite.SetUpStoreTestSuite()
+
+	// insert an QApiKeyAuthMethod and then query the datastore to see if it was inserted
+	amb1 := QBasicAuthMethod{ServiceUUID: "uuid1", Host: "host2", Port: 9000, Path: "test_path_1", UUID: "am_uuid_1", CreatedOn: ""}
+	expApiAms := []QApiKeyAuthMethod{{amb1, "access_key"}}
+
+	amIns := &QApiKeyAuthMethod{amb1, "access_key"}
+	errIns := suite.Mockstore.InsertAuthMethod(amIns)
+
+	apiAms, _ := suite.Mockstore.QueryApiKeyAuthMethods("uuid1", "host2")
+
+	suite.Equal(expApiAms, apiAms)
+
+	suite.Nil(errIns)
+
+}
+
 func (suite *StoreTestSuite) TestInsertServiceType() {
 
 	suite.SetUpStoreTestSuite()
 
-	_, err1 := suite.Mockstore.InsertServiceType("sIns", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "uuid_ins", "token", "2018-05-05T18:04:05Z")
+	_, err1 := suite.Mockstore.InsertServiceType("sIns", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "uuid_ins", "2018-05-05T18:04:05Z", "ams")
 
-	expQServices1 := []QServiceType{{Name: "sIns", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid_ins", RetrievalField: "token", CreatedOn: "2018-05-05T18:04:05Z"}}
+	expQServices1 := []QServiceType{{Name: "sIns", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid_ins", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"}}
 	qServices1, err1 := suite.Mockstore.QueryServiceTypes("sIns")
 
 	suite.Equal(expQServices1[0], qServices1[0])
 	suite.Nil(err1)
 }
 
-func (suite *StoreTestSuite) TestInsertAuthMethod() {
+func (suite *StoreTestSuite) TestDeprecatedInsertAuthMethod() {
 
 	suite.SetUpStoreTestSuite()
 
@@ -295,9 +343,9 @@ func (suite *StoreTestSuite) TestUpdateServiceType() {
 
 	suite.SetUpStoreTestSuite()
 
-	original := QServiceType{Name: "s1", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", RetrievalField: "token", CreatedOn: "2018-05-05T18:04:05Z"}
+	original := QServiceType{Name: "s1", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"}
 
-	updated := QServiceType{Name: "s_updated", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", RetrievalField: "token", CreatedOn: "2018-05-05T18:04:05Z"}
+	updated := QServiceType{Name: "s_updated", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"}
 
 	_, err1 := suite.Mockstore.UpdateServiceType(original, updated)
 
@@ -328,7 +376,7 @@ func (suite *StoreTestSuite) TestDeleteBinding() {
 	suite.Nil(err1)
 }
 
-func (suite *StoreTestSuite) TestDeleteAuthMethod() {
+func (suite *StoreTestSuite) TestDeprecatedDeleteAuthMethod() {
 
 	suite.SetUpStoreTestSuite()
 
@@ -344,6 +392,28 @@ func (suite *StoreTestSuite) TestDeleteAuthMethod() {
 	suite.Equal(expAuthMs, suite.Mockstore.DeprecatedAuthMethods)
 
 	suite.Nil(err1)
+}
+
+func (suite *StoreTestSuite) TestDeleteAuthMethod() {
+
+	suite.SetUpStoreTestSuite()
+	var expAMS []QAuthMethod
+
+	// add a temporary auth method
+	amb1 := QBasicAuthMethod{ServiceUUID: "ins_uuid", Host: "ins_host", Port: 9000, Path: "test_path_1", Type: "api-key", UUID: "am_uuid_1", CreatedOn: ""}
+	am1 := QApiKeyAuthMethod{AccessKey: "access_key"}
+	am1.QBasicAuthMethod = amb1
+	suite.Mockstore.AuthMethods = append(suite.Mockstore.AuthMethods, &am1)
+
+	err1 := suite.Mockstore.DeleteAuthMethod(&am1)
+
+	amb := QBasicAuthMethod{ServiceUUID: "uuid1", Host: "host1", Port: 9000, Path: "test_path_1", Type: "api-key", UUID: "am_uuid_1", CreatedOn: ""}
+	expApiAms := &QApiKeyAuthMethod{amb, "access_key"}
+	expAMS = append(expAMS, expApiAms)
+
+	suite.Equal(expAMS, suite.Mockstore.AuthMethods)
+	suite.Nil(err1)
+
 }
 
 func TestStoreTestSuite(t *testing.T) {
