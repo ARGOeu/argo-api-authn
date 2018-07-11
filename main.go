@@ -15,19 +15,18 @@ import (
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/routing"
 	"github.com/ARGOeu/argo-api-authn/stores"
-	"log/syslog"
 	LOGGER "github.com/sirupsen/logrus"
 	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
+	"log/syslog"
 )
-
 
 func init() {
 	LOGGER.SetFormatter(&LOGGER.TextFormatter{FullTimestamp: true, DisableColors: true})
-		hook, err := lSyslog.NewSyslogHook("", "", syslog.LOG_INFO, "")
-		if err == nil {
-				LOGGER.AddHook(hook)
-			}
+	hook, err := lSyslog.NewSyslogHook("", "", syslog.LOG_INFO, "")
+	if err == nil {
+		LOGGER.AddHook(hook)
 	}
+}
 
 func main() {
 

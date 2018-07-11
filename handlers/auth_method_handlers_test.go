@@ -5,11 +5,11 @@ import (
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/gorilla/mux"
+	LOGGER "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	LOGGER "github.com/sirupsen/logrus"
 )
 
 type AuthMethodHandlersTestSuite struct {
@@ -1022,7 +1022,7 @@ func (suite *AuthMethodHandlersTestSuite) TestAuthMethodDeleteUnknownAuthMethod(
 	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
 
 	// append a service that has no associated auth method yet
-	mockstore.ServiceTypes = append(mockstore.ServiceTypes, stores.QServiceType{Name: "s_test", Hosts: []string{"host_test"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", RetrievalField: "token", CreatedOn: "2018-05-05T18:04:05Z"})
+	mockstore.ServiceTypes = append(mockstore.ServiceTypes, stores.QServiceType{Name: "s_test", Hosts: []string{"host_test"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", CreatedOn: "2018-05-05T18:04:05Z"})
 
 	router := mux.NewRouter().StrictSlash(true)
 	w := httptest.NewRecorder()

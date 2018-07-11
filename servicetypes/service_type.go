@@ -9,13 +9,13 @@ import (
 )
 
 type ServiceType struct {
-	Name           string   `json:"name" required:"true"`
-	Hosts          []string `json:"hosts" required:"true"`
-	AuthTypes      []string `json:"auth_types" required:"true"`
-	AuthMethod     string   `json:"auth_method" required:"true"`
-	UUID           string   `json:"uuid"`
-	RetrievalField string   `json:"retrieval_field" required:"true"`
-	CreatedOn      string   `json:"created_on"`
+	Name       string   `json:"name" required:"true"`
+	Hosts      []string `json:"hosts" required:"true"`
+	AuthTypes  []string `json:"auth_types" required:"true"`
+	AuthMethod string   `json:"auth_method" required:"true"`
+	UUID       string   `json:"uuid"`
+	CreatedOn  string   `json:"created_on"`
+	Type       string   `json:"type" required:"true"`
 }
 
 // TempServiceType is a struct to be used as an intermediate node when updating a service type
@@ -52,7 +52,7 @@ func CreateServiceType(service ServiceType, store stores.Store, cfg config.Confi
 	uuid := uuid2.NewV4().String()
 
 	// insert the service type
-	if qService, err = store.InsertServiceType(service.Name, service.Hosts, service.AuthTypes, service.AuthMethod, uuid, service.RetrievalField, utils.ZuluTimeNow()); err != nil {
+	if qService, err = store.InsertServiceType(service.Name, service.Hosts, service.AuthTypes, service.AuthMethod, uuid, utils.ZuluTimeNow(), service.Type); err != nil {
 		return ServiceType{}, err
 	}
 
@@ -88,6 +88,11 @@ func (s *ServiceType) Validate(store stores.Store, cfg config.Config) error {
 
 	// check if the authentication type is supported
 	if err = s.hasValidAuthTypes(cfg); err != nil {
+		return err
+	}
+
+	// check the type
+	if err = s.IsOfValidType(cfg); err != nil {
 		return err
 	}
 
@@ -246,6 +251,20 @@ func (s *ServiceType) hasValidAuthMethod(cfg config.Config) error {
 	}
 
 	err = utils.APIErrUnsupportedContent("auth_method", s.AuthMethod, fmt.Sprintf("Supported:%v", cfg.SupportedAuthMethods))
+	return err
+}
+
+// IsOfValidType checks whether or not the type of a service type is supported
+func (s *ServiceType) IsOfValidType(cfg config.Config) error {
+
+	var err error
+	for _, am := range cfg.SupportedServiceTypes {
+		if am == s.Type {
+			return err
+		}
+	}
+
+	err = utils.APIErrUnsupportedContent("type", s.Type, fmt.Sprintf("Supported:%v", cfg.SupportedServiceTypes))
 	return err
 }
 

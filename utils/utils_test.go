@@ -10,7 +10,7 @@ import (
 
 type UtilsTestSuite struct {
 	suite.Suite
-	TestStructList map[string]TestStruct
+	TestStructList map[string]interface{}
 }
 
 type TestStruct struct {
@@ -26,7 +26,7 @@ type TestStruct struct {
 func (suite *UtilsTestSuite) SetUpUtilsTestSuite() {
 
 	// initialize the map
-	suite.TestStructList = make(map[string]TestStruct)
+	suite.TestStructList = make(map[string]interface{})
 
 	tStr := "tStr"
 
@@ -36,6 +36,8 @@ func (suite *UtilsTestSuite) SetUpUtilsTestSuite() {
 	// fill the map
 	suite.TestStructList["ts1"] = ts1
 	suite.TestStructList["ts2"] = ts2
+	suite.TestStructList["ts1_ptr"] = &ts1
+	suite.TestStructList["ts2_ptr"] = &ts2
 
 }
 
@@ -50,7 +52,7 @@ func (suite *UtilsTestSuite) TestCheckForNulls() {
 
 func (suite *UtilsTestSuite) TestGetFieldByName() {
 
-	// tests the normal case
+	// tests the normal case - without a ptr value
 	val1, err1 := GetFieldValueByName(suite.TestStructList["ts1"], "Field1")
 
 	// tests the case of a missing field
@@ -62,15 +64,70 @@ func (suite *UtilsTestSuite) TestGetFieldByName() {
 	// tests the case of an unexported field
 	val4, err4 := GetFieldValueByName(suite.TestStructList["ts2"], "field6")
 
+	// tests the normal case - with a ptr value
+	val5, err5 := GetFieldValueByName(suite.TestStructList["ts1_ptr"], "Field1")
+
+	// tests the case of a missing field
+	val6, err6 := GetFieldValueByName(suite.TestStructList["ts1_ptr"], "Field10")
+
+	// tests the case of an empty field
+	val7, err7 := GetFieldValueByName(suite.TestStructList["ts2_ptr"], "Field1")
+
+	// tests the case of an unexported field
+	val8, err8 := GetFieldValueByName(suite.TestStructList["ts2_ptr"], "field6")
+
 	suite.Equal("44", val1.(string))
 	suite.Nil(val2)
 	suite.Nil(val3)
 	suite.Nil(val4)
+	suite.Equal("44", val5.(string))
+	suite.Nil(val6)
+	suite.Nil(val7)
+	suite.Nil(val8)
 
 	suite.Nil(err1)
 	suite.Equal("Field: Field10 has not been declared.", err2.Error())
 	suite.Equal("empty value for field: Field1", err3.Error())
 	suite.Equal("you are trying to access an unexported field", err4.Error())
+	suite.Nil(err5)
+	suite.Equal("Field: Field10 has not been declared.", err6.Error())
+	suite.Equal("empty value for field: Field1", err7.Error())
+	suite.Equal("you are trying to access an unexported field", err8.Error())
+
+}
+
+func (suite *UtilsTestSuite) TestSetFieldValueByName() {
+
+	tt := TestStruct{}
+
+	// normal case
+	err1 := SetFieldValueByName(&tt, "Field1", "value")
+
+	// non pointer argument
+	err2 := SetFieldValueByName(tt, "Field1", "value")
+
+	// non exported field
+	err3 := SetFieldValueByName(&tt, "field1", "value")
+
+	// type miss match between field and value
+	err4 := SetFieldValueByName(&tt, "Field1", 90)
+
+	// unknown field
+	err5 := SetFieldValueByName(&tt, "Unknown", "value")
+
+	// normal case - pointer value
+	s := "value"
+	err6 := SetFieldValueByName(&tt, "Field5", &s)
+
+	suite.Equal("value",tt.Field1)
+	suite.Equal("value", *(tt.Field5))
+
+	suite.Nil(err1)
+	suite.Equal("SetFieldValueByName needs a pointer to a struct", err2.Error())
+	suite.Equal("you are trying to access an unexported field", err3.Error())
+	suite.Equal("type miss match between field and value", err4.Error())
+	suite.Equal("Field: Unknown has not been declared.", err5.Error())
+	suite.Nil(err6)
 
 }
 
