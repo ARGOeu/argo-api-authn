@@ -1,0 +1,349 @@
+{
+	"info": {
+		"_postman_id": "2177f5dd-9556-4560-8aca-f46031b6fc51",
+		"name": "authn",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "bindings",
+			"item": [
+				{
+					"name": "get bindings",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e913e364-9226-494c-b604-2f7109a91817",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "key",
+								"type": "text",
+								"value": "{{authn_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": "https://{{api_host}}:8081/v1/bindings"
+					},
+					"response": []
+				},
+				{
+					"name": "create binding",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e913e364-9226-494c-b604-2f7109a91817",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "key",
+								"type": "text",
+								"value": "{{authn_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"auth_type\": \"string\",\n  \"host\": \"string\",\n  \"name\": \"string\",\n  \"unique_key\": \"string\",\n  \"service_uuid\": \"string\",\n  \"auth_identifier\": \"string\"\n}"
+						},
+						"url": "https://{{api_host}}:8081/v1/bindings"
+					},
+					"response": []
+				},
+				{
+					"name": "get specific binding",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e913e364-9226-494c-b604-2f7109a91817",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "key",
+								"type": "text",
+								"value": "{{authn_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": "https://{{api_host}}:8081/v1/bindings/{{binding_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "update binding",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e913e364-9226-494c-b604-2f7109a91817",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "key",
+								"value": "{{authn_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": "https://{{api_host}}:8081/v1/bindings/{{binding_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "delete binding",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e913e364-9226-494c-b604-2f7109a91817",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "key",
+								"type": "text",
+								"value": "{{authn_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": "https://{{api_host}}:8081/v1/bindings/{{binding_id}}"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "service types",
+			"item": [
+				{
+					"name": "get service types",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e913e364-9226-494c-b604-2f7109a91817",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "key",
+								"type": "text",
+								"value": "{{authn_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": "https://{{api_host}}:8081/v1/service-types"
+					},
+					"response": []
+				},
+				{
+					"name": "create service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e913e364-9226-494c-b604-2f7109a91817",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "key",
+								"type": "text",
+								"value": "{{authn_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"auth_types\": [\n    \"string\"\n  ],\n  \"hosts\": [\n    \"string\"\n  ],\n  \"name\": \"string\",\n  \"auth_method\": \"string\"\n}"
+						},
+						"url": "https://{{api_host}}:8081/v1/service-types"
+					},
+					"response": []
+				},
+				{
+					"name": "get specific service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e913e364-9226-494c-b604-2f7109a91817",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "key",
+								"type": "text",
+								"value": "{{authn_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": "https://{{api_host}}:8081/v1/service-types/{{service_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "update service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e913e364-9226-494c-b604-2f7109a91817",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "key",
+								"type": "text",
+								"value": "{{authn_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": "https://{{api_host}}:8081/v1/service-types/{{service_id}}"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "get auth methods",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e913e364-9226-494c-b604-2f7109a91817",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "key",
+						"value": "{{authn_token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": "https://{{api_host}}:8081/v1/authm"
+			},
+			"response": []
+		}
+	]
+}
