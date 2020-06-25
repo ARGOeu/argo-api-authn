@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>API Bindings - ARGO API AUTHN[V1]</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "API Bindings";
+    var mkdocs_page_input_path = "api_bindings.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> ARGO API AUTHN[V1]</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">API & References</span>
+    <ul class="subnav">
+                <li class=" current">
+                    
+    <a class="current" href="./">API Bindings</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#binding-api-calls">Binding API Calls</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#post-manage-bindings-create-new-binding">[POST] Manage Bindings - Create New Binding</a></li>
+        
+            <li><a class="toctree-l4" href="#get-manage-bindings-list-all-bindings">[GET] Manage Bindings - List All Bindings</a></li>
+        
+            <li><a class="toctree-l4" href="#get-manage-bindings-list-all-bindings-by-service-type-and-host">[GET] Manage Bindings - List All Bindings By Service Type And Host</a></li>
+        
+            <li><a class="toctree-l4" href="#get-manage-bindings-list-one-binding-by-uuid">[GET] Manage Bindings - List One Binding By UUID</a></li>
+        
+            <li><a class="toctree-l4" href="#put-manage-bindings-update-a-binding">[PUT] Manage Bindings - Update a Binding</a></li>
+        
+            <li><a class="toctree-l4" href="#delete-manage-bindings-delete-a-binding">[DELETE] Manage Bindings - Delete a Binding</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../api_service_types/">API Service Types</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../api_authmethods/">API Auth Methods</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../auth_certificate/">API Certificate Functionality</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../api_errors/">API Error Messages</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">ARGO API AUTHN[V1]</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>API & References &raquo;</li>
+        
+      
+    
+    <li>API Bindings</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/ARGOeu/argo-api-authn/edit/master/docs/api_bindings.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="binding-api-calls">Binding API Calls</h1>
+<p>This documentation file contains guidelines in order to interact with the binding entity.</p>
+<p>A binding, is a structure that maps various forms of authentication to the credentials of a service type's "user" entity.</p>
+<p>For example, a service type's "user", requires an api token to authenticate to its respective service type. This token should be either</p>
+<p>remembered by the "user" or retrieved using some form of credentials.</p>
+<p>A binding will hold additional information like a DN or an OIDC Token(in the auth_identifier field), that can be used to retrieve the required api token.</p>
+<p>A binding is associated with the uuid of a service type,the host on which this service type runs on,</p>
+<p>It also requires the unique_key that the service type that is associated with, uses in order to expose its "user's" information.</p>
+<h2 id="post-manage-bindings-create-new-binding">[POST] Manage Bindings - Create New Binding</h2>
+<p>This request creates a new binding.</p>
+<h4 id="request">Request</h4>
+<pre><code>POST /v1/bindings`
+</code></pre>
+
+<h3 id="example-request">Example request</h3>
+<pre><code>curl -X POST -H &quot;Content-Type: application/json&quot;
+  &quot;https://{URL}/v1/bindings?key={key_in_the_config}&quot;
+</code></pre>
+
+<h5 id="post-body">Post Body</h5>
+<pre><code>{
+    &quot;name&quot;: &quot;b1&quot;,
+    &quot;service_uuid&quot;: &quot;b61030d9-bef3-4768-9a03-7b1ff36e8af4cc&quot;,
+    &quot;host&quot;: &quot;host1&quot;,
+    &quot;auth_identifier&quot;:&quot;dn&quot;,
+    &quot;auth_type&quot;: &quot;x509&quot;,
+    &quot;unique_key&quot;: &quot;key&quot;
+}
+</code></pre>
+
+<h3 id="response">Response</h3>
+<p>If the request is successful, the response contains the newly created binding.</p>
+<p>Success Response</p>
+<p><code>201 CREATED</code></p>
+<pre><code> {
+     &quot;name&quot;: &quot;b1&quot;,
+     &quot;service_uuid&quot;: &quot;b61030d9-bef3-4768-9a03-7b1ff36e8af4cc&quot;,
+     &quot;host&quot;: &quot;host1&quot;,
+     &quot;uuid&quot;: &quot;p61020d9-bef3-4768-9a03-331ff36e8af4cc&quot;,
+     &quot;auth_identifier&quot;: &quot;dn&quot;,
+     &quot;unique_key&quot;: &quot;key&quot;,
+     &quot;auth_type&quot;: &quot;x509&quot;,
+     &quot;created_on&quot;: &quot;2018-05-24T09:58:17Z&quot;
+ }
+
+</code></pre>
+
+<h3 id="errors">Errors</h3>
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+<h2 id="get-manage-bindings-list-all-bindings">[GET] Manage Bindings - List All Bindings</h2>
+<p>This request lists all bindings that are currently present in th service.</p>
+<h3 id="request_1">Request</h3>
+<pre><code>GET /v1/bindings
+</code></pre>
+
+<h3 id="response_1">Response</h3>
+<p>If the request is successful, the response contains all the bindings in the service.</p>
+<h4 id="success-response">Success Response</h4>
+<p><code>200 OK</code></p>
+<pre><code>  {
+      &quot;bindings&quot;: [
+              {
+                  &quot;name&quot;: &quot;testb&quot;,
+                  &quot;service_uuid&quot;: &quot;uuid1&quot;,
+                  &quot;host&quot;: &quot;host1&quot;,
+                  &quot;uuid&quot;: &quot;p61020d9-bef3-4768-9a03-331ff36e8af4cc&quot;,
+                  &quot;auth_identifier&quot;: &quot;testdn&quot;,
+                  &quot;unique_key&quot;: &quot;key&quot;,
+                  &quot;auth_type&quot;: &quot;x509&quot;,
+                  &quot;created_on&quot;: &quot;2018-05-23T09:25:25Z&quot;,
+                  &quot;last_auth&quot;: &quot;2018-05-23T09:25:25Z&quot;
+              },
+              {
+                  &quot;name&quot;: &quot;testb2&quot;,
+                  &quot;service_uuid&quot;: &quot;uuid1&quot;,
+                  &quot;host&quot;: &quot;host1&quot;,
+                  &quot;uuid&quot;: &quot;p61020d9-bef3-4768-9a03-331ff36e8af4rr&quot;,
+                  &quot;auth_identifier&quot;: &quot;testdn&quot;,
+                  &quot;unique_key&quot;: &quot;key&quot;,
+                  &quot;auth_type&quot;: &quot;x509&quot;,                
+                  &quot;created_on&quot;: &quot;2018-05-23T09:25:43Z&quot;,
+                  &quot;last_auth&quot;: &quot;2018-05-23T09:25:25Z&quot;
+              }
+      ]
+  }
+</code></pre>
+
+<h3 id="errors_1">Errors</h3>
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+<h2 id="get-manage-bindings-list-all-bindings-by-service-type-and-host">[GET] Manage Bindings - List All Bindings By Service Type And Host</h2>
+<p>This request returns all the bindings under the specified service type and host.</p>
+<h3 id="request_2">Request</h3>
+<pre><code>GET /v1/service-types/{service-type}/hosts/{host}/bindings`
+</code></pre>
+
+<h3 id="response_2">Response</h3>
+<p>If the request is successful, the response contains all the bindings under the given host and service.</p>
+<h4 id="success-response_1">Success Response</h4>
+<p><code>200 OK</code></p>
+<pre><code>  {
+      &quot;bindings&quot;: [
+              {
+                  &quot;name&quot;: &quot;testb&quot;,
+                  &quot;service_uuid&quot;: &quot;uuid1&quot;,
+                  &quot;host&quot;: &quot;host1&quot;,
+                  &quot;auth_identifier&quot;: &quot;testdn&quot;,
+                  &quot;uuid&quot;: &quot;p61020d9-bef3-4768-9a03-331ff36e8af4cc&quot;,
+                  &quot;unique_key&quot;: &quot;key&quot;,
+                  &quot;auth_type&quot;: &quot;x509&quot;,                
+                  &quot;created_on&quot;: &quot;2018-05-23T09:25:25Z&quot;,
+                  &quot;last_auth&quot;: &quot;2018-05-23T09:25:25Z&quot;
+              },
+              {
+                  &quot;name&quot;: &quot;testb2&quot;,
+                  &quot;service_uuid&quot;: &quot;uuid1&quot;,
+                  &quot;host&quot;: &quot;host1&quot;,
+                  &quot;uuid&quot;: &quot;p61020d9-bef3-4768-9a03-331ff36e8af4rr&quot;,
+                  &quot;auth_identifier&quot;: &quot;testdn&quot;,
+                  &quot;unique_key&quot;: &quot;key&quot;,
+                  &quot;auth_type&quot;: &quot;x509&quot;,                
+                  &quot;created_on&quot;: &quot;2018-05-23T09:25:43Z&quot;,
+                  &quot;last_auth&quot;: &quot;2018-05-23T09:25:25Z&quot;
+              }
+      ]
+  }
+</code></pre>
+
+<h3 id="errors_2">Errors</h3>
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+<h2 id="get-manage-bindings-list-one-binding-by-uuid">[GET] Manage Bindings - List One Binding By UUID</h2>
+<p>This request retrieves the information of a binding associated with the provided uuid.</p>
+<h3 id="request_3">Request</h3>
+<pre><code>GET /v1/bindings/{uuid}
+</code></pre>
+
+<h3 id="response_3">Response</h3>
+<p>If the request is successful, the response contains the binding associated with the given uuid</p>
+<h4 id="success-response_2">Success Response</h4>
+<p><code>200 OK</code></p>
+<pre><code>  {
+      &quot;name&quot;: &quot;testb&quot;,
+      &quot;service_uuid&quot;: &quot;uuid1&quot;,
+      &quot;host&quot;: &quot;host1&quot;,
+      &quot;uuid&quot;: &quot;p61020d9-bef3-4768-9a03-331ff36e8af4cc&quot;,
+      &quot;auth_identifier&quot;: &quot;testdn&quot;,
+      &quot;unique_key&quot;: &quot;key&quot;,
+      &quot;auth_type&quot;: &quot;x509&quot;,                
+      &quot;created_on&quot;: &quot;2018-05-23T09:25:25Z&quot;,
+      &quot;last_auth&quot;: &quot;2018-05-23T09:25:25Z&quot;   
+  }
+</code></pre>
+
+<h3 id="errors_3">Errors</h3>
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+<h2 id="put-manage-bindings-update-a-binding">[PUT] Manage Bindings - Update a Binding</h2>
+<p>This request updates binding. You can specify one or more fields to update.
+The allowed to be updated fields are:</p>
+<p><code>name, service_uuid, host, dn, oidc_token, unique_key</code>.</p>
+<h4 id="request_4">Request</h4>
+<pre><code>PUT /v1/bindings/{uuid}
+</code></pre>
+
+<h5 id="request-body">Request Body</h5>
+<pre><code>{
+    &quot;name&quot;: &quot;b1_updated&quot;
+}
+</code></pre>
+
+<h3 id="response_4">Response</h3>
+<p>If the request is successful, the response contains the updated binding.</p>
+<h4 id="success-response_3">Success Response</h4>
+<p><code>200 OK</code></p>
+<pre><code> {
+     &quot;name&quot;: &quot;b1_updated&quot;,
+     &quot;service_uuid&quot;: &quot;b61030d9-bef3-4768-9a03-7b1ff36e8af4cc&quot;,
+     &quot;host&quot;: &quot;host1&quot;,
+     &quot;uuid&quot;: &quot;p61020d9-bef3-4768-9a03-331ff36e8af4cc&quot;,
+     &quot;auth_identifier&quot;: &quot;host1&quot;,
+     &quot;unique_key&quot;: &quot;key&quot;,
+     &quot;auth_type&quot;: &quot;x509&quot;,                
+     &quot;created_on&quot;: &quot;2018-05-24T09:58:17Z&quot;
+ }
+</code></pre>
+
+<h3 id="errors_4">Errors</h3>
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+<h2 id="delete-manage-bindings-delete-a-binding">[DELETE] Manage Bindings - Delete a Binding</h2>
+<p>This request deletes a binding.</p>
+<h4 id="request_5">Request</h4>
+<pre><code>DELETE /v1/bindings/{uuid}`
+</code></pre>
+
+<h3 id="response_5">Response</h3>
+<p>If the request is successful, the response is empty.</p>
+<h4 id="success-response_4">Success Response</h4>
+<p><code>204 No Content</code></p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../api_service_types/" class="btn btn-neutral float-right" title="API Service Types">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>Copyright © 2018 GRNET S.A.</p>
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/ARGOeu/argo-api-authn/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+      
+        <span style="margin-left: 15px"><a href="../api_service_types/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>

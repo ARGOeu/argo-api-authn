@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>API Service Types - ARGO API AUTHN[V1]</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "API Service Types";
+    var mkdocs_page_input_path = "api_service_types.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> ARGO API AUTHN[V1]</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">API & References</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../api_bindings/">API Bindings</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">API Service Types</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#service-api-calls">Service API Calls</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#post-manage-service-types-create-new-service-type">[POST] Manage Service Types - Create New Service Type</a></li>
+        
+            <li><a class="toctree-l4" href="#get-manage-service-types-list-all-service-types">[GET] Manage Service Types - List All Service Types</a></li>
+        
+            <li><a class="toctree-l4" href="#get-manage-service-types-list-one-service-type">[GET] Manage Service Types - List One Service Type</a></li>
+        
+            <li><a class="toctree-l4" href="#put-manage-service-types-update-a-service-type">[PUT] Manage Service Types - Update a Service Type</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../api_authmethods/">API Auth Methods</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../auth_certificate/">API Certificate Functionality</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../api_errors/">API Error Messages</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">ARGO API AUTHN[V1]</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>API & References &raquo;</li>
+        
+      
+    
+    <li>API Service Types</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/ARGOeu/argo-api-authn/edit/master/docs/api_service_types.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="service-api-calls">Service API Calls</h1>
+<h2 id="post-manage-service-types-create-new-service-type">[POST] Manage Service Types - Create New Service Type</h2>
+<p>This request creates a new service type.</p>
+<h4 id="request">Request</h4>
+<pre><code>POST /v1/service-types
+</code></pre>
+
+<p><code>auth_types:</code> This field refers to the authentication types that the service type wishes to support.The provided authentication types should also be supported by the authn service. E.g. a service type wishes to use an authentication type of x509 certificate, meaning that it will enable its users to use x509 certificates as an alternative authentication mechanism.The authn service will use an internal handler to map x509 certificates to a service-types credentials, so when declaring an auth-type, it needs to be first, supported by the authn-service itself.</p>
+<p><code>auth_method</code>: This field refers to the authentication method that the service type uses in order to authenticate requests against it.The specified authentication method should also be supported by the authn service. E.g. a service type can use the <code>api-key</code> authentication method which means that it uses an api key/token to authenticate/authorize requests against it. Each authentication method uses an internal handler from the authn service in order to be executed, that's why the declared authentication method must be supported.</p>
+<p><code>retrieval_field</code>:The field refers to the response's field from the respective service type, which will contain the token we need. E.g. when accessing a service type's users, the response's field that might contain the token we are looking for, might come in different placeholders, like, access_token, token, jwt, etc.</p>
+<h3 id="example-request">Example request</h3>
+<pre><code>curl -X POST -H &quot;Content-Type: application/json&quot;
+  &quot;https://{URL}/v1/service-types?key={key_in_the_config}&quot;
+</code></pre>
+
+<h5 id="post-body">Post Body</h5>
+<pre><code>{
+    &quot;name&quot;: &quot;string&quot;,
+    &quot;hosts&quot;: [&quot;host1&quot;, &quot;host2&quot;],
+    &quot;auth_types&quot;: [&quot;x509&quot;, &quot;oidc&quot;],
+    &quot;auth_method&quot;: &quot;api-key&quot;,
+    &quot;type&quot;: &quot;ams&quot;
+ }
+</code></pre>
+
+<h3 id="response">Response</h3>
+<p>If the request is successful, the response contains the newly created service type.</p>
+<h4 id="success-response">Success Response</h4>
+<p><code>201 CREATED</code></p>
+<pre><code> {
+    &quot;name&quot;: &quot;string&quot;,
+    &quot;hosts&quot;: [&quot;host1&quot;, &quot;host2&quot;],
+    &quot;auth_types&quot;: [&quot;x509&quot;, &quot;oidc&quot;],
+    &quot;auth_method&quot;: &quot;api-key&quot;,
+    &quot;uuid&quot;: &quot;da22b2d4-ba6c-43ca-b28d-400cd0a5d83e&quot;,
+    &quot;type&quot;: &quot;ams&quot;,
+    &quot;created_on&quot;: &quot;2018-05-05T18:04:05Z&quot; 
+  }
+</code></pre>
+
+<h3 id="errors">Errors</h3>
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+<h2 id="get-manage-service-types-list-all-service-types">[GET] Manage Service Types - List All Service Types</h2>
+<h3 id="request_1">Request</h3>
+<pre><code>GET/v1/service-types
+</code></pre>
+
+<h3 id="response_1">Response</h3>
+<p>If the request is successful, the response contains all the service types.</p>
+<h4 id="success-response_1">Success Response</h4>
+<p><code>200 OK</code></p>
+<pre><code>{
+    &quot;service_types&quot;: [
+        {
+            &quot;name&quot;: &quot;s1&quot;,
+            &quot;hosts&quot;: [
+                &quot;example.gr&quot;,
+                &quot;127.0.0.1&quot;
+            ],
+            &quot;auth_types&quot;: [
+                &quot;x509&quot;
+            ],
+            &quot;auth_method&quot;: &quot;api-key&quot;,
+            &quot;uuid&quot;: &quot;da22b2d4-ba6c-43ca-b28d-400cd0a5d83e&quot;,
+            &quot;type&quot;: &quot;ams&quot;,
+            &quot;created_on&quot;: &quot;&quot;
+        },
+        {
+            &quot;name&quot;: &quot;s2&quot;,
+            &quot;hosts&quot;: [
+                &quot;127.0.0.1&quot;,
+                &quot;example2.gr&quot;
+            ],
+            &quot;auth_types&quot;: [
+                &quot;x509&quot;,
+                &quot;oidc&quot;
+            ],
+            &quot;auth_method&quot;: &quot;api-key&quot;,
+            &quot;uuid&quot;: &quot;da22b2d4-ba6c-43ca-b28d-400sd0a5d83e&quot;,
+            &quot;type&quot;: &quot;ams&quot;,
+            &quot;created_on&quot;: &quot;2018-05-13T21:52:58Z&quot;
+        }
+    ]
+}
+</code></pre>
+
+<h3 id="errors_1">Errors</h3>
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+<h2 id="get-manage-service-types-list-one-service-type">[GET] Manage Service Types - List One Service Type</h2>
+<h3 id="request_2">Request</h3>
+<pre><code>GET/v1/service-types/{NAME}
+</code></pre>
+
+<p>If the request is successful, the response contains information for the requested service type.</p>
+<h4 id="success-response_2">Success Response</h4>
+<p><code>200 OK</code></p>
+<pre><code>   {
+        &quot;name&quot;: &quot;string&quot;,
+        &quot;hosts&quot;: [&quot;host1&quot;, &quot;host2&quot;],
+        &quot;auth_types&quot;: [&quot;x509&quot;, &quot;oidc&quot;],
+        &quot;auth_method&quot;: &quot;api-key&quot;,
+        &quot;uuid&quot;: &quot;da22b2d4-ba6c-43ca-b28d-400cd0a5d83e&quot;,
+        &quot;type&quot;: &quot;ams&quot;,
+        &quot;created_on&quot;: &quot;2018-05-05T18:04:05Z&quot; 
+    }
+</code></pre>
+
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+<h2 id="put-manage-service-types-update-a-service-type">[PUT] Manage Service Types - Update a Service Type</h2>
+<p>This request updates a service type. You can specify one or more fields to update.
+The allowed to be updated fields are:</p>
+<p><code>name, hosts, auth_types, auth_method</code>.</p>
+<h3 id="request_3">Request</h3>
+<pre><code>PUT /v1/service-type/{service-type}
+</code></pre>
+
+<h4 id="request-body">Request Body</h4>
+<pre><code>{
+    &quot;name&quot;: &quot;s1_updated&quot;
+}
+</code></pre>
+
+<h3 id="response_2">Response</h3>
+<p>If the request is successful, the response contains the updated service type.</p>
+<h4 id="success-response_3">Success Response</h4>
+<p><code>200 OK</code></p>
+<pre><code> {
+        &quot;name&quot;: &quot;s1_updated&quot;,
+        &quot;hosts&quot;: [&quot;host1&quot;, &quot;host2&quot;],
+        &quot;auth_types&quot;: [&quot;x509&quot;, &quot;oidc&quot;],
+        &quot;auth_method&quot;: &quot;api-key&quot;,
+        &quot;uuid&quot;: &quot;da22b2d4-ba6c-43ca-b28d-400cd0a5d83e&quot;,
+        &quot;type&quot;: &quot;ams&quot;,
+        &quot;created_on&quot;: &quot;2018-05-05T18:04:05Z&quot; 
+ }
+</code></pre>
+
+<h3 id="errors_2">Errors</h3>
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../api_authmethods/" class="btn btn-neutral float-right" title="API Auth Methods">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../api_bindings/" class="btn btn-neutral" title="API Bindings"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>Copyright © 2018 GRNET S.A.</p>
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/ARGOeu/argo-api-authn/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../api_bindings/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../api_authmethods/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>

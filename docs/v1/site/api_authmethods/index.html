@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>API Auth Methods - ARGO API AUTHN[V1]</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "API Auth Methods";
+    var mkdocs_page_input_path = "api_authmethods.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> ARGO API AUTHN[V1]</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">API & References</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../api_bindings/">API Bindings</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../api_service_types/">API Service Types</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">API Auth Methods</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#auth-method-api-calls">Auth method API Calls</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#post-manage-auth-methods-create-new-auth-method">[POST] Manage Auth Methods - Create New Auth Method</a></li>
+        
+            <li><a class="toctree-l4" href="#api-key-auth-methods">API Key Auth methods</a></li>
+        
+            <li><a class="toctree-l4" href="#headers-auth-methods">Headers Auth methods</a></li>
+        
+            <li><a class="toctree-l4" href="#get-manage-auth-methods-list-one-auth-method">[GET] Manage Auth Methods - List One Auth Method</a></li>
+        
+            <li><a class="toctree-l4" href="#get-manage-auth-methods-list-all-auth-methods">[GET] Manage Auth Methods - List All Auth Methods</a></li>
+        
+            <li><a class="toctree-l4" href="#put-manage-auth-methods-update-an-existing-auth-method">[PUT] Manage Auth Methods - Update an existing auth method</a></li>
+        
+            <li><a class="toctree-l4" href="#delete-manage-auth-methods-delete-an-auth-method">[DELETE] Manage Auth Methods - Delete an auth method</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../auth_certificate/">API Certificate Functionality</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../api_errors/">API Error Messages</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">ARGO API AUTHN[V1]</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>API & References &raquo;</li>
+        
+      
+    
+    <li>API Auth Methods</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/ARGOeu/argo-api-authn/edit/master/docs/api_authmethods.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="auth-method-api-calls">Auth method API Calls</h1>
+<h2 id="post-manage-auth-methods-create-new-auth-method">[POST] Manage Auth Methods - Create New Auth Method</h2>
+<p>This request creates a new auth method for the given service type. The type of the auth method
+as well as some of its predefined fields will be decided by the service-type's <code>auth_method</code> and <code>type</code>fields.
+E.g. for a service-type of type <code>ams</code> with an auth_method of type <code>api-key</code>, it will create an api-key auth method
+with predeclared fields for <code>path</code> and <code>retrieval_field</code> that are common across all type <code>ams</code> service-types.
+Of course you can always override the default's if you like.</p>
+<h2 id="api-key-auth-methods">API Key Auth methods</h2>
+<h4 id="fields">Fields</h4>
+<ul>
+<li>path: Combined with the <code>host</code> and the <code>port</code> is represents the URL where the external resource is located. We use it to map the x509 certificate or any other auth mechanism to the needed token</li>
+<li>access_key: In the case of an api-key method, the access key specifies te <code>key</code> to use in order to access the external resource</li>
+</ul>
+<h3 id="request">Request</h3>
+<pre><code>POST /v1/service-types/{Name}/authm`
+</code></pre>
+
+<h3 id="example-request">Example request</h3>
+<pre><code>curl -X POST -H &quot;Content-Type: application/json&quot;
+  &quot;https://{URL}/v1/service-types/{Name}/authm?key={key_in_the_config}&quot;
+</code></pre>
+
+<h3 id="post-body">Post Body</h3>
+<pre><code>        {
+            &quot;access_key&quot;: &quot;key1&quot;,
+            &quot;host&quot;: &quot;127.0.0.1&quot;,
+            &quot;port&quot;: 9000,
+        }
+</code></pre>
+
+<h2 id="headers-auth-methods">Headers Auth methods</h2>
+<h4 id="fields_1">Fields</h4>
+<ul>
+<li>path: Combined with the <code>host</code> and the <code>port</code> is represents the URL where the external resource is located. We use it to map the x509 certificate or any other auth mechanism to the needed token</li>
+<li>headers: A collection of <code>key value pairs</code> that will be used as request headers when accessing the respective service type</li>
+</ul>
+<h3 id="request_1">Request</h3>
+<pre><code>POST /v1/service-types/{Name}/authm`
+</code></pre>
+
+<h3 id="example-request_1">Example request</h3>
+<pre><code>curl -X POST -H &quot;Content-Type: application/json&quot;
+  &quot;https://{URL}/v1/service-types/{Name}/authm?key={key_in_the_config}&quot;
+</code></pre>
+
+<h3 id="post-body_1">Post Body</h3>
+<pre><code>        {
+            &quot;headers&quot;: {
+                &quot;header-1&quot;: &quot;value-1&quot;,
+                &quot;header-2&quot;: &quot;value-2&quot;
+            },
+            &quot;host&quot;: &quot;127.0.0.1&quot;,
+            &quot;port&quot;: 9000
+        }
+</code></pre>
+
+<h3 id="response">Response</h3>
+<p>If the request is successful, the response contains the newly created auth method.</p>
+<p>Success Response</p>
+<p><code>201 CREATED</code></p>
+<pre><code>        {
+            &quot;access_key&quot;: &quot;key1&quot;,
+            &quot;host&quot;: &quot;127.0.0.1&quot;,
+            &quot;service_uuid&quot;: &quot;da22b2d4-ba6c-43ca-b28d-400sd0a5d83e&quot;,
+            &quot;port&quot;: 9000,
+            &quot;type&quot;: &quot;api-key&quot;,
+            &quot;uuid&quot;: &quot;da22b2d4-8ip0-43ca-b28d-500sd0a5d876e&quot;,
+            &quot;created_on&quot;: &quot;2018-05-05T18:04:05Z&quot;
+        }
+</code></pre>
+
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+<h2 id="get-manage-auth-methods-list-one-auth-method">[GET] Manage Auth Methods - List One Auth Method</h2>
+<h3 id="request_2">Request</h3>
+<pre><code>GET /v1/services/{service}/hosts/{host}/authm
+</code></pre>
+
+<h3 id="example-request_2">Example request</h3>
+<pre><code>  curl -X GET -H &quot;Content-Type: application/json&quot;
+  &quot;https://{URL}/v1/services/{service}/hosts/{host}/authm?key={key_in_the_config}&quot;
+</code></pre>
+
+<p>If the request is successful, the response contains information for the requested auth method.</p>
+<h4 id="success-response">Success Response</h4>
+<p><code>200 OK</code></p>
+<pre><code>        {
+            &quot;access_key&quot;: &quot;key1&quot;,
+            &quot;host&quot;: &quot;127.0.0.1&quot;,
+            &quot;service_uuid&quot;: &quot;da22b2d4-ba6c-43ca-b28d-400sd0a5d83e&quot;,
+            &quot;port&quot;: 9000,
+            &quot;type&quot;: &quot;api-key&quot;,
+            &quot;uuid&quot;: &quot;da22b2d4-8ip0-43ca-b28d-500sd0a5d876e&quot;,
+            &quot;created_on&quot;: &quot;2018-05-05T18:04:05Z&quot;
+        }
+</code></pre>
+
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+<h2 id="get-manage-auth-methods-list-all-auth-methods">[GET] Manage Auth Methods - List All Auth Methods</h2>
+<h3 id="request_3">Request</h3>
+<pre><code>GET /v1/authm`
+</code></pre>
+
+<h3 id="example-request_3">Example request</h3>
+<pre><code>  curl -X GET -H &quot;Content-Type: application/json&quot;
+  &quot;https://{URL}/v1/authm?key={key_in_the_config}&quot;
+</code></pre>
+
+<p>If the request is successful, the response contains information for all the auth methods.</p>
+<h4 id="success-response_1">Success Response</h4>
+<p><code>200 OK</code></p>
+<pre><code>{
+  &quot;auth_methods&quot;: [
+        {
+            &quot;access_key&quot;: &quot;key1&quot;,
+            &quot;host&quot;: &quot;127.0.0.1&quot;,
+            &quot;service_uuid&quot;: &quot;da22b2d4-ba6c-43ca-b28d-400sd0a5d83e&quot;,
+            &quot;port&quot;: 9000,
+            &quot;type&quot;: &quot;api-key&quot;,
+            &quot;uuid&quot;: &quot;da22b2d4-8ip0-43ca-b28d-500sd0a5d876e&quot;,
+            &quot;created_on&quot;: &quot;2018-05-05T18:04:05Z&quot;
+        },
+        {
+            &quot;access_key&quot;: &quot;key1&quot;,
+            &quot;host&quot;: &quot;host2&quot;,
+            &quot;service_uuid&quot;: &quot;da22b2d4-ba6c-43ca-b28d-400sd0a5d83e&quot;,
+            &quot;port&quot;: 9000,
+            &quot;type&quot;: &quot;api-key&quot;,
+            &quot;uuid&quot;: &quot;da22b2d4-9kl2-43ca-b28d-500sd0a5d876e&quot;,
+            &quot;created_on&quot;: &quot;2018-05-05T18:04:05Z&quot;
+        }
+  ]
+}
+</code></pre>
+
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+<h2 id="put-manage-auth-methods-update-an-existing-auth-method">[PUT] Manage Auth Methods - Update an existing auth method</h2>
+<p>This request updates the auth method for the given service-type and host.
+This request can update one or more fields with one call.</p>
+<pre><code>PUT /v1/service-types/{service-type}/hosts/{host}/authm
+</code></pre>
+
+<h3 id="example-request_4">Example request</h3>
+<pre><code>curl -X PUT -H &quot;Content-Type: application/json&quot;
+  &quot;https://{URL}/v1/service-types/{Name}/authm?key={key_in_the_config}&quot;
+</code></pre>
+
+<h3 id="post-body_2">Post Body</h3>
+<pre><code>        {
+            &quot;port&quot;: 8080,
+            &quot;access_key&quot;: &quot;key2&quot;
+        }
+</code></pre>
+
+<h3 id="response_1">Response</h3>
+<p>If the request is successful, the response contains the updated auth method.</p>
+<p>Success Response</p>
+<p><code>200 OK</code></p>
+<pre><code>        {
+            &quot;access_key&quot;: &quot;key2&quot;,
+            &quot;host&quot;: &quot;127.0.0.1&quot;,
+            &quot;service_uuid&quot;: &quot;da22b2d4-ba6c-43ca-b28d-400sd0a5d83e&quot;,
+            &quot;port&quot;: 8080,
+            &quot;type&quot;: &quot;api-key&quot;,
+            &quot;uuid&quot;: &quot;da22b2d4-8ip0-43ca-b28d-500sd0a5d876e&quot;,
+            &quot;created_on&quot;: &quot;2018-05-05T18:04:05Z&quot;
+        }
+</code></pre>
+
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+<h2 id="delete-manage-auth-methods-delete-an-auth-method">[DELETE] Manage Auth Methods - Delete an auth method</h2>
+<p>This request deletes an auth method associated with the provided service-type and host.</p>
+<h3 id="request_4">Request</h3>
+<pre><code>DELETE /v1/service-types/{service-type}/hosts/{host}/authm
+</code></pre>
+
+<h3 id="response_2">Response</h3>
+<p>If the request is successful, the response is empty.</p>
+<h4 id="success-response_2">Success Response</h4>
+<p><code>204 No Content</code></p>
+<p>Please refer to section <a href="../api_errors/">Errors</a> to see all possible Errors</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../auth_certificate/" class="btn btn-neutral float-right" title="API Certificate Functionality">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../api_service_types/" class="btn btn-neutral" title="API Service Types"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>Copyright © 2018 GRNET S.A.</p>
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/ARGOeu/argo-api-authn/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../api_service_types/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../auth_certificate/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>
