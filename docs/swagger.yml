@@ -37,24 +37,24 @@ paths:
           description: Required service type information
           required: true
           schema:
-           type: object
-           properties:
-             name:
-               type: string
-             hosts:
+            type: object
+            properties:
+              name:
+                type: string
+              hosts:
                 type: array
                 items:
                   type: string
-             auth_types:
+              auth_types:
                 type: array
                 items:
                   type: string
-             auth_method:
-              type: string
-              enum: [api-key, headers]
-             type:
-              type: string
-              enum: [ams, web-api]
+              auth_method:
+                type: string
+                enum: [api-key, headers]
+              type:
+                type: string
+                enum: [ams, web-api]
       tags:
         - Service Types
       responses:
@@ -79,7 +79,7 @@ paths:
       summary: Lists all service types
       description: Lists all service types
       parameters:
-          - $ref: '#/parameters/ApiKey'
+        - $ref: '#/parameters/ApiKey'
       tags:
         - Service Types
       responses:
@@ -135,20 +135,20 @@ paths:
           description:  Required service type information. When updating, you need to provide information ONLY for the fields(s) you are updating .You can updated one or more fields at a time.
           required: true
           schema:
-           type: object
-           properties:
-             name:
-               type: string
-             hosts:
+            type: object
+            properties:
+              name:
+                type: string
+              hosts:
                 type: array
                 items:
                   type: string
-             auth_types:
+              auth_types:
                 type: array
                 items:
                   type: string
-             auth_method:
-              type: string
+              auth_method:
+                type: string
 
       tags:
         - Service Types
@@ -189,15 +189,15 @@ paths:
           description: The auth method will also automatically contain additional information based on the service-type that is associated with. The auth method will be created based on the service-type's auth_method and type fields. E.g. create an api-key auth method for an ams type of service.
           required: true
           schema:
-           type: object
-           properties:
-             host:
-               type: string
-             port:
-                type: integer
-             access_key:
+            type: object
+            properties:
+              host:
                 type: string
-             headers:
+              port:
+                type: integer
+              access_key:
+                type: string
+              headers:
                 type: object
                 additionalProperties:
                   type: string
@@ -278,15 +278,15 @@ paths:
           description: You can update one or more fields in one request.
           required: true
           schema:
-           type: object
-           properties:
-             service_uuid:
-               type: string
-             port:
-               type: integer
-             host:
-               type: string
-             access_key:
+            type: object
+            properties:
+              service_uuid:
+                type: string
+              port:
+                type: integer
+              host:
+                type: string
+              access_key:
                 type: string
       tags:
         - Service Types
@@ -388,6 +388,11 @@ paths:
           description: Name of the host
           required: true
           type: string
+        - name: authID
+          in: query
+          description: authID of a specific binding
+          type: string
+          required: false
         - $ref: '#/parameters/ApiKey'
       tags:
         - Service Types
@@ -506,7 +511,7 @@ paths:
     get:
       summary: Retrieve information for a specific binding
       description: |
-         Retrieve information for a specific binding
+        Retrieve information for a specific binding
       parameters:
         - name: NAME
           in: path
@@ -534,7 +539,7 @@ paths:
     put:
       summary: Updates a binding
       description: |
-         Updates a binding
+        Updates a binding
       parameters:
         - name: NAME
           in: path
@@ -585,7 +590,7 @@ paths:
     delete:
       summary: Deletes a binding
       description: |
-         Deletes a binding
+        Deletes a binding
       parameters:
         - name: NAME
           in: path

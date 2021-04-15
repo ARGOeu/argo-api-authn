@@ -628,17 +628,22 @@ func (suite *BindingHandlersSuite) TestBindingListAllByServiceTypeAndHostUnknown
 func (suite *BindingHandlersSuite) TestBindingListOneByAuthID() {
 
 	expRespJSON := `{
- "name": "b1",
- "service_uuid": "uuid1",
- "host": "host1",
- "uuid": "b_uuid1",
- "auth_identifier": "test_dn_1",
- "unique_key": "unique_key_1",
- "auth_type": "x509",
- "created_on": "2018-05-05T15:04:05Z"
+ "bindings": [
+  {
+   "name": "b1",
+   "service_uuid": "uuid1",
+   "host": "host1",
+   "uuid": "b_uuid1",
+   "auth_identifier": "test_dn_1",
+   "unique_key": "unique_key_1",
+   "auth_type": "x509",
+   "created_on": "2018-05-05T15:04:05Z"
+  }
+ ]
 }`
 
-	req, err := http.NewRequest("GET", "http://localhost:8080/service-types/s1/hosts/host1/bindings/test_dn_1", nil)
+	req, err := http.NewRequest("GET",
+		"http://localhost:8080/service-types/s1/hosts/host1/bindings?authID=test_dn_1", nil)
 	if err != nil {
 		LOGGER.Error(err.Error())
 	}
@@ -651,7 +656,7 @@ func (suite *BindingHandlersSuite) TestBindingListOneByAuthID() {
 
 	router := mux.NewRouter().StrictSlash(true)
 	w := httptest.NewRecorder()
-	router.HandleFunc("/service-types/{service-type}/hosts/{host}/bindings/{dn}", WrapConfig(BindingListOneByAuthID, mockstore, cfg))
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}/bindings", WrapConfig(BindingListAllByServiceTypeAndHost, mockstore, cfg))
 	router.ServeHTTP(w, req)
 	suite.Equal(200, w.Code)
 	suite.Equal(expRespJSON, w.Body.String())
@@ -668,7 +673,8 @@ func (suite *BindingHandlersSuite) TestBindingListOneByDNMultipleEntries() {
  }
 }`
 
-	req, err := http.NewRequest("GET", "http://localhost:8080/service-types/s1/hosts/host1/bindings/test_dn_1", nil)
+	req, err := http.NewRequest("GET",
+		"http://localhost:8080/service-types/s1/hosts/host1/bindings?authID=test_dn_1", nil)
 	if err != nil {
 		LOGGER.Error(err.Error())
 	}
@@ -685,7 +691,7 @@ func (suite *BindingHandlersSuite) TestBindingListOneByDNMultipleEntries() {
 
 	router := mux.NewRouter().StrictSlash(true)
 	w := httptest.NewRecorder()
-	router.HandleFunc("/service-types/{service-type}/hosts/{host}/bindings/{dn}", WrapConfig(BindingListOneByAuthID, mockstore, cfg))
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}/bindings", WrapConfig(BindingListAllByServiceTypeAndHost, mockstore, cfg))
 	router.ServeHTTP(w, req)
 	suite.Equal(500, w.Code)
 	suite.Equal(expRespJSON, w.Body.String())
@@ -762,7 +768,8 @@ func (suite *BindingHandlersSuite) TestBindingListOneByDnUnknownDN() {
  }
 }`
 
-	req, err := http.NewRequest("GET", "http://localhost:8080/service-types/s1/hosts/host1/bindings/unknown_dn", nil)
+	req, err := http.NewRequest("GET",
+		"http://localhost:8080/service-types/s1/hosts/host1/bindings?authID=unknown_dn", nil)
 	if err != nil {
 		LOGGER.Error(err.Error())
 	}
@@ -775,7 +782,7 @@ func (suite *BindingHandlersSuite) TestBindingListOneByDnUnknownDN() {
 
 	router := mux.NewRouter().StrictSlash(true)
 	w := httptest.NewRecorder()
-	router.HandleFunc("/service-types/{service-type}/hosts/{host}/bindings/{dn}", WrapConfig(BindingListOneByAuthID, mockstore, cfg))
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}/bindings", WrapConfig(BindingListAllByServiceTypeAndHost, mockstore, cfg))
 	router.ServeHTTP(w, req)
 	suite.Equal(404, w.Code)
 	suite.Equal(expRespJSON, w.Body.String())

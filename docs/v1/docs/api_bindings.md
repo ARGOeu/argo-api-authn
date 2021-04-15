@@ -171,9 +171,50 @@ If the request is successful, the response contains all the bindings under the g
 
 Please refer to section [Errors](api_errors.md) to see all possible Errors
 
-## [GET] Manage Bindings - List One Binding By UUID
+## [GET] Manage Bindings - List One Binding by Auth identifier
 
-This request retrieves the information of a binding associated with the provided uuid.
+This request returns the binding under the provider service type and host matching
+the auth identifier
+    
+### Request
+
+```
+GET /v1/service-types/{service-type}/hosts/{host}/bindings?authID=test_dn
+```
+    
+### Response
+     
+If the request is successful, the response contains all the bindings under the given host and service.
+   
+#### Success Response
+     
+`200 OK`
+     
+```
+  {
+      "bindings": [
+              {
+                  "name": "testb",
+                  "service_uuid": "uuid1",
+                  "host": "host1",
+                  "auth_identifier": "testdn",
+                  "uuid": "p61020d9-bef3-4768-9a03-331ff36e8af4cc",
+                  "unique_key": "key",
+                  "auth_type": "x509",                
+                  "created_on": "2018-05-23T09:25:25Z",
+                  "last_auth": "2018-05-23T09:25:25Z"
+              }
+      ]
+  }
+```
+  
+### Errors
+
+Please refer to section [Errors](api_errors.md) to see all possible Errors
+
+## [GET] Manage Bindings - List One Binding By NAME
+
+This request retrieves the information of a binding associated with the provided name.
     
 ### Request
     

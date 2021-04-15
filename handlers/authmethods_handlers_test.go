@@ -576,6 +576,14 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodListAll() {
   }
  ]
 }`
+
+	amb1 := authmethods.BasicAuthMethod{ServiceUUID: "uuid1", Host: "host1", Port: 9000, Type: "api-key", UUID: "am_uuid_1", CreatedOn: ""}
+	apiKeyAm := &authmethods.ApiKeyAuthMethod{AccessKey: "access_key"}
+	apiKeyAm.BasicAuthMethod = amb1
+
+	amb2 := authmethods.BasicAuthMethod{ServiceUUID: "uuid2", Host: "host3", Port: 9000, Type: "headers", UUID: "am_uuid_2", CreatedOn: ""}
+	headersAm := &authmethods.HeadersAuthMethod{Headers: map[string]string{"x-api-key": "key-1", "Accept": "application/json"}}
+	headersAm.BasicAuthMethod = amb2
 	req, err := http.NewRequest("GET", "http://localhost:8080/authm", nil)
 	if err != nil {
 		LOGGER.Error(err.Error())
@@ -591,8 +599,42 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodListAll() {
 	w := httptest.NewRecorder()
 	router.HandleFunc("/authm", WrapConfig(AuthMethodListAll, mockstore, cfg))
 	router.ServeHTTP(w, req)
+
+	expectedAMList := map[string]interface{}{}
+
+	_ = json.Unmarshal([]byte(expRespJSON), &expectedAMList)
+
+	amList := expectedAMList["auth_methods"]
+	amListCasted := amList.([]interface{})
+	suite.Equal(2, len(amListCasted))
+
+	for _, am := range amListCasted {
+		_am := am.(map[string]interface{})
+		if _am["type"] == "api-key" {
+			suite.Equal(apiKeyAm.UUID, _am["uuid"])
+			suite.Equal(apiKeyAm.CreatedOn, _am["created_on"])
+			suite.Equal(apiKeyAm.AccessKey, _am["access_key"])
+			suite.Equal(apiKeyAm.ServiceUUID, _am["service_uuid"])
+			suite.Equal(apiKeyAm.Host, _am["host"])
+			suite.Equal(apiKeyAm.Type, _am["type"])
+			suite.Equal(float64(apiKeyAm.Port), _am["port"])
+		} else {
+			suite.Equal(headersAm.UUID, _am["uuid"])
+			suite.Equal(headersAm.CreatedOn, _am["created_on"])
+			for k, v := range _am["headers"].(map[string]interface{}) {
+				if k == "Accept" {
+					suite.Equal("application/json", v)
+				} else if k == "x-api-key" {
+					suite.Equal("key-1", v)
+				}
+			}
+			suite.Equal(headersAm.ServiceUUID, _am["service_uuid"])
+			suite.Equal(headersAm.Host, _am["host"])
+			suite.Equal(float64(headersAm.Port), _am["port"])
+		}
+	}
+
 	suite.Equal(200, w.Code)
-	suite.Equal(expRespJSON, w.Body.String())
 }
 
 // TestAuthMethodListAllEmptyList tests the normal case where there are no auth methods in the service yet

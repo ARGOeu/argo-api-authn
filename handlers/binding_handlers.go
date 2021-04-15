@@ -83,48 +83,31 @@ func BindingListAllByServiceTypeAndHost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// check if the authID flag has any value
+	authID := r.URL.Query().Get("authID")
+	if authID != "" {
+		binding, err := bindings.FindBindingByAuthID(authID, serviceType.UUID, vars["host"], "x509", store)
+		if err != nil {
+			utils.RespondError(w, err)
+			return
+		}
+
+		bindingsList = bindings.BindingList{
+			Bindings: []bindings.Binding{
+				binding,
+			},
+		}
+
+		utils.RespondOk(w, 200, bindingsList)
+		return
+	}
+
 	if bindingsList, err = bindings.FindBindingsByServiceTypeAndHost(serviceType.UUID, vars["host"], store); err != nil {
 		utils.RespondError(w, err)
 		return
 	}
 
 	utils.RespondOk(w, 200, bindingsList)
-
-}
-
-// BindingListOneByAuthID finds and returns information about a binding, using its auth identifier, service type and host
-func BindingListOneByAuthID(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-	var ok bool
-	var serviceType servicetypes.ServiceType
-	var binding bindings.Binding
-
-	//context references
-	store := context.Get(r, "stores").(stores.Store)
-
-	// url vars
-	vars := mux.Vars(r)
-
-	// check if the service exists
-	if serviceType, err = servicetypes.FindServiceTypeByName(vars["service-type"], store); err != nil {
-		utils.RespondError(w, err)
-		return
-	}
-
-	// check if the provided host is associated with the given service type
-	if ok = serviceType.HasHost(vars["host"]); ok == false {
-		err = utils.APIErrNotFound("Host")
-		utils.RespondError(w, err)
-		return
-	}
-
-	if binding, err = bindings.FindBindingByAuthID(vars["dn"], serviceType.UUID, vars["host"], "x509", store); err != nil {
-		utils.RespondError(w, err)
-		return
-	}
-
-	utils.RespondOk(w, 200, binding)
 
 }
 
