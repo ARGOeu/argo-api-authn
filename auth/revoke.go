@@ -5,7 +5,7 @@ import (
 	"crypto/x509/pkix"
 	"fmt"
 	"github.com/ARGOeu/argo-api-authn/utils"
-	LOGGER "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math/big"
 	"net/http"
@@ -46,7 +46,15 @@ func CRLCheckRevokedCert(cert *x509.Certificate) error {
 			if crtList, err = FetchCRL(crlURL); err != nil {
 				errChan <- err
 			}
-			LOGGER.Infof("PERFORMANCE    Request to CRL: %v took %v", crlURL, time.Since(t1))
+
+			log.WithFields(
+				log.Fields{
+					"type":            "backend_log",
+					"backend_service": "crl",
+					"backend_hosts":   crlURL,
+					"processing_time": time.Since(t1),
+				},
+			).Info("CRL REQUEST")
 
 			// how many chunks should the slice should be split into
 			goMaxP = 2
@@ -56,7 +64,13 @@ func CRLCheckRevokedCert(cert *x509.Certificate) error {
 			psi = 0
 
 			rvkCrtListLen := len(crtList.RevokedCertificates)
-			LOGGER.Infof("PERFORMANCE    Request to CRL: %v returned %v elements", crlURL, rvkCrtListLen)
+			log.WithFields(
+				log.Fields{
+					"type":            "backend_log",
+					"backend_service": "crl",
+					"backend_hosts":   crlURL,
+				},
+			).Infof("Request to CRL returned %v elements", rvkCrtListLen)
 
 			// distribute the list of revoked certs evenly
 			// in order to break up the slice to a specified number of chunks
@@ -83,7 +97,12 @@ func CRLCheckRevokedCert(cert *x509.Certificate) error {
 	// cancel mechanism
 	go func() {
 		wg.Wait()
-		LOGGER.Infof("PERFORMANCE    Total time for examining certificate revocation %v", time.Since(totalTime))
+		log.WithFields(
+			log.Fields{
+				"type":            "service_log",
+				"processing_time": time.Since(totalTime),
+			},
+		).Info("PERFORMANCE for examining certificate revocation")
 		close(errChan)
 	}()
 
@@ -95,7 +114,12 @@ func CRLCheckRevokedCert(cert *x509.Certificate) error {
 		}
 	}
 
-	LOGGER.Infof("PERFORMANCE    Total time for examining certificate revocation %v", time.Since(totalTime))
+	log.WithFields(
+		log.Fields{
+			"type":            "service_log",
+			"processing_time": time.Since(totalTime),
+		},
+	).Info("PERFORMANCE for examining certificate revocation")
 	return err
 }
 
@@ -130,15 +154,28 @@ func FetchCRL(url string) (pkix.TBSCertificateList, error) {
 	// initialize the client and perform a get request to grab the crl
 	client := &http.Client{Timeout: time.Duration(30 * time.Second)}
 	if resp, err = client.Get(url); err != nil {
-		LOGGER.Error(fmt.Errorf("Request to CRL: %v produced the following error, %v", url, err.Error()))
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "crl",
+				"backend_hosts":   url,
+				"details":         err.Error(),
+			},
+		).Error("CRL Request error")
 		err := fmt.Errorf("Could not access CRL %v", url)
 		return pkix.TBSCertificateList{}, err
 	}
 
 	// read the response
 	if crlBytes, err = ioutil.ReadAll(resp.Body); err != nil {
-		err := fmt.Errorf("Reading CRL data: %v produced the following error, %v", url, err.Error())
-		LOGGER.Error(err)
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "crl",
+				"backend_hosts":   url,
+				"details":         err.Error(),
+			},
+		).Error("Unable to read CRL data")
 		return pkix.TBSCertificateList{}, err
 	}
 
@@ -146,8 +183,14 @@ func FetchCRL(url string) (pkix.TBSCertificateList, error) {
 
 	// create the crl from the byte slice
 	if crtList, err = x509.ParseCRL(crlBytes); err != nil {
-		err := fmt.Errorf("Parsing CRL data: %v produced the following error, %v", url, err.Error())
-		LOGGER.Error(err)
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "crl",
+				"backend_hosts":   url,
+				"details":         err.Error(),
+			},
+		).Error("Unable to parse CRL data")
 		return pkix.TBSCertificateList{}, err
 	}
 

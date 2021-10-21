@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	LOGGER "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -54,7 +54,13 @@ func RespondError(w http.ResponseWriter, err error) {
 	w.WriteHeader(apiErr.Code)
 
 	//log the APIError
-	LOGGER.Error(apiErr.Code, "\t", apiErr.Status, "\t", apiErr.Message)
+	log.WithFields(
+		log.Fields{
+			"type":   "service_log",
+			"code":   apiErr.Code,
+			"status": apiErr.Status,
+		},
+	).Error(apiErr.Message)
 
 	// Write the response
 	errData, _ := json.MarshalIndent(errResp, "", " ")
