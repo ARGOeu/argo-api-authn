@@ -2,7 +2,7 @@ package authmethods
 
 import (
 	"github.com/ARGOeu/argo-api-authn/utils"
-	LOGGER "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type AuthMethodFactory struct{}
@@ -20,7 +20,11 @@ func (f *AuthMethodFactory) Create(amType string) (AuthMethod, error) {
 
 	if aMInit, ok = AuthMethodsTypes[amType]; !ok {
 		err = utils.APIGenericInternalError("Type is supported but not found")
-		LOGGER.Errorf("Type: %v was requested, but was not found inside the source code despite being supported", amType)
+		log.WithFields(
+			log.Fields{
+				"type": "service_log",
+			},
+		).Errorf("Type: %v was requested, but was not found inside the source code despite being supported", amType)
 		return am, err
 	}
 

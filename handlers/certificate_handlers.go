@@ -12,7 +12,7 @@ import (
 	"github.com/ARGOeu/argo-api-authn/utils"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	LOGGER "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 func AuthViaCert(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +74,14 @@ func AuthViaCert(w http.ResponseWriter, r *http.Request) {
 	// Find the binding associated with the provided certificate
 	rdnSequence := auth.ExtractEnhancedRDNSequenceToString(r.TLS.PeerCertificates[0])
 
-	LOGGER.Infof("Certificate request: %v for Service-Type: %v and  Host: %v", rdnSequence, serviceType.Name, vars["host"])
+	log.WithFields(
+		log.Fields{
+			"type":         "service_log",
+			"rdn":          rdnSequence,
+			"service_type": serviceType.Name,
+			"host":         vars["host"],
+		},
+	).Infof("New Certificate request")
 
 	if binding, err = bindings.FindBindingByAuthID(rdnSequence, serviceType.UUID, vars["host"], "x509", store); err != nil {
 		utils.RespondError(w, err)

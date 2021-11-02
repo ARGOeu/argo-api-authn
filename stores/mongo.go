@@ -2,7 +2,7 @@ package stores
 
 import (
 	"github.com/ARGOeu/argo-api-authn/utils"
-	LOGGER "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -17,15 +17,33 @@ type MongoStore struct {
 func (mongo *MongoStore) SetUp() {
 
 	for {
-		LOGGER.Info("STORE", "\t", "Trying to connect to mongo: ", mongo.Server)
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Info("Trying to connect to Mongo")
 		session, err := mgo.Dial(mongo.Server)
 		if err != nil {
-			LOGGER.Error("STORE", "\t", err.Error())
+			log.WithFields(
+				log.Fields{
+					"type":            "backend_log",
+					"backend_service": "mongo",
+					"backend_hosts":   mongo.Server,
+				},
+			).Error(err.Error())
 			continue
 		}
 
 		mongo.Session = session
-		LOGGER.Info("STORE", "\t", "Connected to Mongo: ", mongo.Server)
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Info("Connection to Mongo established successfully")
 		break
 	}
 }
@@ -58,7 +76,13 @@ func (mongo *MongoStore) QueryServiceTypes(name string) ([]QServiceType, error) 
 	err = c.Find(query).All(&qServices)
 
 	if err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return []QServiceType{}, err
 	}
@@ -76,7 +100,13 @@ func (mongo *MongoStore) QueryServiceTypesByUUID(uuid string) ([]QServiceType, e
 	err = c.Find(bson.M{"uuid": uuid}).All(&qServices)
 
 	if err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return []QServiceType{}, err
 	}
@@ -100,7 +130,13 @@ func (mongo *MongoStore) QueryApiKeyAuthMethods(serviceUUID string, host string)
 	err = c.Find(query).All(&qAuthms)
 
 	if err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return qAuthms, err
 	}
@@ -124,7 +160,13 @@ func (mongo *MongoStore) QueryHeadersAuthMethods(serviceUUID string, host string
 	err = c.Find(query).All(&qAuthms)
 
 	if err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return qAuthms, err
 	}
@@ -140,7 +182,13 @@ func (mongo *MongoStore) InsertAuthMethod(am QAuthMethod) error {
 	c := db.C("auth_methods")
 
 	if err := c.Insert(am); err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return err
 	}
@@ -165,7 +213,13 @@ func (mongo *MongoStore) QueryBindingsByAuthID(authID string, serviceUUID string
 	err = c.Find(query).All(&qBindings)
 
 	if err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return []QBinding{}, err
 	}
@@ -192,7 +246,13 @@ func (mongo *MongoStore) QueryBindingsByUUIDAndName(uuid, name string) ([]QBindi
 	err = c.Find(q).All(&qBindings)
 
 	if err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return []QBinding{}, err
 	}
@@ -214,7 +274,13 @@ func (mongo *MongoStore) QueryBindings(serviceUUID string, host string) ([]QBind
 	}
 
 	if err = c.Find(query).All(&qBindings); err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return qBindings, err
 	}
@@ -232,7 +298,13 @@ func (mongo *MongoStore) InsertServiceType(name string, hosts []string, authType
 	c := db.C("service_types")
 
 	if err := c.Insert(qService); err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return QServiceType{}, nil
 	}
@@ -261,7 +333,13 @@ func (mongo *MongoStore) InsertBinding(name string, serviceUUID string, host str
 	c := db.C("bindings")
 
 	if err := c.Insert(qBinding); err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return QBinding{}, nil
 	}
@@ -278,7 +356,13 @@ func (mongo *MongoStore) UpdateBinding(original QBinding, updated QBinding) (QBi
 	c := db.C("bindings")
 
 	if err := c.Update(original, updated); err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return QBinding{}, err
 	}
@@ -295,7 +379,13 @@ func (mongo *MongoStore) UpdateServiceType(original QServiceType, updated QServi
 	c := db.C("service_types")
 
 	if err := c.Update(original, updated); err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return QServiceType{}, err
 	}
@@ -312,7 +402,13 @@ func (mongo *MongoStore) UpdateAuthMethod(original QAuthMethod, updated QAuthMet
 	c := db.C("auth_methods")
 
 	if err := c.Update(original, updated); err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return nil, err
 	}
@@ -329,8 +425,13 @@ func (mongo *MongoStore) DeleteServiceTypeByUUID(uuid string) error {
 	err = c.Remove(bson.M{"uuid": uuid})
 
 	if err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
-		LOGGER.Error("STORE service types", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return err
 	}
@@ -347,7 +448,13 @@ func (mongo *MongoStore) DeleteBinding(qBinding QBinding) error {
 	c := db.C("bindings")
 
 	if err := c.Remove(qBinding); err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return err
 	}
@@ -358,17 +465,21 @@ func (mongo *MongoStore) DeleteBinding(qBinding QBinding) error {
 func (mongo *MongoStore) DeleteBindingByServiceUUID(serviceUUID string) error {
 
 	var err error
-	var info *mgo.ChangeInfo
 
 	db := mongo.Session.DB(mongo.Database)
 	c := db.C("bindings")
 
-	if info, err = c.RemoveAll(bson.M{"service_uuid": serviceUUID}); err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+	if _, err = c.RemoveAll(bson.M{"service_uuid": serviceUUID}); err != nil {
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return err
 	}
-	LOGGER.Infof("Bindings Remove Operation: %+v", *info)
 	return err
 }
 
@@ -380,7 +491,13 @@ func (mongo *MongoStore) DeleteAuthMethod(am QAuthMethod) error {
 	c := db.C("auth_methods")
 
 	if err := c.Remove(am); err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return err
 	}
@@ -390,18 +507,21 @@ func (mongo *MongoStore) DeleteAuthMethod(am QAuthMethod) error {
 func (mongo *MongoStore) DeleteAuthMethodByServiceUUID(serviceUUID string) error {
 
 	var err error
-	var info *mgo.ChangeInfo
 
 	db := mongo.Session.DB(mongo.Database)
 	c := db.C("auth_methods")
 
-	if info, err = c.RemoveAll(bson.M{"service_uuid": serviceUUID}); err != nil {
-		LOGGER.Error("STORE", "\t", err.Error())
+	if _, err = c.RemoveAll(bson.M{"service_uuid": serviceUUID}); err != nil {
+		log.WithFields(
+			log.Fields{
+				"type":            "backend_log",
+				"backend_service": "mongo",
+				"backend_hosts":   mongo.Server,
+			},
+		).Error(err.Error())
 		err = utils.APIErrDatabase(err.Error())
 		return err
 	}
-
-	LOGGER.Infof("Bindings Remove Operation: %+v", *info)
 
 	return err
 

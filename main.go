@@ -15,23 +15,24 @@ import (
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/routing"
 	"github.com/ARGOeu/argo-api-authn/stores"
-	LOGGER "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
-	LOGGER.SetFormatter(&LOGGER.TextFormatter{FullTimestamp: true, DisableColors: true})
+	log.SetFormatter(&log.TextFormatter{FullTimestamp: true, DisableColors: true})
 }
 
 func main() {
 
 	// Retrieve configuration file location through cmd argument
-	var cfgPath = flag.String("config", "/etc/argo-api-authn/conf.d/argo-api-authn-config.json", "Path for the required configuration file.")
+	var cfgPath = flag.String("config", "/etc/argo-api-authn/conf.d/argo-api-authn-config.json",
+		"Path for the required configuration file.")
 	flag.Parse()
 
 	// initialize the config
 	var cfg = &config.Config{}
 	if err := cfg.ConfigSetUp(*cfgPath); err != nil {
-		LOGGER.Error(err.Error())
+		log.Error(err.Error())
 		panic(err.Error())
 	}
 
@@ -65,6 +66,11 @@ func main() {
 	//Start the server
 	err := server.ListenAndServeTLS(cfg.Certificate, cfg.CertificateKey)
 	if err != nil {
-		LOGGER.Fatal("API", "\t", "ListenAndServe:", err)
+		log.WithFields(
+			log.Fields{
+				"type":    "service_log",
+				"details": err.Error(),
+			},
+		).Fatal("Service failed to start")
 	}
 }

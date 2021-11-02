@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/ARGOeu/argo-api-authn/utils"
-	LOGGER "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
 	"io/ioutil"
 	"log/syslog"
@@ -32,7 +32,7 @@ type Config struct {
 	ClientCertHostVerification  bool              `json:"client_cert_host_verification"`
 }
 
-// ConfigSetUp unmarshals a json file specified by the input parameter into the config object
+// ConfigSetUp unmarshalls a json file specified by the input parameter into the config object
 func (cfg *Config) ConfigSetUp(path string) error {
 
 	var data []byte
@@ -49,7 +49,7 @@ func (cfg *Config) ConfigSetUp(path string) error {
 	if cfg.SyslogEnabled {
 		hook, err := lSyslog.NewSyslogHook("", "", syslog.LOG_INFO, "")
 		if err == nil {
-			LOGGER.AddHook(hook)
+			log.AddHook(hook)
 		}
 	}
 
@@ -63,7 +63,11 @@ func (cfg *Config) ConfigSetUp(path string) error {
 
 		fl := rvc.Type().Field(i)
 
-		LOGGER.Infof("Config Field: `%v` has been successfully initialized with value: %v", fl.Name, rvc.Field(i).Interface())
+		log.WithFields(
+			log.Fields{
+				"type": "service_log",
+			},
+		).Infof("Parameter loaded %v - %v", fl.Name, rvc.Field(i).Interface())
 	}
 	return nil
 }
