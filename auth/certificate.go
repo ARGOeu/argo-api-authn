@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/ARGOeu/argo-api-authn/utils"
-	LOGGER "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"net"
 	"strings"
 	"time"
@@ -27,12 +27,22 @@ var NonStandardAttributeNames = map[string]string{
 // load_CAs reads the root certificates from a directory within the filesystem, and creates the trusted root CA chain
 func LoadCAs(dir string) (roots *x509.CertPool) {
 
-	LOGGER.Info("Building the root CA chain...")
+	log.WithFields(
+		log.Fields{
+			"type": "service_log",
+		},
+	).Info("Building the root CA chain . . .")
 	pattern := "*.pem"
 	roots = x509.NewCertPool()
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			LOGGER.Errorf("Prevent panic by handling failure accessing a path %q: %v\n", dir, err)
+			log.WithFields(
+				log.Fields{
+					"type":    "service_log",
+					"details": err.Error(),
+					"path":    dir,
+				},
+			).Error("Certificate system path access failure")
 			return err
 		}
 		if ok, _ := filepath.Match(pattern, info.Name()); ok {
@@ -45,9 +55,17 @@ func LoadCAs(dir string) (roots *x509.CertPool) {
 	})
 
 	if err != nil {
-		LOGGER.Errorf("error walking the path %q: %v\n", dir, err)
+		log.WithFields(
+			log.Fields{
+				"type":    "service_log",
+				"details": err.Error(),
+				"path":    dir,
+			},
+		).Error("Error walking certificate system path")
 	} else {
-		LOGGER.Info("API", "\t", "All certificates parsed successfully.")
+		log.WithFields(
+			log.Fields{},
+		).Info("All certificates parsed successfully!")
 	}
 
 	return
@@ -129,6 +147,14 @@ func ValidateClientCertificate(cert *x509.Certificate, clientIP string, clientCe
 	var hosts []string
 	var ip string
 
+	log.WithFields(
+		log.Fields{
+			"type":  "service_log",
+			"hosts": hosts,
+			"ip":    clientIP,
+		},
+	).Info("Validating Client Certificate")
+
 	if clientCertHostVerification {
 
 		if ip, _, err = net.SplitHostPort(clientIP); err != nil {
@@ -140,8 +166,6 @@ func ValidateClientCertificate(cert *x509.Certificate, clientIP string, clientCe
 			err = &utils.APIError{Message: err.Error(), Code: 400, Status: "BAD REQUEST"}
 			return err
 		}
-
-		LOGGER.Infof("Certificate request: %v from Host: %v with IP: %v", ExtractEnhancedRDNSequenceToString(cert), hosts, clientIP)
 
 		// loop through hosts and check if any of them matches with the one specified in the certificate
 		var tmpErr error

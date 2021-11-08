@@ -8,7 +8,7 @@ import (
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
 	"github.com/satori/go.uuid"
-	LOGGER "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"io"
 )
 
@@ -106,7 +106,12 @@ func AuthMethodFinder(serviceUUID string, host string, authMethodType string, st
 	// access the appropriate finder based on the auth method type
 	if finderFunc, ok = QueryAuthMethodFinders[authMethodType]; !ok {
 		err = utils.APIGenericInternalError("Type is supported but not found")
-		LOGGER.Errorf("Type: %v was used to retrieve from AuthMethodsRetrievalFields, but was not found inside the source code(QueryAuthMethodFinders) of despite being supported", authMethodType)
+		log.WithFields(
+			log.Fields{
+				"type": "service_log",
+			},
+		).Errorf("Type: %v was used to retrieve from AuthMethodsRetrievalFields,"+
+			" but was not found inside the source code(QueryAuthMethodFinders) of despite being supported", authMethodType)
 		return am, err
 	}
 

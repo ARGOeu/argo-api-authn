@@ -95,76 +95,19 @@ class RdnSequence(object):
             self.DomainComponent.append(rdn_value)
 
     @staticmethod
-    def _escape_cn_rdn_string(dn_string):
+    def _escape_rdn_string(dn_string):
         """
-            Method that checks and escapes the provided DN needs in case it needs support for the CN rdn pattern of
-            {service}/{fqdn}.
-            CN=service/example.com should be escaped to CN=service\/example.com otherwise the ldap parser will fail.
-
-            We use 2 regex that match CNs with the aforementioned pattern.
-
-            1.
-                Given the DN /C=PL/O=GRID/O=OU/CN=service/example.com/emailAddress=test@gmail.com
-                We want to transform it to:
-                /C=PL/O=GRID/O=OU/CN=service\/example.com/emailAddress=test@gmail.com
-
-                The regex splits the DN into 3 matching groups and re-assembles the DN
-                by replacing g2(which contains the {service} with {service}\ while
-                g1 and g3 are preserved as is.
-
-                regex: r"(.*CN=)([^/]+)(/[^/]+/emailAddress=.*$)"
-                replace pattern: r"\g<1>\g<2>\\\g<3>"
-
-            2.
-                Given the DN /C=PL/O=GRID/O=OU/CN=service/example.com
-                We want to transform it to:
-                /C=PL/O=GRID/O=OU/CN=service\/example.com
-
-                The regex splits the DN into 3 matching groups and re-assembles the DN
-                by replacing g2(which contains the {service} with {service}\ while
-                g1 and g3 are preserved as is.
-
-                regex: r"(.*CN=)([^/]+)(/[^/=]+$)"
-                replace pattern: r"\g<1>\g<2>\\\g<3>"
-
-            Note.
-
-                There are 5 possible DN scenarios as encountered so far:
-
-                - /C=PL/O=GRID/O=OU/CN=service/example.com/emailAddress=test@gmail.com(CN escape+emailAddress)
-
-                - /C=PL/O=GRID/O=OU/CN=service/example.com(CN escape only)
-
-                - /C=PL/O=GRID/O=OU/CN=example.com (CN without escape)
-
-                - /C=PL/O=GRID/O=ICM (No CN)
-
-                - /C=PL/O=GRID/O=OU/CN=example.com/emailAddress=test@gmail.com (CN without escape + emailAddress)
-
-                ANY version of this method should make sure that these 5 cases are treated correctly
-                and the escape happens only when it is needed.
-
-                A good observation is that 2 and 5 are the same in terms of layout and thats why in the second regex
-                we exclude the "=" operator as well from the 3d matching group (/[^/=]+$)
-
+            Method that checks and escapes any possible single slash characters in RDN values
 
         :param dn_string:
-        :return: the escaped dn string
+        :return: the escaped string
         """
 
-        repl_pattern = r"\g<1>\g<2>\\\g<3>"
+        re_match_key = re.compile("(\/\w*=)")
+        tokens = list(filter(None,re_match_key.split(dn_string)))
+        escaped_string = "".join(x.replace("/","\/") if not re_match_key.match(x) else x for x in tokens)
 
-        cn_escape_email_address_pattern = re.compile(r"(.*CN=)([^/]+)(/[^/]+/emailAddress=.*$)")
-
-        if re.match(cn_escape_email_address_pattern, dn_string):
-            return re.sub(cn_escape_email_address_pattern, repl_pattern, dn_string)
-
-
-        cn_only_escape_pattern = re.compile(r"(.*CN=)([^/]+)(/[^/=]+$)")
-        if re.match(cn_only_escape_pattern, dn_string):
-            return re.sub(cn_only_escape_pattern, repl_pattern, dn_string)
-
-        return dn_string
+        return escaped_string
 
 
     def _parse_dn_string_ldap_util(self, dn_string):
@@ -174,7 +117,7 @@ class RdnSequence(object):
         """
 
         # if the host/ appears in the DN
-        escaped_dn_string = self._escape_cn_rdn_string(dn_string)
+        escaped_dn_string = self._escape_rdn_string(dn_string)
 
         # check that the DN string is valid and can be parsed
         if not ldap.dn.is_dn(escaped_dn_string, ldap.DN_FORMAT_DCE):
@@ -488,11 +431,13 @@ def create_users(config, verify):
             # else if the Dn isn't in use, go through the full process of creating or updating an existing binding
             elif binding_exists_req.status_code == 404:
 
-                usr_create = {'email': contact_email}
+                project = {'project': ams_project, 'roles': [users_role]}
+                usr_create = {'projects': [project], 'email': contact_email}
 
                 # create the user
-                api_url = 'https://{0}/v1/projects/{1}/members/{2}?key={3}'.format(ams_host, ams_project, user_binding_name, ams_token)
-                ams_usr_crt_req = requests.post(url=api_url, data=json.dumps(usr_create), verify=verify)
+                ams_user_crt_url = 'https://{0}/v1/projects/{1}/members/{2}?key={3}'.format(
+                    ams_host, ams_project, user_binding_name, ams_token)
+                ams_usr_crt_req = requests.post(url=ams_user_crt_url, data=json.dumps(usr_create), verify=verify)
                 LOGGER.info(ams_usr_crt_req.text)
 
                 ams_user_uuid = ""

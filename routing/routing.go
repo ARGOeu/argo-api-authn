@@ -8,7 +8,7 @@ import (
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	LOGGER "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // API Object that holds routing information and the router itself
@@ -58,7 +58,11 @@ func NewRouting(routes []APIRoute, store stores.Store, config *config.Config) *A
 			Handler(context.ClearHandler(handler))
 	}
 
-	LOGGER.Info("API", "\t", "API Router initialized! Ready to start listening...")
+	log.WithFields(
+		log.Fields{
+			"type": "service_log",
+		},
+	).Infof("API Router initialized!")
 
 	// Return reference to the API object
 	return &ar

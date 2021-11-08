@@ -2,7 +2,7 @@ package stores
 
 import (
 	"github.com/ARGOeu/argo-api-authn/utils"
-	LOGGER "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type QServiceType struct {
@@ -59,7 +59,12 @@ func (f *QAuthMethodFactory) Create(amType string) (QAuthMethod, error) {
 
 	if qAmInit, ok = QAuthMethodsTypes[amType]; !ok {
 		err = utils.APIGenericInternalError("Type is supported but not found")
-		LOGGER.Errorf("Type: %v was requested, but was not found inside the source code(store) despite being supported", amType)
+		log.WithFields(
+			log.Fields{
+				"type": "service_log",
+			},
+		).Errorf("Type: %v was requested,"+
+			" but was not found inside the source code(store) despite being supported", amType)
 		return am, err
 	}
 

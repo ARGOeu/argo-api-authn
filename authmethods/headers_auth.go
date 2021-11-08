@@ -10,7 +10,7 @@ import (
 	"github.com/ARGOeu/argo-api-authn/servicetypes"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
-	LOGGER "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"strconv"
@@ -125,13 +125,25 @@ func (m *HeadersAuthMethod) RetrieveAuthResource(binding bindings.Binding, servi
 
 	if retrievalField, ok = cfg.ServiceTypesRetrievalFields[serviceType.Type]; !ok {
 		err = utils.APIGenericInternalError("Backend error")
-		LOGGER.Errorf("The retrieval field for type: %v was not found in the config retrieval fields: %v", serviceType.Type, cfg.ServiceTypesRetrievalFields)
+		log.WithFields(
+			log.Fields{
+				"type":         "service_log",
+				"service_type": serviceType.Type,
+				"fields":       cfg.ServiceTypesRetrievalFields,
+			},
+		).Error("Retrieval field for service-type was not found in service config")
 		return externalResp, err
 	}
 
 	if path, ok = cfg.ServiceTypesPaths[serviceType.Type]; !ok {
 		err = utils.APIGenericInternalError("Backend error")
-		LOGGER.Errorf("The path for type: %v was not found in the config retrieval fields: %v", serviceType.Type, cfg.ServiceTypesPaths)
+		log.WithFields(
+			log.Fields{
+				"type":         "service_log",
+				"service_type": serviceType.Type,
+				"paths":        cfg.ServiceTypesPaths,
+			},
+		).Error("Path field for service-type was not found in service config")
 		return externalResp, err
 	}
 
