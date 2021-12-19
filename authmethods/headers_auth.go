@@ -63,7 +63,7 @@ func (m *HeadersAuthMethod) Update(r io.ReadCloser) (AuthMethod, error) {
 	var authMBytes []byte
 	var tempAM TempHeadersAuthMethod
 
-	var updatedAM = NewHeadersAuthMethod()
+	var updatedAM = &HeadersAuthMethod{}
 
 	// first fill the temp auth method with the already existing data
 	// convert the existing auth method to bytes
@@ -110,6 +110,7 @@ func (m *HeadersAuthMethod) Update(r io.ReadCloser) (AuthMethod, error) {
 		return updatedAM, err
 	}
 
+	m.UpdatedOn = utils.ZuluTimeNow()
 	return updatedAM, err
 }
 

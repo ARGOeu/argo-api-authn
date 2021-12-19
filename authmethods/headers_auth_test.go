@@ -69,6 +69,8 @@ func (suite *HeadersAuthMethodTestSuite) TestUpdate() {
 	hamUpd1 := HeadersAuthMethod{BasicAuthMethod: amb2, Headers: map[string]string{"x-api-key": "key-2", "Accept": "application/json"}}
 	r1 := ConvertAuthMethodToReadCloser(&hamUpd1)
 	a1, err1 := hamUpd1.Update(r1)
+	ca1 := a1.(*HeadersAuthMethod)
+	ham.UpdatedOn = ca1.UpdatedOn
 
 	// update fields that aren't supposed to be updated
 	apkUpd2 := &HeadersAuthMethod{}

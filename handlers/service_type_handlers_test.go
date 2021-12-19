@@ -2,10 +2,13 @@ package handlers
 
 import (
 	"bytes"
+	"github.com/ARGOeu/argo-api-authn/utils"
 	LOGGER "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http"
+	"strings"
 	"testing"
+	"time"
 
 	"encoding/json"
 	"github.com/ARGOeu/argo-api-authn/config"
@@ -676,6 +679,7 @@ func (suite *BindingHandlersSuite) TestServiceTypeUpdate() {
  "auth_method": "api-key",
  "uuid": "uuid1",
  "created_on": "2018-05-05T18:04:05Z",
+ "updated_on": "{{UPDATED_ON}}",
  "type": "ams"
 }`
 	req, err := http.NewRequest("PUT", "http://localhost:8080/service-types/s1", bytes.NewBuffer([]byte(postJSON)))
@@ -693,6 +697,12 @@ func (suite *BindingHandlersSuite) TestServiceTypeUpdate() {
 	w := httptest.NewRecorder()
 	router.HandleFunc("/service-types/{service-type}", WrapConfig(ServiceTypeUpdate, mockstore, cfg))
 	router.ServeHTTP(w, req)
+
+	qSt, _ := mockstore.QueryServiceTypes("updated_name")
+	expRespJSON = strings.Replace(expRespJSON, "{{UPDATED_ON}}", qSt[0].UpdatedOn, 1)
+	// make sure the updated time is before now
+	updatedTime, _ := time.Parse(utils.ZULU_FORM, qSt[0].UpdatedOn)
+	suite.True(updatedTime.Before(time.Now().UTC()))
 	suite.Equal(200, w.Code)
 	suite.Equal(expRespJSON, w.Body.String())
 }

@@ -57,7 +57,7 @@ func (m *ApiKeyAuthMethod) Update(r io.ReadCloser) (AuthMethod, error) {
 	var authMBytes []byte
 	var tempAM TempApiKeyAuthMethod
 
-	var updatedAM = NewApiKeyAuthMethod()
+	var updatedAM = &ApiKeyAuthMethod{}
 
 	// first fill the temp auth method with the already existing data
 	// convert the existing auth method to bytes
@@ -104,6 +104,7 @@ func (m *ApiKeyAuthMethod) Update(r io.ReadCloser) (AuthMethod, error) {
 		return updatedAM, err
 	}
 
+	updatedAM.UpdatedOn = utils.ZuluTimeNow()
 	return updatedAM, err
 }
 

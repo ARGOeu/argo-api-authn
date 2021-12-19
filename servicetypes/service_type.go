@@ -15,6 +15,7 @@ type ServiceType struct {
 	AuthMethod string   `json:"auth_method" required:"true"`
 	UUID       string   `json:"uuid"`
 	CreatedOn  string   `json:"created_on"`
+	UpdatedOn  string   `json:"updated_on,omitempty"`
 	Type       string   `json:"type" required:"true"`
 }
 
@@ -319,6 +320,8 @@ func UpdateServiceType(original ServiceType, tempServiceType TempServiceType, st
 			return ServiceType{}, err
 		}
 	}
+
+	updated.UpdatedOn = utils.ZuluTimeNow()
 
 	// convert the original service type to a QServiceType
 	if err := utils.CopyFields(original, &qOriginalSt); err != nil {

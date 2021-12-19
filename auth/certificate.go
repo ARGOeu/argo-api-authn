@@ -64,7 +64,7 @@ func LoadCAs(dir string) (roots *x509.CertPool) {
 		).Error("Error walking certificate system path")
 	} else {
 		log.WithFields(
-			log.Fields{},
+			log.Fields{"type": "service_log"},
 		).Info("All certificates parsed successfully!")
 	}
 

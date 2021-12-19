@@ -99,6 +99,7 @@ If the request is successful, the response contains all the bindings in the serv
                   "unique_key": "key",
                   "auth_type": "x509",
                   "created_on": "2018-05-23T09:25:25Z",
+                  "updated_on": "2021-05-05T18:04:05Z"
                   "last_auth": "2018-05-23T09:25:25Z"
               },
               {
@@ -161,6 +162,7 @@ If the request is successful, the response contains all the bindings under the g
                   "unique_key": "key",
                   "auth_type": "x509",                
                   "created_on": "2018-05-23T09:25:43Z",
+                   "updated_on": "2021-05-05T18:04:05Z"
                   "last_auth": "2018-05-23T09:25:25Z"
               }
       ]
@@ -287,7 +289,8 @@ If the request is successful, the response contains the updated binding.
      "auth_identifier": "host1",
      "unique_key": "key",
      "auth_type": "x509",                
-     "created_on": "2018-05-24T09:58:17Z"
+     "created_on": "2018-05-24T09:58:17Z",
+    "updated_on": "2021-05-05T18:04:05Z"
  }
 ```
   

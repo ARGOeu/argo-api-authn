@@ -12,6 +12,7 @@ type QServiceType struct {
 	AuthMethod string   `json:"auth_method" bson:"auth_method"`
 	UUID       string   `json:"uuid" bson:"uuid"`
 	CreatedOn  string   `json:"created_on,omitempty" bson:"created_on,omitempty"`
+	UpdatedOn  string   `json:"updated_on,omitempty" bson:"updated_on,omitempty"`
 	Type       string   `json:"type" bson:"type"`
 }
 
@@ -24,6 +25,7 @@ type QBinding struct {
 	AuthType       string `json:"auth_type" bson:"auth_type"`
 	UniqueKey      string `json:"unique_key,omitempty"`
 	CreatedOn      string `json:"created_on,omitempty" bson:"created_on,omitempty"`
+	UpdatedOn      string `json:"updated_on,omitempty" bson:"updated_on,omitempty"`
 	LastAuth       string `json:"last_auth,omitempty" bson:"last_auth,omitempty"`
 }
 
@@ -36,6 +38,7 @@ type QBasicAuthMethod struct {
 	Type        string `json:"type" bson:"type"`
 	UUID        string `json:"uuid" bson:"uuid"`
 	CreatedOn   string `json:"created_on" bson:"created_on"`
+	UpdatedOn   string `json:"updated_on,omitempty" bson:"updated_on,omitempty"`
 }
 
 type QApiKeyAuthMethod struct {

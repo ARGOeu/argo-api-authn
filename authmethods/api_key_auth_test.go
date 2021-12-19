@@ -66,7 +66,7 @@ func (suite *ApiKeyAuthMethodTestSuite) TestApiKeyAuthFinder() {
 
 func (suite *ApiKeyAuthMethodTestSuite) TestUpdate() {
 
-	apk1 := ApiKeyAuthMethod{}
+	apk1 := &ApiKeyAuthMethod{}
 	ba1 := BasicAuthMethod{ServiceUUID: "uuid1", Host: "host1", Port: 9000, Type: "api-key"}
 	apk1.BasicAuthMethod = ba1
 
@@ -76,6 +76,8 @@ func (suite *ApiKeyAuthMethodTestSuite) TestUpdate() {
 	apkUpd1.BasicAuthMethod = baUpd1
 	r1 := ConvertAuthMethodToReadCloser(apkUpd1)
 	a1, err1 := apk1.Update(r1)
+	ca1 := a1.(*ApiKeyAuthMethod)
+	apkUpd1.UpdatedOn = ca1.UpdatedOn
 
 	// update fields that aren't supposed to be updated
 	apkUpd2 := &ApiKeyAuthMethod{}
@@ -83,9 +85,11 @@ func (suite *ApiKeyAuthMethodTestSuite) TestUpdate() {
 	apkUpd2.BasicAuthMethod = baUpd2
 	r2 := ConvertAuthMethodToReadCloser(apkUpd2)
 	a2, err2 := apk1.Update(r2)
+	ca2 := a2.(*ApiKeyAuthMethod)
+	apk1.UpdatedOn = ca2.UpdatedOn
 
 	suite.Equal(apkUpd1, a1)
-	suite.NotEqual(apk1, a2)
+	suite.Equal(apk1, a2)
 
 	suite.Nil(err1)
 	suite.Nil(err2)

@@ -6,12 +6,15 @@ import (
 	"github.com/ARGOeu/argo-api-authn/authmethods"
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
+	"github.com/ARGOeu/argo-api-authn/utils"
 	"github.com/gorilla/mux"
 	LOGGER "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 )
 
 type AuthMethodsHandlersTestSuite struct {
@@ -793,6 +796,7 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodUpdateOne() {
  "type": "api-key",
  "uuid": "am_uuid_1",
  "created_on": "",
+ "updated_on": "{{UPDATED_ON}}",
  "access_key": "key1"
 }`
 
@@ -811,6 +815,12 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodUpdateOne() {
 	w := httptest.NewRecorder()
 	router.HandleFunc("/service-types/{service-type}/hosts/{host}/authm", WrapConfig(AuthMethodUpdateOne, mockstore, cfg))
 	router.ServeHTTP(w, req)
+
+	amU, _ := mockstore.QueryApiKeyAuthMethods("uuid1", "host1")
+	expRespJSON = strings.Replace(expRespJSON, "{{UPDATED_ON}}", amU[0].UpdatedOn, 1)
+	// make sure the updated time is before now
+	updatedTime, _ := time.Parse(utils.ZULU_FORM, amU[0].UpdatedOn)
+	suite.True(updatedTime.Before(time.Now().UTC()))
 	suite.Equal(200, w.Code)
 	suite.Equal(expRespJSON, w.Body.String())
 }
@@ -831,6 +841,7 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodUpdateOneIllegalFields(
  "type": "api-key",
  "uuid": "am_uuid_1",
  "created_on": "",
+ "updated_on": "{{UPDATED_ON}}",
  "access_key": "access_key"
 }`
 
@@ -849,6 +860,12 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodUpdateOneIllegalFields(
 	w := httptest.NewRecorder()
 	router.HandleFunc("/service-types/{service-type}/hosts/{host}/authm", WrapConfig(AuthMethodUpdateOne, mockstore, cfg))
 	router.ServeHTTP(w, req)
+
+	amU, _ := mockstore.QueryApiKeyAuthMethods("uuid1", "host1")
+	expRespJSON = strings.Replace(expRespJSON, "{{UPDATED_ON}}", amU[0].UpdatedOn, 1)
+	// make sure the updated time is before now
+	updatedTime, _ := time.Parse(utils.ZULU_FORM, amU[0].UpdatedOn)
+	suite.True(updatedTime.Before(time.Now().UTC()))
 	suite.Equal(200, w.Code)
 	suite.Equal(expRespJSON, w.Body.String())
 }
