@@ -352,12 +352,15 @@ def create_users(config, verify):
         # users from goc db that don't have a dn registered
         missing_dns = []
 
+        not_in_production_endpoints = []
+
         # build the xml object
         root = ET.fromstring(goc_request.text)
         # iterate through the xml object's service_endpoints
         for service_endpoint in root.findall("SERVICE_ENDPOINT"):
             service_type = service_endpoint.find("SERVICE_TYPE"). \
                 text.replace(".", "-")
+
 
             # grab the dn
             service_dn = service_endpoint.find("HOSTDN")
@@ -367,6 +370,13 @@ def create_users(config, verify):
 
             hostname = service_endpoint.find("HOSTNAME").text.replace(".", "-")
             sitename = service_endpoint.find("SITENAME").text.replace(".", "-")
+
+
+            # check if the endpoint is in production
+            if service_endpoint.find("IN_PRODUCTION").text != "Y":
+                LOGGER.info("Skipping not in production endpoint " + hostname)
+                not_in_production_endpoints.append(hostname)
+                continue
 
             # try to get the site's contact email
             contact_email = ams_email
@@ -625,6 +635,7 @@ def create_users(config, verify):
 
         LOGGER.critical("Service Type: " + srv_type)
         LOGGER.critical("Missing DNS: " + str(missing_dns))
+        LOGGER.critical("Not in production endpoints: " +str(not_in_production_endpoints))
         LOGGER.critical("Total Users Created: " + str(user_count))
         LOGGER.critical("Total Bindings Updated: " + str(update_binding_count))
         LOGGER.critical("Updated bingings: " + str(update_bindings_names))
