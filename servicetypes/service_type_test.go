@@ -20,55 +20,55 @@ func (suite *ServiceTestSuite) TestCreateServiceType() {
 	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
 
 	// test the normal case with type ams
-	s1 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "ams"}
+	s1 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "ams"}
 	_, err := CreateServiceType(s1, mockstore, *cfg)
 	res1, _ := mockstore.QueryServiceTypes("sCr")
 
 	// test the normal case with type web-api
 
-	sWb := ServiceType{"sCr_wb", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "web-api"}
+	sWb := ServiceType{"sCr_wb", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "web-api"}
 	_, errWb := CreateServiceType(sWb, mockstore, *cfg)
 	res2, _ := mockstore.QueryServiceTypes("sCr_wb")
 
 	// test the normal case with type custom
-	sCustom := ServiceType{"sCr_custom", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "token", "custom"}
+	sCustom := ServiceType{"sCr_custom", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "token", "", "custom"}
 	_, errCustom := CreateServiceType(sCustom, mockstore, *cfg)
 	res3, _ := mockstore.QueryServiceTypes("sCr_custom")
 
 	// test the case where the name already exists
-	s2 := ServiceType{"s1", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "some_uuid", "", "ams"}
+	s2 := ServiceType{"s1", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "some_uuid", "", "", "ams"}
 	_, err2 := CreateServiceType(s2, mockstore, *cfg)
 
 	// test the case of unsupported auth type
-	s3 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"unsup_type", "oidc"}, "api-key", "some_uuid", "", "ams"}
+	s3 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"unsup_type", "oidc"}, "api-key", "some_uuid", "", "", "ams"}
 	_, err3 := CreateServiceType(s3, mockstore, *cfg)
 
 	// test the case of empty auth type list
-	s4 := ServiceType{"sCr", []string{"host1", "host2"}, []string{}, "api-key", "some_uuid", "", "ams"}
+	s4 := ServiceType{"sCr", []string{"host1", "host2"}, []string{}, "api-key", "some_uuid", "", "", "ams"}
 	_, err4 := CreateServiceType(s4, mockstore, *cfg)
 
 	// test the case of unsupported auth method
-	s5 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "unsup_method", "some_uuid", "", "ams"}
+	s5 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "unsup_method", "some_uuid", "", "", "ams"}
 	_, err5 := CreateServiceType(s5, mockstore, *cfg)
 
 	// test the case of empty name
-	s6 := ServiceType{"", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "ams"}
+	s6 := ServiceType{"", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "ams"}
 	_, err6 := CreateServiceType(s6, mockstore, *cfg)
 
 	// test the case of empty auth method
-	s8 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "", "uuid1", "", "ams"}
+	s8 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "", "uuid1", "", "", "ams"}
 	_, err8 := CreateServiceType(s8, mockstore, *cfg)
 
 	// test the case of empty hosts
-	s9 := ServiceType{"sCr", []string{}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "ams"}
+	s9 := ServiceType{"sCr", []string{}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "ams"}
 	_, err9 := CreateServiceType(s9, mockstore, *cfg)
 
 	// test the case of empty type
-	s10 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", ""}
+	s10 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", ""}
 	_, err10 := CreateServiceType(s10, mockstore, *cfg)
 
 	// test the case of unsupported type type
-	s11 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "unsup_type"}
+	s11 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "unsup_type"}
 	_, err11 := CreateServiceType(s11, mockstore, *cfg)
 
 	suite.Equal(s1.Name, res1[0].Name)
@@ -107,7 +107,7 @@ func (suite *ServiceTestSuite) TestFindServiceTypeByName() {
 	mockstore.SetUp()
 
 	// normal case
-	expS1 := ServiceType{"s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "uuid1", "2018-05-05T18:04:05Z", "ams"}
+	expS1 := ServiceType{"s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "uuid1", "2018-05-05T18:04:05Z", "", "ams"}
 	ser1, err1 := FindServiceTypeByName("s1", mockstore)
 
 	// not found case
@@ -133,7 +133,7 @@ func (suite *ServiceTestSuite) TestFindServiceTypeByUUID() {
 	mockstore.SetUp()
 
 	// normal case
-	expS1 := ServiceType{"s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "uuid1", "2018-05-05T18:04:05Z", "ams"}
+	expS1 := ServiceType{"s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "uuid1", "2018-05-05T18:04:05Z", "", "ams"}
 	ser1, err1 := FindServiceTypeByUUID("uuid1", mockstore)
 
 	// not found case
@@ -218,8 +218,8 @@ func (suite *ServiceTestSuite) TestUpdateService() {
 	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
 
 	// original service type
-	qOriginal := stores.QServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "ams"}
-	original := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "ams"}
+	qOriginal := stores.QServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "ams"}
+	original := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "ams"}
 	mockstore.ServiceTypes = append(mockstore.ServiceTypes, qOriginal)
 
 	// test the normal case

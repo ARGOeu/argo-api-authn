@@ -17,6 +17,7 @@ type Binding struct {
 	UniqueKey      string `json:"unique_key" required:"true"`
 	AuthType       string `json:"auth_type" required:"true"`
 	CreatedOn      string `json:"created_on,omitempty"`
+	UpdatedOn      string `json:"updated_on,omitempty"`
 	LastAuth       string `json:"last_auth,omitempty"`
 }
 
@@ -304,6 +305,8 @@ func UpdateBinding(original Binding, tempBind TempUpdateBinding, store stores.St
 		err = utils.APIGenericInternalError(err.Error())
 		return Binding{}, err
 	}
+
+	updated.UpdatedOn = utils.ZuluTimeNow()
 
 	// convert the updated binding to a QBinding
 	if err := utils.CopyFields(updated, &qUpdatedBinding); err != nil {
