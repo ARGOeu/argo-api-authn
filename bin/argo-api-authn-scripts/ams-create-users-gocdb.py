@@ -346,6 +346,8 @@ def create_users(config, verify):
         # users from goc db that don't have a dn registered
         missing_dns = []
 
+        not_in_production_endpoints = []
+
         # updated bindings count
         update_binding_count= 0 
 
@@ -371,6 +373,14 @@ def create_users(config, verify):
             # Create AMS user
             hostname = service_endpoint.find("HOSTNAME").text.replace(".", "-")
             sitename = service_endpoint.find("SITENAME").text.replace(".", "-")
+
+
+            # check if the endpoint is in production
+            if service_endpoint.find("IN_PRODUCTION").text != "Y":
+                LOGGER.info("Skipping not in production endpoint " + hostname)
+                not_in_production_endpoints.append(hostname)
+                continue
+
             user_binding_name = service_type + "---" + hostname + "---" + sitename
 
             # try to get the site's contact email
@@ -567,6 +577,8 @@ def create_users(config, verify):
         LOGGER.critical("Service Type: " + srv_type)
 
         LOGGER.critical("Missing DNS: " + str(missing_dns))
+
+        LOGGER.critical("Not in production endpoints: " +str(not_in_production_endpoints))
 
         LOGGER.critical("Total Users Created: " + str(user_count))
         
