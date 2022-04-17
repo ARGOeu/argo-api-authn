@@ -94,7 +94,7 @@ class RdnSequence(object):
     @staticmethod
     def _escape_rdn_string(dn_string):
         """
-            Method that checks and escapes any possible single slash characters in RDN values
+            Method that checks and escapes any possible single slash characters and commas in RDN values
 
         :param dn_string:
         :return: the escaped string
@@ -104,7 +104,7 @@ class RdnSequence(object):
         tokens = list(filter(None,re_match_key.split(dn_string)))
         escaped_string = "".join(x.replace("/","\/") if not re_match_key.match(x) else x for x in tokens)
 
-        return escaped_string
+        return escaped_string.replace(",", "\,")
 
     def _parse_dn_string_ldap_util(self, dn_string):
         """
@@ -137,10 +137,13 @@ class RdnSequence(object):
         # we need to process the rdn_list from the ldap utility in reverse
         # if we don't, the RDN DC, will look like DC=tcs+DC=terena+DC=org
 
+        # also fields with escaped commas turn in OU=value\, value
+        # so we need to replace any \, with just comma
+
         for rdn in reversed(rdns_list):
             rdn_type, rdn_value = self._rdn_to_type_and_value(rdn)
 
-            self._assign_rdn_to_field(rdn_type, rdn_value)
+            self._assign_rdn_to_field(rdn_type, rdn_value.replace("\,", ","))
 
     def _parse_dn_string(self, dn_string):
         """
