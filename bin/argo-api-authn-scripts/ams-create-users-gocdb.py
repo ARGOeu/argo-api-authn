@@ -137,13 +137,10 @@ class RdnSequence(object):
         # we need to process the rdn_list from the ldap utility in reverse
         # if we don't, the RDN DC, will look like DC=tcs+DC=terena+DC=org
 
-        # also fields with escaped commas turn in OU=value\, value
-        # so we need to replace any \, with just comma
-
         for rdn in reversed(rdns_list):
             rdn_type, rdn_value = self._rdn_to_type_and_value(rdn)
 
-            self._assign_rdn_to_field(rdn_type, rdn_value.replace("\,", ","))
+            self._assign_rdn_to_field(rdn_type, rdn_value)
 
     def _parse_dn_string(self, dn_string):
         """
