@@ -35,7 +35,7 @@ func (suite *ConfigTestSuite) TestConfigSetUp() {
 		TrustUnknownCAs:        false,
 		VerifyCertificate:      true,
 		ServiceTypesPaths: map[string]string{
-			"ams":     "/v1/users:byUUID/{{identifier}}?key={{access_key}}",
+			"ams":     "/v1/users:byUUID/{{identifier}}",
 			"web-api": "/api/v2/admin/users:byID/{{identifier}}?export=flat",
 		},
 		ServiceTypesRetrievalFields: map[string]string{

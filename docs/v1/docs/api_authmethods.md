@@ -80,7 +80,10 @@ Success Response
 
 ```
         {
-            "access_key": "key1",
+            "headers": {
+                "header-1": "value-1",
+                "header-2": "value-2"
+            },
             "host": "127.0.0.1",
             "service_uuid": "da22b2d4-ba6c-43ca-b28d-400sd0a5d83e",
             "port": 9000,

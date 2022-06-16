@@ -75,7 +75,7 @@ Before you start, you need to issue a valid certificate.
    "trust_unknown_cas": false,
    "verify_certificate": true,
    "service_types_paths": {
-    "ams": "/v1/users:byUUID/{{identifier}}?key={{access_key}}",
+    "ams": "/v1/users:byUUID/{{identifier}}",
     "web-api": "/api/v2/users:byID/{{identifier}}?export=flat"
     },
    "service_types_retrieval_fields": {
