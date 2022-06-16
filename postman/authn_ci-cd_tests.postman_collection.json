@@ -187,7 +187,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"service_uuid\": \"{{st-uuid}}\",\n\t\"host\": \"{{ams-host}}\",\n\t\"auth_identifier\": \"CN=*.devel.argo.grnet.gr,OU=GRNET,O=National Infrastructures for Research and Technology,L=Athens,ST\t=Attikí,C=GR\",\n\t\"unique_key\": \"3530bde2-a8bc-417b-9f8e-c36dedeedafb\",\n\t\"auth_type\": \"x509\"\n}\n"
+					"raw": "{\n\t\"service_uuid\": \"{{st-uuid}}\",\n\t\"host\": \"{{ams-host}}\",\n\t\"auth_identifier\": \"CN=*.devel.argo.grnet.gr,OU=GRNET,O=National Infrastructures for Research and Technology,L=Athens,ST=Attikí,C=GR\",\n\t\"unique_key\": \"3530bde2-a8bc-417b-9f8e-c36dedeedafb\",\n\t\"auth_type\": \"x509\"\n}\n"
 				},
 				"url": {
 					"raw": "https://{{authn-host}}/v1/bindings/authn-cicd?key={{authn-token}}",
