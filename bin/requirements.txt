@@ -1,3 +1,4 @@
-defusedxml==0.5.0
-requests==2.20
+defusedxml==0.7.1
 python-ldap==3.4.0
+argo-ams-library==0.5.9
+requests
