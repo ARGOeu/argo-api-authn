@@ -12,6 +12,7 @@ import argparse
 import ldap
 import re
 import urllib.parse
+from argo_ams_library import ArgoMessagingService, AmsUser, AmsUserProject, AmsException, AmsServiceException
 
 # set up logging
 LOGGER = logging.getLogger("AMS User create script per site")
@@ -300,6 +301,8 @@ class RdnSequence(object):
                 self._format_rdn_to_string("DC", self.DomainComponent))
 
         return "".join(x for x in printable_string)
+
+
 def create_users(config, verify):
 
     # retrieve ams info
@@ -324,6 +327,9 @@ def create_users(config, verify):
     # cert key tuple
     cert_creds = (config.get("AMS", "cert"), config.get("AMS", "cert_key"))
 
+    # init the Argo Messaging Service
+    ams = ArgoMessagingService(endpoint=ams_host, token=ams_token, project=ams_project)
+
     conf_services = config.get("AMS", "service-types").split(",")
     for srv_type in conf_services:
 
@@ -341,8 +347,8 @@ def create_users(config, verify):
 
         # form the goc db url
         goc_db_url = goc_db_url_arch.replace("{{service-type}}", srv_type)
-        LOGGER.info("\nAccessing url: " + goc_db_url)
-        LOGGER.info("\nStarted the process for service-type: " + srv_type)
+        LOGGER.info("Accessing url: " + goc_db_url)
+        LOGGER.info("Started the process for service-type: " + srv_type)
 
         # grab the xml data from goc db
         goc_request = requests.get(url=goc_db_url, cert=cert_creds, verify=False)
@@ -360,7 +366,6 @@ def create_users(config, verify):
             service_type = service_endpoint.find("SERVICE_TYPE"). \
                 text.replace(".", "-")
 
-
             # grab the dn
             service_dn = service_endpoint.find("HOSTDN")
             if service_dn is None:
@@ -370,10 +375,9 @@ def create_users(config, verify):
             hostname = service_endpoint.find("HOSTNAME").text.replace(".", "-")
             sitename = service_endpoint.find("SITENAME").text.replace(".", "-")
 
-
             # check if the endpoint is in production
             if service_endpoint.find("IN_PRODUCTION").text != "Y":
-                LOGGER.info("Skipping not in production endpoint " + hostname)
+                LOGGER.info("Skipping not in production endpoint: " + hostname)
                 not_in_production_endpoints.append(hostname)
                 continue
 
@@ -404,8 +408,8 @@ def create_users(config, verify):
                     site_contact_emails[site_name] = contact_email
 
                 except Exception as e:
-                    LOGGER.warning("Skipping endpoint {} under site {}, {}".format(
-                        hostname, site_name, e))
+                    LOGGER.warning("Skipping endpoint {0} under site {1}, {2}".format(
+                        hostname, site_name, str(e)))
 
             # Create AMS user
             user_binding_name = \
@@ -416,13 +420,14 @@ def create_users(config, verify):
                 service_dn = RdnSequence(service_dn.text).__str__()
             except ValueError as ve:
                 LOGGER.error(
-                    "Invalid DN: {}. Exception: {}".
-                    format(service_dn.text, ve))
+                    "Invalid DN: {0}. Exception: {1}".
+                    format(service_dn.text, str(ve)))
                 continue
 
             # check if the given DN already corresponds to a binding
             # if the DN is already in use, skip the creation process and only perform the steps where the user
-            # is being assigned to the topic's and sub's acl and the respective topic and subscription are being created.
+            # is being assigned to the topic's and sub's acl
+            # and the respective topic and subscription are being created.
 
             # TODO replace ams(service type name) with config value
             binding_exists_url = "https://{0}/v1/service-types/ams/hosts/{1}/bindings?key={2}&authID={3}".format(
@@ -440,45 +445,46 @@ def create_users(config, verify):
             # else if the Dn isn't in use, go through the full process of creating or updating an existing binding
             elif binding_exists_req.status_code == 404:
 
-                project = {'project': ams_project, 'roles': [users_role]}
-                usr_create = {'projects': [project], 'email': contact_email}
-
-                # create the user
-                ams_user_crt_url = 'https://{0}/v1/projects/{1}/members/{2}?key={3}'.format(
-                    ams_host, ams_project, user_binding_name, ams_token)
-                ams_usr_crt_req = requests.post(url=ams_user_crt_url, data=json.dumps(usr_create), verify=verify)
-                LOGGER.info(ams_usr_crt_req.text)
-
                 ams_user_uuid = ""
 
-                # if the response is neither a 200(OK) nor a 409(already exists)
-                # then move on to the next user
-                if ams_usr_crt_req.status_code != 200 and ams_usr_crt_req.status_code != 409:
-                    LOGGER.critical("\nUser: " + user_binding_name)
-                    LOGGER.critical(
-                        "\nSomething went wrong while creating ams user." +
-                        "\nBody data: " + str(usr_create) + "\nResponse Body: " +
-                        ams_usr_crt_req.text)
-                    continue
+                user_project = AmsUserProject(
+                    project=ams_project,
+                    roles=[users_role]
+                )
+                user_create_data = AmsUser(
+                    projects=[user_project],
+                    email=contact_email,
+                    name=user_binding_name
+                )
 
-                if ams_usr_crt_req.status_code == 200:
-                    ams_user_uuid = ams_usr_crt_req.json()["uuid"]
-                    # count how many users have been created
+                exists = False
+                try:
+                    # create the user
+                    created_ams_user = ams.create_user(user=user_create_data, verify=verify)
+                    LOGGER.info("Created user: " + created_ams_user.name)
+                    ams_user_uuid = created_ams_user.uuid
                     user_count += 1
+                except AmsException as e:
+                    if isinstance(e, AmsServiceException) and e.code == 409:
+                        exists = True
+                    else:
+                        LOGGER.error("User: " + user_binding_name)
+                        LOGGER.error(
+                            "Something went wrong while creating ams user." +
+                            "\nError: " + str(e))
+                        continue
 
                 # If the user already exists, Get user by username
-                if ams_usr_crt_req.status_code == 409:
-                    proj_member_list_url = "https://{0}/v1/projects/{1}/members/{2}?key={3}".format(ams_host, ams_project, user_binding_name, ams_token)
-                    ams_usr_get_req = requests.get(url=proj_member_list_url, verify=verify)
-
-                    # if the user retrieval was ok
-                    if ams_usr_get_req.status_code == 200:
-                        LOGGER.info("\nSuccessfully retrieved user {} from ams".format(user_binding_name))
-                        ams_user_uuid = ams_usr_get_req.json()["uuid"]
-                    else:
-                        LOGGER.critical(
-                            "\nCould not retrieve user {} from ams."
-                            "\n Response {}".format(user_binding_name, ams_usr_get_req.text))
+                if exists:
+                    try:
+                        ams_user_uuid = \
+                            ams.get_project_member(username=user_binding_name,
+                                                   verify=verify).uuid
+                        LOGGER.info("Successfully retrieved user: " + user_binding_name)
+                    except AmsException as ae:
+                        LOGGER.error(
+                            "Could not retrieve user {0} from ams."
+                            "\nError: {1}".format(user_binding_name, str(ae)))
                         continue
 
                 # Create the respective AUTH binding
@@ -530,117 +536,101 @@ def create_users(config, verify):
                         continue
 
             # add the user to the AMS project with corresponding role
-            add_user_project_url = "https://{0}/v1/projects/{1}/members/{2}:add?key={3}".format(ams_host,
-                                                                                                ams_project,
-                                                                                                user_binding_name,
-                                                                                                ams_token)
+            try:
+                ams.add_project_member(username=user_binding_name,
+                                       roles=[users_role],
+                                       verify=verify)
+            except AmsException as e:
+                if isinstance(e, AmsServiceException) and e.code == 409:
+                    pass
+                else:
+                    LOGGER.error("Could not add user {0} to project {1}.\nError: {2}".format(user_binding_name,
+                                                                                             ams_project,
+                                                                                             str(e)))
+                    continue
 
-            add_user_project_req_body = {
-                "project": ams_project,
-                "roles": [users_role]
-            }
-
-            LOGGER.info("Adding user {0} to project {1} . . .".format(user_binding_name, ams_project))
-
-            add_user_project_req = requests.post(url=add_user_project_url,
-                                                 data=json.dumps(add_user_project_req_body), verify=verify)
-
-            if add_user_project_req.status_code != 200 and add_user_project_req.status_code != 409:
-                LOGGER.info("Could not add user {0} to project {1}.\nResponse {2}".format(user_binding_name,
-                                                                                          ams_project,
-                                                                                          add_user_project_req.text))
-                continue
-
-            # since both the ams user was created or already existed AND the authn binding was created or already existed
+            # since both the ams user was created or already existed
+            # AND the authn binding was created or already existed
             # move to topic and subscription creation
 
             # create new topic
             primary_key = service_endpoint. \
                 find("PRIMARY_KEY").text.replace(' ', '')
             topic_name = 'SITE_' + sitename + '_ENDPOINT_' + primary_key
-            topic_crt_req = requests.put(
-                "https://" + ams_host + "/v1/projects/" + ams_project +
-                "/topics/" + topic_name + "?key=" + ams_token, verify=verify)
-
             topic_authorized_users = [user_binding_name]
-            if topic_crt_req.status_code != 200:
-                if topic_crt_req.status_code != 409:
-                    LOGGER.critical(
-                        "Something went wrong while creating topic " +
-                        topic_name + "\nResponse: " + topic_crt_req.text)
-                    continue
-                else:
-                    get_topic_acl_req = requests.get(
-                        "https://" + ams_host + "/v1/projects/" + ams_project +
-                        "/topics/" + topic_name + ":acl?key=" + ams_token,
-                        verify=verify)
-                    if get_topic_acl_req.status_code == 200:
-                        acl_users = json.loads(get_topic_acl_req.text)
-                        topic_authorized_users = topic_authorized_users + acl_users['authorized_users']
-                        # remove duplicates
-                        topic_authorized_users = list(set(topic_authorized_users))
+            topic_exists = False
 
-            # modify the authorized users
-            modify_topic_req = requests.post(
-                "https://" + ams_host + "/v1/projects/" + ams_project +
-                "/topics/" + topic_name + ":modifyAcl?key=" + ams_token,
-                data=json.dumps({'authorized_users': topic_authorized_users}),
-                verify=verify)
-            LOGGER.critical(
-                "Modified ACL for topic: {0} with users {1}."
-                "Response from AMS {2}".
-                format(
-                    topic_name, str(user_binding_name), modify_topic_req.text))
+            try:
+                ams.create_topic(topic=topic_name, verify=verify)
+            except AmsException as e:
+                if isinstance(e, AmsServiceException) and e.code == 409:
+                    topic_exists = True
+                else:
+                    LOGGER.error("Could not create topic: {0}.\nError: {1}".format(topic_name, str(e)))
+                    continue
+
+            # modify the topic's acl
+            # check the already existing acl for the topic
+            if topic_exists:
+                try:
+                    acl = ams.getacl_topic(topic=topic_name, verify=verify)
+                    # remove duplicates
+                    topic_authorized_users = list(set(topic_authorized_users + acl["authorized_users"]))
+                except AmsException as ae:
+                    LOGGER.error("Couldn't get ACL for topic {0}.\nError: {1}".format(topic_name, str(ae)))
+                    continue
+
+            try:
+                ams.modifyacl_topic(topic=topic_name, users=topic_authorized_users, verify=verify)
+                LOGGER.info(
+                    "Modified ACL for topic: {0} with users {1}.".format(topic_name, str(topic_authorized_users)))
+            except AmsException as ae:
+                LOGGER.error("Could not modify ACL for topic {0}.\nError: {1}".format(topic_name, str(ae)))
+                continue
 
             # create new sub
             primary_key = service_endpoint.find("PRIMARY_KEY").text.replace(' ', '')
             sub_name = 'SITE_' + sitename + '_ENDPOINT_' + primary_key
             sub_authorized_users = [ams_consumer]
-            sub_data = dict()
-            sub_data["topic"] = "projects/" + ams_project + "/topics/" + sub_name
-            sub_data["ackDeadlineSeconds"] = 100
+            sub_exists = False
 
-            sub_crt_req = requests.put(
-                "https://" + ams_host + "/v1/projects/" + ams_project +
-                "/subscriptions/" + sub_name + "?key=" + ams_token, data=json.dumps(sub_data),verify=verify)
+            try:
+                ams.create_sub(sub=sub_name,
+                               topic=topic_name,
+                               ackdeadline=100,
+                               verify=verify)
+            except AmsException as e:
+                if isinstance(e, AmsServiceException) and e.code == 409:
+                    sub_exists = True
+                else:
+                    LOGGER.error("Could not create sub: {0}.\nError: {1}".format(sub_name, str(e)))
+                    continue
 
-            if sub_crt_req.status_code != 200 and sub_crt_req.status_code != 409:
-                LOGGER.critical(
-                    "Something went wrong while creating subscription " +
-                    sub_name + "\nResponse: " + sub_crt_req.text)
+            # modify the sub's acl
+            # check the already existing acl for the subscription
+            if sub_exists:
+                try:
+                    acl = ams.getacl_sub(sub=sub_name, verify=verify)
+                    # remove duplicates
+                    sub_authorized_users = list(set(sub_authorized_users + acl["authorized_users"]))
+                except AmsException as ae:
+                    LOGGER.error("Couldn't get ACL for sub {0}.\nError: {1}".format(sub_name, str(ae)))
+                    continue
 
-            if sub_crt_req.status_code == 409:
-                    get_sub_acl_req = requests.get(
-                        "https://" + ams_host + "/v1/projects/" + ams_project +
-                        "/subscriptions/" + sub_name + ":acl?key=" + ams_token,
-                        verify=verify)
-                    if get_sub_acl_req.status_code == 200:
-                        acl_users = json.loads(get_sub_acl_req.text)
-                        sub_authorized_users = sub_authorized_users + acl_users['authorized_users']
-                        # remove duplicates
-                        sub_authorized_users = list(set(sub_authorized_users))
+            try:
+                ams.modifyacl_sub(sub=sub_name, users=sub_authorized_users, verify=verify)
+                LOGGER.info(
+                    "Modified ACL for sub: {0} with users {1}.".format(sub_name, str(sub_authorized_users)))
+            except AmsException as ae:
+                LOGGER.error("Could not modify ACL for sub {0}.\nError: {1}".format(sub_name, str(ae)))
+                continue
 
-            # modify the authorized users
-            modify_sub_req = requests.post(
-                "https://" + ams_host + "/v1/projects/" + ams_project +
-                "/subscriptions/" + sub_name + ":modifyAcl?key=" + ams_token,
-                data=json.dumps({'authorized_users': sub_authorized_users}),
-                verify=verify)
-            LOGGER.critical(
-                "Modified ACL for subscription: {0} with users {1}."
-                "Response from AMS {2}".
-                format(
-                    sub_name, sub_authorized_users, modify_sub_req.text))
-
-        LOGGER.critical("Service Type: " + srv_type)
+        LOGGER.info("Service Type: " + srv_type)
         LOGGER.critical("Missing DNS: " + str(missing_dns))
         LOGGER.critical("Not in production endpoints: " +str(not_in_production_endpoints))
-        LOGGER.critical("Total Users Created: " + str(user_count))
-        LOGGER.critical("Total Bindings Updated: " + str(update_binding_count))
-        LOGGER.critical("Updated bingings: " + str(update_bindings_names))
-
-
-        LOGGER.critical("-----------------------------------------")
+        LOGGER.info("Total Users Created: " + str(user_count))
+        LOGGER.info("Total Bindings Updated: " + str(update_binding_count))
+        LOGGER.info("Updated bingings: " + str(update_bindings_names))
 
 
 def main(args=None):
