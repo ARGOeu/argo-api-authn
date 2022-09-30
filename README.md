@@ -1,6 +1,7 @@
 # Argo Api Authn
 
-<img src="https://jenkins.argo.grnet.gr/static/3c75a153/images/headshot.png" alt="Jenkins" width="25"/> [![Build Status](https://jenkins.argo.grnet.gr/job/argo-api-authn_devel/badge/icon)](https://jenkins.argo.grnet.gr/job/argo-api-authn_devel)
+[![Build Status](https://jenkins.einfra.grnet.gr/buildStatus/icon?job=ARGO%2Fargo-api-authn%2Fmaster&style=flat-square&color=darkturquoise&subject=build-master)](https://jenkins.einfra.grnet.gr/job/ARGO/job/argo-api-authn/job/master/) 
+[![Build Status](https://jenkins.einfra.grnet.gr/buildStatus/icon?job=ARGO%2Fargo-api-authn%2Fdevel&style=flat-square&subject=build-devel)](https://jenkins.einfra.grnet.gr/job/ARGO/job/argo-api-authn/job/devel/)
 
 Authentication Service for ARGO API(s)
 
