@@ -66,10 +66,10 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "c95d2c5c-937d-4df0-873d-f6fd9e35de9b",
+						"id": "edf1b517-d398-4834-8de2-50bf840c2383",
 						"type": "text/javascript",
 						"exec": [
-							"pm.test(\"Check that the Servie-type was successfully created\", function(){",
+							"pm.test(\"Check that the Service-type was successfully created\", function(){",
 							"        pm.response.to.have.status(201) ",
 							"});",
 							"",
@@ -89,7 +89,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"name\": \"ams-devel-cicd\",\n\t\"hosts\": [\"{{ams-host}}\"],\n\t\"auth_types\": [\"x509\"],\n\t\"auth_method\": \"api-key\",\n\t\"type\": \"ams\"\n}"
+					"raw": "{\n\t\"name\": \"ams-devel-cicd\",\n\t\"hosts\": [\"{{ams-host}}\"],\n\t\"auth_types\": [\"x509\"],\n\t\"auth_method\": \"headers\",\n\t\"type\": \"ams\"\n}"
 				},
 				"url": {
 					"raw": "https://{{authn-host}}/v1/service-types?key={{authn-token}}",
@@ -137,7 +137,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"port\": 443,\n\t\"host\": \"{{ams-host}}\",\n\t\"access_key\": \"{{ams-token}}\"\n}"
+					"raw": "{\n\t\"port\": 443,\n\t\"host\": \"{{ams-host}}\",\n\t\"headers\": {\n\t\t\"x-api-key\": \"{{ams-token}}\"\n\t}\n}"
 				},
 				"url": {
 					"raw": "https://{{authn-host}}/v1/service-types/ams-devel-cicd/authm?key={{authn-token}}",
@@ -187,7 +187,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"service_uuid\": \"{{st-uuid}}\",\n\t\"host\": \"{{ams-host}}\",\n\t\"auth_identifier\": \"CN=jenkins.einfra.grnet.gr,OU=E-Infrastructures Department,O=National Infrastructures for Research and Technology (GRNET),L=Athens,C=GR\",\n\t\"unique_key\": \"3530bde2-a8bc-417b-9f8e-c36dedeedafb\",\n\t\"auth_type\": \"x509\"\n}\n"
+					"raw": "{\n\t\"service_uuid\": \"{{st-uuid}}\",\n\t\"host\": \"{{ams-host}}\",\n\t\"auth_identifier\": \"CN=*.einfra.grnet.gr,OU=GRNET,O=National Infrastructures for Research and Technology,ST=Attikí,C=GR\",\n\t\"unique_key\": \"3530bde2-a8bc-417b-9f8e-c36dedeedafb\",\n\t\"auth_type\": \"x509\"\n}\n"
 				},
 				"url": {
 					"raw": "https://{{authn-host}}/v1/bindings/authn-cicd?key={{authn-token}}",

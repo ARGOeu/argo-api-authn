@@ -3,10 +3,13 @@ package handlers
 import (
 	"bytes"
 	"github.com/ARGOeu/argo-api-authn/stores"
+	"github.com/ARGOeu/argo-api-authn/utils"
 	LOGGER "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"net/http"
+	"strings"
 	"testing"
+	"time"
 
 	"encoding/json"
 	"github.com/ARGOeu/argo-api-authn/bindings"
@@ -865,7 +868,8 @@ func (suite *BindingHandlersSuite) TestBindingUpdate() {
  "auth_identifier": "test_dn_1",
  "unique_key": "unique_key_1",
  "auth_type": "x509",
- "created_on": "2018-05-05T15:04:05Z"
+ "created_on": "2018-05-05T15:04:05Z",
+ "updated_on": "{{UPDATED_ON}}"
 }`
 	req, err := http.NewRequest("PUT", "http://localhost:8080/bindings/b1", bytes.NewBuffer([]byte(postJSON)))
 	if err != nil {
@@ -882,6 +886,13 @@ func (suite *BindingHandlersSuite) TestBindingUpdate() {
 	w := httptest.NewRecorder()
 	router.HandleFunc("/bindings/{name}", WrapConfig(BindingUpdate, mockstore, cfg))
 	router.ServeHTTP(w, req)
+
+	qB, _ := mockstore.QueryBindingsByUUIDAndName("b_uuid1", "updated_name")
+	expRespJSON = strings.Replace(expRespJSON, "{{UPDATED_ON}}", qB[0].UpdatedOn, 1)
+	// make sure the updated time is before now
+	updatedTime, _ := time.Parse(utils.ZULU_FORM, qB[0].UpdatedOn)
+	suite.True(updatedTime.Before(time.Now().UTC()))
+
 	suite.Equal(200, w.Code)
 	suite.Equal(expRespJSON, w.Body.String())
 }

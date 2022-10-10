@@ -400,7 +400,6 @@ func (mongo *MongoStore) UpdateAuthMethod(original QAuthMethod, updated QAuthMet
 
 	db := mongo.Session.DB(mongo.Database)
 	c := db.C("auth_methods")
-
 	if err := c.Update(original, updated); err != nil {
 		log.WithFields(
 			log.Fields{

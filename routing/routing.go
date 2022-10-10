@@ -69,7 +69,7 @@ func NewRouting(routes []APIRoute, store stores.Store, config *config.Config) *A
 }
 
 var ApiRoutes = []APIRoute{
-	{"serviceTypes:create", "POST", "/service-types", handlers.ServiceTypeCreate, true},
+	{"serviceTypes:Create", "POST", "/service-types", handlers.ServiceTypeCreate, true},
 	{"serviceTypes:ListOne", "GET", "/service-types/{service-type}", handlers.ServiceTypesListOne, true},
 	{"serviceTypes:DeleteOne", "DELETE", "/service-types/{service-type}", handlers.ServiceTypeDeleteOne, true},
 	{"serviceTypes:ListOne", "PUT", "/service-types/{service-type}", handlers.ServiceTypeUpdate, true},
@@ -77,13 +77,13 @@ var ApiRoutes = []APIRoute{
 	{"authMethod:Create", "POST", "/service-types/{service-type}/authm", handlers.AuthMethodCreate, true},
 	{"authMethod:ListOne", "GET", "/service-types/{service-type}/hosts/{host}/authm", handlers.AuthMethodListOne, true},
 	{"authMethod:Delete", "DELETE", "/service-types/{service-type}/hosts/{host}/authm", handlers.AuthMethodDeleteOne, true},
-	{"authMethod:Delete", "PUT", "/service-types/{service-type}/hosts/{host}/authm", handlers.AuthMethodUpdateOne, true},
+	{"authMethod:Update", "PUT", "/service-types/{service-type}/hosts/{host}/authm", handlers.AuthMethodUpdateOne, true},
 	{"bindings:ListAllByServiceTypeAndHost", "GET", "/service-types/{service-type}/hosts/{host}/bindings", handlers.BindingListAllByServiceTypeAndHost, true},
 	{"authMethod:ListAll", "GET", "/authm", handlers.AuthMethodListAll, true},
-	{"bindings:create", "POST", "/bindings/{name}", handlers.BindingCreate, true},
+	{"bindings:Create", "POST", "/bindings/{name}", handlers.BindingCreate, true},
 	{"bindings:ListAll", "GET", "/bindings", handlers.BindingListAll, true},
-	{"bindings:update", "PUT", "/bindings/{name}", handlers.BindingUpdate, true},
+	{"bindings:Update", "PUT", "/bindings/{name}", handlers.BindingUpdate, true},
 	{"bindings:ListOneByName", "GET", "/bindings/{name}", handlers.BindingListOneByName, true},
-	{"bindings:delete", "DELETE", "/bindings/{name}", handlers.BindingDelete, true},
-	{"auth:dn", "GET", "/service-types/{service-type}/hosts/{host}:authx509", handlers.AuthViaCert, false},
+	{"bindings:Delete", "DELETE", "/bindings/{name}", handlers.BindingDelete, true},
+	{"auth:Map", "GET", "/service-types/{service-type}/hosts/{host}:authx509", handlers.AuthViaCert, false},
 }

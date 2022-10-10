@@ -683,6 +683,10 @@ definitions:
         description: the type of authentication that this binding represets(e.g. x509)
       created_on:
         type: string
+        description: when the binding was created
+      updated_on:
+        type: string
+        description: when the binding was updated
       last_auth:
         type: string
 
@@ -722,8 +726,10 @@ definitions:
         description: service type's type, either AMS or web-api
       created_on:
         type: string
-        enum: [ams, web-api]
         description: datetime of creation
+      updated_on:
+        type: string
+        description: when the servcie type was updated
 
   AuthMethods:
     type: object
@@ -763,6 +769,9 @@ definitions:
       created_on:
         type: string
         description: when the auth method was created
+      updated_on:
+        type: string
+        description: when the auth method was updated
 
 
   TokenResponse:

@@ -105,7 +105,8 @@ GET/v1/service-types
             "auth_method": "api-key",
             "uuid": "da22b2d4-ba6c-43ca-b28d-400sd0a5d83e",
             "type": "ams",
-            "created_on": "2018-05-13T21:52:58Z"
+            "created_on": "2018-05-13T21:52:58Z",
+            "updated_on": "2021-05-05T18:04:05Z"
         }
     ]
 }
@@ -137,7 +138,8 @@ If the request is successful, the response contains information for the requeste
     	"auth_method": "api-key",
     	"uuid": "da22b2d4-ba6c-43ca-b28d-400cd0a5d83e",
     	"type": "ams",
-    	"created_on": "2018-05-05T18:04:05Z" 
+    	"created_on": "2018-05-05T18:04:05Z",
+        "updated_on": "2021-05-05T18:04:05Z"
     }
 ```
 
@@ -180,7 +182,8 @@ If the request is successful, the response contains the updated service type.
     	"auth_method": "api-key",
     	"uuid": "da22b2d4-ba6c-43ca-b28d-400cd0a5d83e",
     	"type": "ams",
-    	"created_on": "2018-05-05T18:04:05Z" 
+    	"created_on": "2018-05-05T18:04:05Z",
+        "updated_on": "2021-05-05T18:04:05Z"
  }
 ```
   

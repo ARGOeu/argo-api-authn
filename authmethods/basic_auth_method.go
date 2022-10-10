@@ -13,6 +13,7 @@ type BasicAuthMethod struct {
 	Type        string `json:"type" required:"true"`
 	UUID        string `json:"uuid"`
 	CreatedOn   string `json:"created_on"`
+	UpdatedOn   string `json:"updated_on,omitempty"`
 }
 
 // TempBasicAuthMethod represents the fields that are allowed to be modified

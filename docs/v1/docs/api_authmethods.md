@@ -80,7 +80,10 @@ Success Response
 
 ```
         {
-            "access_key": "key1",
+            "headers": {
+                "header-1": "value-1",
+                "header-2": "value-2"
+            },
             "host": "127.0.0.1",
             "service_uuid": "da22b2d4-ba6c-43ca-b28d-400sd0a5d83e",
             "port": 9000,
@@ -121,7 +124,8 @@ If the request is successful, the response contains information for the requeste
             "port": 9000,
             "type": "api-key",
             "uuid": "da22b2d4-8ip0-43ca-b28d-500sd0a5d876e",
-            "created_on": "2018-05-05T18:04:05Z"
+            "created_on": "2018-05-05T18:04:05Z",
+            "updated_on": "2021-05-05T18:04:05Z"
         }
 ```
 Please refer to section [Errors](api_errors.md) to see all possible Errors
@@ -157,7 +161,8 @@ If the request is successful, the response contains information for all the auth
             "port": 9000,
             "type": "api-key",
             "uuid": "da22b2d4-8ip0-43ca-b28d-500sd0a5d876e",
-            "created_on": "2018-05-05T18:04:05Z"
+            "created_on": "2018-05-05T18:04:05Z",
+            "updated_on": "2021-05-05T18:04:05Z"
         },
         {
             "access_key": "key1",
@@ -166,7 +171,8 @@ If the request is successful, the response contains information for all the auth
             "port": 9000,
             "type": "api-key",
             "uuid": "da22b2d4-9kl2-43ca-b28d-500sd0a5d876e",
-            "created_on": "2018-05-05T18:04:05Z"
+            "created_on": "2018-05-05T18:04:05Z",
+            "updated_on": "2021-05-05T18:04:05Z"
         }
   ]
 }
@@ -214,7 +220,8 @@ Success Response
             "port": 8080,
             "type": "api-key",
             "uuid": "da22b2d4-8ip0-43ca-b28d-500sd0a5d876e",
-            "created_on": "2018-05-05T18:04:05Z"
+            "created_on": "2018-05-05T18:04:05Z",
+            "updated_on": "2021-05-05T18:04:05Z"
         }
 ```
 
