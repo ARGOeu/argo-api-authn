@@ -47,7 +47,11 @@ install --mode 644 src/github.com/ARGOeu/argo-api-authn/argo-api-authn.service %
 %{__rm} -rf %{buildroot}
 export GOPATH=$PWD
 cd src/github.com/ARGOeu/argo-api-authn/
-go clean
+
+export GIT_COMMIT=$(git rev-list -1 HEAD)
+export BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+export CGO_CFLAGS"=-O2 -fstack-protector --param=ssp-buffer-size=4 -D_FORTIFY_SOURCE=2"
+go install -buildmode=pie -ldflags "-s -w -linkmode=external -extldflags '-z relro -z now' -X github.com/ARGOeu/argo-api-authn/version.Commit=$GIT_COMMIT -X github.com/ARGOeu/argo-api-authn/version.BuildTime=$BUILD_TIME"
 
 %files
 %defattr(0644,argo-api-authn,argo-api-authn)

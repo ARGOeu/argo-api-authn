@@ -72,7 +72,7 @@ func (cfg *Config) ConfigSetUp(path string) error {
 	return nil
 }
 
-// ClintAuthPolicy determines, based on the given configuration what client authentication policy should the server follow
+// ClientAuthPolicy determines, based on the given configuration what client authentication policy should the server follow
 func (cfg *Config) ClientAuthPolicy() tls.ClientAuthType {
 
 	var policy = tls.VerifyClientCertIfGiven

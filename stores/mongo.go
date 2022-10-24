@@ -287,7 +287,7 @@ func (mongo *MongoStore) QueryBindings(serviceUUID string, host string) ([]QBind
 	return qBindings, err
 }
 
-//InsertServiceType inserts a new service into the datastore
+// InsertServiceType inserts a new service into the datastore
 func (mongo *MongoStore) InsertServiceType(name string, hosts []string, authTypes []string, authMethod string, uuid string, createdOn string, sType string) (QServiceType, error) {
 
 	var qService QServiceType
@@ -312,7 +312,7 @@ func (mongo *MongoStore) InsertServiceType(name string, hosts []string, authType
 	return qService, err
 }
 
-//InsertBinding inserts a new binding into the datastore
+// InsertBinding inserts a new binding into the datastore
 func (mongo *MongoStore) InsertBinding(name string, serviceUUID string, host string, uuid string, authID string, uniqueKey string, authType string) (QBinding, error) {
 
 	var qBinding QBinding
@@ -347,7 +347,7 @@ func (mongo *MongoStore) InsertBinding(name string, serviceUUID string, host str
 	return qBinding, err
 }
 
-//UpdateBinding updates the given binding
+// UpdateBinding updates the given binding
 func (mongo *MongoStore) UpdateBinding(original QBinding, updated QBinding) (QBinding, error) {
 
 	var err error
@@ -370,7 +370,7 @@ func (mongo *MongoStore) UpdateBinding(original QBinding, updated QBinding) (QBi
 	return updated, err
 }
 
-//UpdateServiceType updates the given binding
+// UpdateServiceType updates the given binding
 func (mongo *MongoStore) UpdateServiceType(original QServiceType, updated QServiceType) (QServiceType, error) {
 
 	var err error
@@ -438,7 +438,7 @@ func (mongo *MongoStore) DeleteServiceTypeByUUID(uuid string) error {
 	return err
 }
 
-// Delete binding deletes a binding from the store
+// DeleteBinding deletes a binding from the store
 func (mongo *MongoStore) DeleteBinding(qBinding QBinding) error {
 
 	var err error
