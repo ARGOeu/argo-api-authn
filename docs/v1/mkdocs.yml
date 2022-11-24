@@ -18,5 +18,7 @@ pages:
     - API Service Types: api_service_types.md
     - API Auth Methods: api_authmethods.md
     - API Certificate Functionality: auth_certificate.md
+    - API Version: api_version.md
+    - API Health: api_health.md
     - API Error Messages: api_errors.md
 theme: readthedocs

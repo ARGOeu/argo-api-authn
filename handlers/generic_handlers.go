@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
+	"github.com/ARGOeu/argo-api-authn/version"
 	"github.com/gorilla/context"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -26,7 +28,7 @@ func WrapConfig(hfn http.HandlerFunc, store stores.Store, config *config.Config)
 	})
 }
 
-//WrapAuth authorizes the user
+// WrapAuth authorizes the user
 func WrapAuth(hfn http.HandlerFunc, store stores.Store) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -60,4 +62,36 @@ func WrapLog(hfn http.Handler, name string) http.HandlerFunc {
 		).Info("")
 
 	})
+}
+
+// ListVersion displays version information about the service
+func ListVersion(w http.ResponseWriter, r *http.Request) {
+
+	// Add content type header to the response
+	contentType := "application/json"
+	charset := "utf-8"
+	w.Header().Add("Content-Type", fmt.Sprintf("%s; charset=%s", contentType, charset))
+
+	v := version.Version{
+		BuildTime: version.BuildTime,
+		GO:        version.GO,
+		Compiler:  version.Compiler,
+		OS:        version.OS,
+		Arch:      version.Arch,
+		Distro:    version.Distro,
+	}
+
+	urlQueryVars := r.URL.Query()
+	serviceToken := context.Get(r, "service_token").(string)
+	// Show the api release only for authorised requests
+	if urlQueryVars.Get("key") == serviceToken {
+		v.Release = version.Release
+	}
+
+	utils.RespondOk(w, http.StatusOK, v)
+}
+
+// HealthCheck just returns when the service is up and running
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	utils.RespondOk(w, http.StatusOK, nil)
 }
