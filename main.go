@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/ARGOeu/argo-api-authn/version"
 	"net/http"
 
 	"github.com/gorilla/handlers"
@@ -21,9 +20,6 @@ import (
 
 func init() {
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true, DisableColors: true})
-
-	// display binary version information during start up
-	version.LogInfo()
 }
 
 func main() {
