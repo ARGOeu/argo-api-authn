@@ -25,33 +25,6 @@ tags:
 
 paths:
 
-  /version:
-    get:
-      summary: "List API Version information"
-      description: "List api version information such as release version, commit hash etc.Authorisation is required when we want to access the release field as well."
-      parameters:
-        - $ref: '#/parameters/ApiKey'
-      tags:
-        - Version
-      produces:
-        - "application/json"
-      responses:
-        200:
-          description: "Successful retrieval of version info"
-          schema:
-            $ref: "#/definitions/Version"
-
-  /health:
-    get:
-      summary: List the health status for authn
-      description: |
-        list health status
-      tags:
-        - Health Check
-      responses:
-        200:
-          description: Returns the health status
-
   /service-types:
     post:
       summary: Create a new service type
@@ -830,21 +803,3 @@ definitions:
           status:
             type: string
             description: status of the error
-
-  Version:
-    type: object
-    properties:
-      build_time:
-        type: string
-      golang:
-        type: string
-      compiler:
-        type: string
-      os:
-        type: string
-      architecture:
-        type: string
-      release:
-        type: string
-      distro:
-        type: string

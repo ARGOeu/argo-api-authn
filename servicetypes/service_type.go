@@ -199,7 +199,7 @@ func FindAllServiceTypes(store stores.Store) (ServiceTypesList, error) {
 
 }
 
-// HasHost returns whether or not a host is associated with a service type
+// hsHost returns whether or not a host is associated with a service type
 func (s *ServiceType) HasHost(host string) bool {
 
 	flag := false
@@ -290,7 +290,7 @@ func (s *ServiceType) IsOfValidType(cfg config.Config) error {
 	return err
 }
 
-// UpdateServiceType updates a binding after validating its fields
+//UpdateServiceType updates a binding after validating its fields
 func UpdateServiceType(original ServiceType, tempServiceType TempServiceType, store stores.Store, cfg config.Config) (ServiceType, error) {
 
 	var err error

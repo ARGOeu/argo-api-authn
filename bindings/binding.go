@@ -36,7 +36,7 @@ type BindingList struct {
 	Bindings []Binding `json:"bindings"`
 }
 
-// CreateBinding creates a new binding after validating its context
+//CreateBinding creates a new binding after validating its context
 func CreateBinding(binding Binding, store stores.Store) (Binding, error) {
 
 	var qBinding stores.QBinding
@@ -204,7 +204,7 @@ func FindAllBindings(store stores.Store) (BindingList, error) {
 
 }
 
-// FindBindingsByServiceTypeAndHost returns all the bindings of a specific service type and host
+//FindBindingsByServiceTypeAndHost returns all the bindings of a specific service type and host
 func FindBindingsByServiceTypeAndHost(serviceUUID string, host string, store stores.Store) (BindingList, error) {
 
 	var qBindings []stores.QBinding
@@ -258,7 +258,7 @@ func FindBindingByUUIDAndName(uuid, name string, store stores.Store) (Binding, e
 	return binding, err
 }
 
-// UpdateBinding updates a binding after validating its fields
+//UpdateBinding updates a binding after validating its fields
 func UpdateBinding(original Binding, tempBind TempUpdateBinding, store stores.Store) (Binding, error) {
 
 	var err error
