@@ -1,3 +1,9 @@
+---
+id: api_service_types
+title: Service Types
+sidebar_position: 2
+---
+
 # Service API Calls
 
 ## [POST] Manage Service Types - Create New Service Type

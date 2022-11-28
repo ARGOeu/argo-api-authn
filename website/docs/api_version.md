@@ -1,3 +1,9 @@
+---
+id: api_version
+title: Version
+sidebar_position: 5
+---
+
 # Version API Call
 
 ## [GET] Version API Call
