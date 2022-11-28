@@ -1,3 +1,9 @@
+---
+id: auth_certificate
+title: Auth Certificate
+sidebar_position: 4
+---
+
 # Authenticate Using an x509 certificate
 
 ## [GET] Authenticate Via x509
