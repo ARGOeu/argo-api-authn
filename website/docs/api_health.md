@@ -1,3 +1,9 @@
+---
+id: api_health
+title: Health
+sidebar_position: 6
+---
+
 # Health API Call
 
 ## [GET] Health API Call
