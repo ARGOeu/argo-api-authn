@@ -1,3 +1,10 @@
+---
+id: api_bindings
+title: Bindings
+sidebar_position: 1
+slug: /
+---
+
 # Binding API Calls
 
 This documentation file contains guidelines in order to interact with the binding entity.
