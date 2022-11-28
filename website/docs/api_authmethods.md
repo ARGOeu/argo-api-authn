@@ -1,3 +1,9 @@
+---
+id: api_auth_methods
+title: Auth Methods
+sidebar_position: 3
+---
+
 # Auth method API Calls
 
 ## [POST] Manage Auth Methods - Create New Auth Method
