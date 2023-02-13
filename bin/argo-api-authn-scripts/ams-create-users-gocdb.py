@@ -455,9 +455,15 @@ def create_users(config, verify):
 
                 exists = False
                 try:
-                    # create the user
-                    created_ams_user = ams.create_user(user=user_create_data, verify=verify)
-                    LOGGER.info("Created user: " + created_ams_user.name)
+                    # create the project member user
+                    created_ams_user = ams.create_project_member(
+                        username=user_binding_name,
+                        project=ams_project,
+                        roles=[users_role],
+                        email=contact_email,
+                        verify=verify
+                    )
+                    LOGGER.info("Created project member user: " + created_ams_user.name)
                     ams_user_uuid = created_ams_user.uuid
                     user_count += 1
                 except AmsException as e:
@@ -466,7 +472,7 @@ def create_users(config, verify):
                     else:
                         LOGGER.error("User: " + user_binding_name)
                         LOGGER.error(
-                            "Something went wrong while creating ams user." +
+                            "Something went wrong while creating ams project member user." +
                             "\nError: " + str(e))
                         continue
 
