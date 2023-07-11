@@ -2,6 +2,7 @@ package authmethods
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -33,12 +34,12 @@ func NewApiKeyAuthMethod() AuthMethod {
 	return new(ApiKeyAuthMethod)
 }
 
-func (m *ApiKeyAuthMethod) Validate(store stores.Store) error {
+func (m *ApiKeyAuthMethod) Validate(ctx context.Context, store stores.Store) error {
 
 	var err error
 
 	// check if the embedded struct is valid
-	if err = m.BasicAuthMethod.Validate(store); err != nil {
+	if err = m.BasicAuthMethod.Validate(ctx, store); err != nil {
 		return err
 	}
 
@@ -108,7 +109,8 @@ func (m *ApiKeyAuthMethod) Update(r io.ReadCloser) (AuthMethod, error) {
 	return updatedAM, err
 }
 
-func (m *ApiKeyAuthMethod) RetrieveAuthResource(binding bindings.Binding, serviceType servicetypes.ServiceType, cfg *config.Config) (map[string]interface{}, error) {
+func (m *ApiKeyAuthMethod) RetrieveAuthResource(ctx context.Context, binding bindings.Binding,
+	serviceType servicetypes.ServiceType, cfg *config.Config) (map[string]interface{}, error) {
 
 	var externalResp map[string]interface{}
 	var err error
@@ -122,6 +124,7 @@ func (m *ApiKeyAuthMethod) RetrieveAuthResource(binding bindings.Binding, servic
 		err = utils.APIGenericInternalError("Backend error")
 		log.WithFields(
 			log.Fields{
+				"trace_id":      ctx.Value("trace_id"),
 				"type":          "service_log",
 				"config_fields": cfg.ServiceTypesRetrievalFields,
 			},
@@ -134,8 +137,9 @@ func (m *ApiKeyAuthMethod) RetrieveAuthResource(binding bindings.Binding, servic
 		err = utils.APIGenericInternalError("Backend error")
 		log.WithFields(
 			log.Fields{
-				"type":  "service_log",
-				"paths": cfg.ServiceTypesPaths,
+				"trace_id": ctx.Value("trace_id"),
+				"type":     "service_log",
+				"paths":    cfg.ServiceTypesPaths,
 			},
 		).Errorf("The path for type: %v was not found in the config retrieval fields", serviceType.Type)
 		return externalResp, err
@@ -177,7 +181,8 @@ func (m *ApiKeyAuthMethod) RetrieveAuthResource(binding bindings.Binding, servic
 
 	// check if the retrieval field that we need is present in the response
 	if authResource, ok = externalResp[retrievalField]; !ok {
-		err = utils.APIGenericInternalError(fmt.Sprintf("The specified retrieval field: `%v` was not found in the response body of the service type", retrievalField))
+		err = utils.APIGenericInternalError(fmt.Sprintf("The specified retrieval field: `%v`"+
+			" was not found in the response body of the service type", retrievalField))
 		return externalResp, err
 	}
 
@@ -186,13 +191,13 @@ func (m *ApiKeyAuthMethod) RetrieveAuthResource(binding bindings.Binding, servic
 
 }
 
-func ApiKeyAuthFinder(serviceUUID string, host string, store stores.Store) ([]stores.QAuthMethod, error) {
+func ApiKeyAuthFinder(ctx context.Context, serviceUUID string, host string, store stores.Store) ([]stores.QAuthMethod, error) {
 
 	var err error
 	var qAms []stores.QAuthMethod
 	var qApiAms []stores.QApiKeyAuthMethod
 
-	if qApiAms, err = store.QueryApiKeyAuthMethods(serviceUUID, host); err != nil {
+	if qApiAms, err = store.QueryApiKeyAuthMethods(ctx, serviceUUID, host); err != nil {
 		return qAms, err
 	}
 

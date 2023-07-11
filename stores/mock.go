@@ -1,6 +1,7 @@
 package stores
 
 import (
+	"context"
 	"github.com/ARGOeu/argo-api-authn/utils"
 	"reflect"
 )
@@ -62,7 +63,7 @@ func (mock *Mockstore) Clone() Store {
 
 }
 
-func (mock *Mockstore) QueryServiceTypes(name string) ([]QServiceType, error) {
+func (mock *Mockstore) QueryServiceTypes(ctx context.Context, name string) ([]QServiceType, error) {
 
 	var qServices []QServiceType
 
@@ -79,7 +80,7 @@ func (mock *Mockstore) QueryServiceTypes(name string) ([]QServiceType, error) {
 	return qServices, nil
 }
 
-func (mock *Mockstore) QueryServiceTypesByUUID(uuid string) ([]QServiceType, error) {
+func (mock *Mockstore) QueryServiceTypesByUUID(ctx context.Context, uuid string) ([]QServiceType, error) {
 
 	var qServices []QServiceType
 
@@ -92,7 +93,7 @@ func (mock *Mockstore) QueryServiceTypesByUUID(uuid string) ([]QServiceType, err
 	return qServices, nil
 }
 
-func (mock *Mockstore) QueryApiKeyAuthMethods(serviceUUID string, host string) ([]QApiKeyAuthMethod, error) {
+func (mock *Mockstore) QueryApiKeyAuthMethods(ctx context.Context, serviceUUID string, host string) ([]QApiKeyAuthMethod, error) {
 
 	var qAuthms []QApiKeyAuthMethod
 	var err error
@@ -120,7 +121,7 @@ func (mock *Mockstore) QueryApiKeyAuthMethods(serviceUUID string, host string) (
 
 }
 
-func (mock *Mockstore) QueryHeadersAuthMethods(serviceUUID string, host string) ([]QHeadersAuthMethod, error) {
+func (mock *Mockstore) QueryHeadersAuthMethods(ctx context.Context, serviceUUID string, host string) ([]QHeadersAuthMethod, error) {
 
 	var qAuthms []QHeadersAuthMethod
 	var err error
@@ -148,7 +149,7 @@ func (mock *Mockstore) QueryHeadersAuthMethods(serviceUUID string, host string) 
 
 }
 
-func (mock *Mockstore) QueryBindingsByAuthID(authID string, serviceUUID string, host string, authType string) ([]QBinding, error) {
+func (mock *Mockstore) QueryBindingsByAuthID(ctx context.Context, authID string, serviceUUID string, host string, authType string) ([]QBinding, error) {
 
 	var qBindings []QBinding
 
@@ -161,7 +162,7 @@ func (mock *Mockstore) QueryBindingsByAuthID(authID string, serviceUUID string, 
 	return qBindings, nil
 }
 
-func (mock *Mockstore) QueryBindingsByUUIDAndName(uuid, name string) ([]QBinding, error) {
+func (mock *Mockstore) QueryBindingsByUUIDAndName(ctx context.Context, uuid, name string) ([]QBinding, error) {
 
 	var qBindings []QBinding
 
@@ -192,7 +193,7 @@ func (mock *Mockstore) QueryBindingsByUUIDAndName(uuid, name string) ([]QBinding
 	return qBindings, nil
 }
 
-func (mock *Mockstore) QueryBindings(serviceUUID string, host string) ([]QBinding, error) {
+func (mock *Mockstore) QueryBindings(ctx context.Context, serviceUUID string, host string) ([]QBinding, error) {
 
 	var qBindings []QBinding
 
@@ -210,14 +211,14 @@ func (mock *Mockstore) QueryBindings(serviceUUID string, host string) ([]QBindin
 	return qBindings, nil
 }
 
-func (mock *Mockstore) InsertAuthMethod(am QAuthMethod) error {
+func (mock *Mockstore) InsertAuthMethod(ctx context.Context, am QAuthMethod) error {
 
 	mock.AuthMethods = append(mock.AuthMethods, am)
 
 	return nil
 }
 
-func (mock *Mockstore) InsertServiceType(name string, hosts []string, authTypes []string, authMethod string, uuid string, createdOn string, sType string) (QServiceType, error) {
+func (mock *Mockstore) InsertServiceType(ctx context.Context, name string, hosts []string, authTypes []string, authMethod string, uuid string, createdOn string, sType string) (QServiceType, error) {
 
 	qService := QServiceType{Name: name, Hosts: hosts, AuthTypes: authTypes, AuthMethod: authMethod, UUID: uuid, CreatedOn: createdOn, Type: sType}
 
@@ -226,7 +227,7 @@ func (mock *Mockstore) InsertServiceType(name string, hosts []string, authTypes 
 	return qService, nil
 }
 
-func (mock *Mockstore) InsertBinding(name string, serviceUUID string, host string, uuid string, authID string, uniqueKey string, authType string) (QBinding, error) {
+func (mock *Mockstore) InsertBinding(ctx context.Context, name string, serviceUUID string, host string, uuid string, authID string, uniqueKey string, authType string) (QBinding, error) {
 
 	qBinding := QBinding{
 		Name:           name,
@@ -245,7 +246,7 @@ func (mock *Mockstore) InsertBinding(name string, serviceUUID string, host strin
 
 }
 
-func (mock *Mockstore) UpdateBinding(original QBinding, updated QBinding) (QBinding, error) {
+func (mock *Mockstore) UpdateBinding(ctx context.Context, original QBinding, updated QBinding) (QBinding, error) {
 
 	// find the  binding in the list and replace it
 	for idx, qb := range mock.Bindings {
@@ -258,7 +259,7 @@ func (mock *Mockstore) UpdateBinding(original QBinding, updated QBinding) (QBind
 	return updated, nil
 }
 
-func (mock *Mockstore) UpdateServiceType(original QServiceType, updated QServiceType) (QServiceType, error) {
+func (mock *Mockstore) UpdateServiceType(ctx context.Context, original QServiceType, updated QServiceType) (QServiceType, error) {
 
 	// find the service type in the list and replace it
 	for idx, sv := range mock.ServiceTypes {
@@ -271,7 +272,7 @@ func (mock *Mockstore) UpdateServiceType(original QServiceType, updated QService
 	return updated, nil
 }
 
-func (mock *Mockstore) UpdateAuthMethod(original QAuthMethod, updated QAuthMethod) (QAuthMethod, error) {
+func (mock *Mockstore) UpdateAuthMethod(ctx context.Context, original QAuthMethod, updated QAuthMethod) (QAuthMethod, error) {
 
 	// find the auth method in the list and replace it
 	for idx, sv := range mock.AuthMethods {
@@ -284,7 +285,7 @@ func (mock *Mockstore) UpdateAuthMethod(original QAuthMethod, updated QAuthMetho
 	return updated, nil
 }
 
-func (mock *Mockstore) DeleteServiceTypeByUUID(uuid string) error {
+func (mock *Mockstore) DeleteServiceTypeByUUID(ctx context.Context, uuid string) error {
 
 	for idx, st := range mock.ServiceTypes {
 		if st.UUID == uuid {
@@ -297,7 +298,7 @@ func (mock *Mockstore) DeleteServiceTypeByUUID(uuid string) error {
 }
 
 // DeleteBinding removes the given qBinding from the slice of bindings
-func (mock *Mockstore) DeleteBinding(qBinding QBinding) error {
+func (mock *Mockstore) DeleteBinding(ctx context.Context, qBinding QBinding) error {
 
 	// find the  binding in the list and replace it
 	for idx, qb := range mock.Bindings {
@@ -310,7 +311,7 @@ func (mock *Mockstore) DeleteBinding(qBinding QBinding) error {
 	return nil
 }
 
-func (mock *Mockstore) DeleteBindingByServiceUUID(serviceUUID string) error {
+func (mock *Mockstore) DeleteBindingByServiceUUID(ctx context.Context, serviceUUID string) error {
 
 	var remainingBindings []QBinding
 
@@ -325,7 +326,7 @@ func (mock *Mockstore) DeleteBindingByServiceUUID(serviceUUID string) error {
 	return nil
 }
 
-func (mock *Mockstore) DeleteAuthMethod(am QAuthMethod) error {
+func (mock *Mockstore) DeleteAuthMethod(ctx context.Context, am QAuthMethod) error {
 
 	// loop through the slice of auth methods
 	// and delete
@@ -341,7 +342,7 @@ func (mock *Mockstore) DeleteAuthMethod(am QAuthMethod) error {
 
 }
 
-func (mock *Mockstore) DeleteAuthMethodByServiceUUID(serviceUUID string) error {
+func (mock *Mockstore) DeleteAuthMethodByServiceUUID(ctx context.Context, serviceUUID string) error {
 
 	var remainingQAM []QAuthMethod
 
