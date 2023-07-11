@@ -1,13 +1,15 @@
 package stores
 
 import (
+	"context"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
 type StoreTestSuite struct {
 	suite.Suite
-	Mockstore *Mockstore
+	mockStore *Mockstore
+	ctx       context.Context
 }
 
 // SetUpTestSuite assigns the mock store to be used in the querying tests
@@ -16,10 +18,11 @@ func (suite *StoreTestSuite) SetUpStoreTestSuite() {
 
 	mockstore := &Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
-	suite.Mockstore = mockstore
+	suite.mockStore = mockstore
+	suite.ctx = context.Background()
 }
 
-// TestSetUp tests if the mockstore setup has been completed successfully
+// TestSetUp tests if the mockStore setup has been completed successfully
 func (suite *StoreTestSuite) TestSetUp() {
 
 	suite.SetUpStoreTestSuite()
@@ -65,17 +68,17 @@ func (suite *StoreTestSuite) TestClose() {
 
 	suite.SetUpStoreTestSuite()
 
-	suite.Mockstore.Close()
-	suite.Equal(false, suite.Mockstore.Session)
+	suite.mockStore.Close()
+	suite.Equal(false, suite.mockStore.Session)
 }
 
 func (suite *StoreTestSuite) TestClone() {
 
 	suite.SetUpStoreTestSuite()
 
-	tempStore := suite.Mockstore.Clone()
+	tempStore := suite.mockStore.Clone()
 
-	suite.Equal(suite.Mockstore, tempStore)
+	suite.Equal(suite.mockStore, tempStore)
 
 }
 
@@ -85,9 +88,9 @@ func (suite *StoreTestSuite) TestQueryServiceTypes() {
 
 	// normal case outcome - 1 service
 	expQServices1 := []QServiceType{{Name: "s1", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"}}
-	qServices1, err1 := suite.Mockstore.QueryServiceTypes("s1")
+	qServices1, err1 := suite.mockStore.QueryServiceTypes(suite.ctx, "s1")
 	expQServices2 := []QServiceType{{Name: "s2", Hosts: []string{"host3", "host4"}, AuthTypes: []string{"x509"}, AuthMethod: "headers", UUID: "uuid2", CreatedOn: "2018-05-05T18:04:05Z", Type: "web-api"}}
-	qServices2, err2 := suite.Mockstore.QueryServiceTypes("s2")
+	qServices2, err2 := suite.mockStore.QueryServiceTypes(suite.ctx, "s2")
 
 	// normal case outcome - all services
 	expQServicesAll := []QServiceType{
@@ -96,11 +99,11 @@ func (suite *StoreTestSuite) TestQueryServiceTypes() {
 		{Name: "same_name"},
 		{Name: "same_name"},
 	}
-	qServicesAll, errAll := suite.Mockstore.QueryServiceTypes("")
+	qServicesAll, errAll := suite.mockStore.QueryServiceTypes(suite.ctx, "")
 
 	// was not found
 	var expQService3 []QServiceType
-	qServices3, err3 := suite.Mockstore.QueryServiceTypes("wrong_name")
+	qServices3, err3 := suite.mockStore.QueryServiceTypes(suite.ctx, "wrong_name")
 
 	// tests the normal case - 1 service type
 	suite.Equal(expQServices1, qServices1)
@@ -123,11 +126,11 @@ func (suite *StoreTestSuite) TestQueryServiceTypesByUUID() {
 
 	// normal case outcome
 	expQServices1 := []QServiceType{{Name: "s1", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"}}
-	qServices1, err1 := suite.Mockstore.QueryServiceTypesByUUID("uuid1")
+	qServices1, err1 := suite.mockStore.QueryServiceTypesByUUID(suite.ctx, "uuid1")
 
 	// was not found
 	var expQServices2 []QServiceType
-	qServices2, err2 := suite.Mockstore.QueryServiceTypesByUUID("wrong_uuid")
+	qServices2, err2 := suite.mockStore.QueryServiceTypesByUUID(suite.ctx, "wrong_uuid")
 
 	suite.Equal(expQServices1, qServices1)
 	suite.Equal(expQServices2, qServices2)
@@ -146,13 +149,13 @@ func (suite *StoreTestSuite) TestQueryApiKeyAuthMethods() {
 	amb1 := QBasicAuthMethod{ServiceUUID: "uuid1", Host: "host1", Port: 9000, Type: "api-key", UUID: "am_uuid_1", CreatedOn: ""}
 	qapi := QApiKeyAuthMethod{amb1, "access_key"}
 	expApiAms = append(expApiAms, qapi)
-	apiAms, err1 := suite.Mockstore.QueryApiKeyAuthMethods("uuid1", "host1")
+	apiAms, err1 := suite.mockStore.QueryApiKeyAuthMethods(suite.ctx, "uuid1", "host1")
 
 	// not found - empty list
-	apiAms2, err2 := suite.Mockstore.QueryApiKeyAuthMethods("unknown", "unknown")
+	apiAms2, err2 := suite.mockStore.QueryApiKeyAuthMethods(suite.ctx, "unknown", "unknown")
 
 	// query all
-	apiAms3, err3 := suite.Mockstore.QueryApiKeyAuthMethods("", "")
+	apiAms3, err3 := suite.mockStore.QueryApiKeyAuthMethods(suite.ctx, "", "")
 
 	suite.Equal(expApiAms, apiAms)
 	suite.Equal(0, len(apiAms2))
@@ -172,13 +175,13 @@ func (suite *StoreTestSuite) TestQueryHeadersMethods() {
 	amb2 := QBasicAuthMethod{ServiceUUID: "uuid2", Host: "host3", Port: 9000, Type: "headers", UUID: "am_uuid_2", CreatedOn: ""}
 	am2 := QHeadersAuthMethod{QBasicAuthMethod: amb2, Headers: map[string]string{"x-api-key": "key-1", "Accept": "application/json"}}
 	expApiAms = append(expApiAms, am2)
-	apiAms, err1 := suite.Mockstore.QueryHeadersAuthMethods("uuid2", "host3")
+	apiAms, err1 := suite.mockStore.QueryHeadersAuthMethods(suite.ctx, "uuid2", "host3")
 
 	// not found - empty list
-	apiAms2, err2 := suite.Mockstore.QueryHeadersAuthMethods("unknown", "unknown")
+	apiAms2, err2 := suite.mockStore.QueryHeadersAuthMethods(suite.ctx, "unknown", "unknown")
 
 	// query all
-	apiAms3, err3 := suite.Mockstore.QueryHeadersAuthMethods("", "")
+	apiAms3, err3 := suite.mockStore.QueryHeadersAuthMethods(suite.ctx, "", "")
 
 	suite.Equal(expApiAms, apiAms)
 	suite.Equal(0, len(apiAms2))
@@ -195,11 +198,11 @@ func (suite *StoreTestSuite) TestQueryBindingsByDN() {
 
 	// normal case
 	expBinding1 := []QBinding{{Name: "b1", ServiceUUID: "uuid1", Host: "host1", UUID: "b_uuid1", AuthIdentifier: "test_dn_1", UniqueKey: "unique_key_1", AuthType: "x509", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}}
-	qBinding1, err1 := suite.Mockstore.QueryBindingsByAuthID("test_dn_1", "uuid1", "host1", "x509")
+	qBinding1, err1 := suite.mockStore.QueryBindingsByAuthID(suite.ctx, "test_dn_1", "uuid1", "host1", "x509")
 
 	// not found case
 	var expBinding2 []QBinding
-	qBinding2, err2 := suite.Mockstore.QueryBindingsByAuthID("wrong_dn", "wrong_uuid", "wrong_host", "x509")
+	qBinding2, err2 := suite.mockStore.QueryBindingsByAuthID(suite.ctx, "wrong_dn", "wrong_uuid", "wrong_host", "x509")
 
 	// tests the normal case
 	suite.Equal(expBinding1, qBinding1)
@@ -216,12 +219,12 @@ func (suite *StoreTestSuite) TestQueryBindingsByUUID() {
 
 	// normal case
 	expBinding1 := []QBinding{{Name: "b1", ServiceUUID: "uuid1", Host: "host1", UUID: "b_uuid1", AuthIdentifier: "test_dn_1", UniqueKey: "unique_key_1", AuthType: "x509", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}}
-	qBinding1, err1 := suite.Mockstore.QueryBindingsByUUIDAndName("b_uuid1", "")
-	qBinding1_name, err1_name := suite.Mockstore.QueryBindingsByUUIDAndName("", "b1")
+	qBinding1, err1 := suite.mockStore.QueryBindingsByUUIDAndName(suite.ctx, "b_uuid1", "")
+	qBinding1_name, err1_name := suite.mockStore.QueryBindingsByUUIDAndName(suite.ctx, "", "b1")
 
 	// not found case
 	var expBinding2 []QBinding
-	qBinding2, err2 := suite.Mockstore.QueryBindingsByUUIDAndName("wrong_uuid", "")
+	qBinding2, err2 := suite.mockStore.QueryBindingsByUUIDAndName(suite.ctx, "wrong_uuid", "")
 
 	// tests the normal case
 	suite.Equal(expBinding1, qBinding1_name)
@@ -243,7 +246,7 @@ func (suite *StoreTestSuite) TestQueryBindings() {
 		{Name: "b1", ServiceUUID: "uuid1", Host: "host1", UUID: "b_uuid1", AuthIdentifier: "test_dn_1", UniqueKey: "unique_key_1", AuthType: "x509", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""},
 		{Name: "b2", ServiceUUID: "uuid1", Host: "host1", UUID: "b_uuid2", AuthIdentifier: "test_dn_2", UniqueKey: "unique_key_2", AuthType: "x509", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""},
 	}
-	qBindings1, err1 := suite.Mockstore.QueryBindings("uuid1", "host1")
+	qBindings1, err1 := suite.mockStore.QueryBindings(suite.ctx, "uuid1", "host1")
 
 	// normal case - without parameters
 	expBindings2 := []QBinding{
@@ -252,11 +255,11 @@ func (suite *StoreTestSuite) TestQueryBindings() {
 		{Name: "b3", ServiceUUID: "uuid1", Host: "host2", UUID: "b_uuid3", AuthIdentifier: "test_dn_3", UniqueKey: "unique_key_3", AuthType: "x509", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""},
 		{Name: "b4", ServiceUUID: "uuid2", Host: "host3", UUID: "b_uuid4", AuthIdentifier: "test_dn_1", UniqueKey: "unique_key_1", AuthType: "x509", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""},
 	}
-	qBindings2, err2 := suite.Mockstore.QueryBindings("", "")
+	qBindings2, err2 := suite.mockStore.QueryBindings(suite.ctx, "", "")
 
 	// ot result case - with parameters
 	var expBindings3 []QBinding
-	qBindings3, err3 := suite.Mockstore.QueryBindings("wrong_service", "wrong_host")
+	qBindings3, err3 := suite.mockStore.QueryBindings(suite.ctx, "wrong_service", "wrong_host")
 
 	// tests the normal case - with parameters
 	suite.Equal(expBindings1, qBindings1)
@@ -280,9 +283,9 @@ func (suite *StoreTestSuite) TestInsertAuthMethod() {
 	expApiAms := []QApiKeyAuthMethod{{amb1, "access_key"}}
 
 	amIns := &QApiKeyAuthMethod{amb1, "access_key"}
-	errIns := suite.Mockstore.InsertAuthMethod(amIns)
+	errIns := suite.mockStore.InsertAuthMethod(suite.ctx, amIns)
 
-	apiAms, _ := suite.Mockstore.QueryApiKeyAuthMethods("uuid1", "host2")
+	apiAms, _ := suite.mockStore.QueryApiKeyAuthMethods(suite.ctx, "uuid1", "host2")
 
 	suite.Equal(expApiAms, apiAms)
 
@@ -294,10 +297,10 @@ func (suite *StoreTestSuite) TestInsertServiceType() {
 
 	suite.SetUpStoreTestSuite()
 
-	_, err1 := suite.Mockstore.InsertServiceType("sIns", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "uuid_ins", "2018-05-05T18:04:05Z", "ams")
+	_, err1 := suite.mockStore.InsertServiceType(suite.ctx, "sIns", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "uuid_ins", "2018-05-05T18:04:05Z", "ams")
 
 	expQServices1 := []QServiceType{{Name: "sIns", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid_ins", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"}}
-	qServices1, err1 := suite.Mockstore.QueryServiceTypes("sIns")
+	qServices1, err1 := suite.mockStore.QueryServiceTypes(suite.ctx, "sIns")
 
 	suite.Equal(expQServices1[0], qServices1[0])
 	suite.Nil(err1)
@@ -308,9 +311,9 @@ func (suite *StoreTestSuite) TestInsertBinding() {
 	suite.SetUpStoreTestSuite()
 
 	var expBinding1 QBinding
-	_, err1 := suite.Mockstore.InsertBinding("bIns", "uuid1", "host1", "b_uuid", "test_dn_ins", "unique_key_ins", "x509")
+	_, err1 := suite.mockStore.InsertBinding(suite.ctx, "bIns", "uuid1", "host1", "b_uuid", "test_dn_ins", "unique_key_ins", "x509")
 	// check if the new binding can be found
-	expBindings, _ := suite.Mockstore.QueryBindingsByAuthID("test_dn_ins", "uuid1", "host1", "x509")
+	expBindings, _ := suite.mockStore.QueryBindingsByAuthID(suite.ctx, "test_dn_ins", "uuid1", "host1", "x509")
 	expBinding1 = expBindings[0]
 
 	suite.Equal("bIns", expBinding1.Name)
@@ -329,9 +332,9 @@ func (suite *StoreTestSuite) TestUpdateBinding() {
 	original := QBinding{Name: "b1", ServiceUUID: "uuid1", Host: "host1", UUID: "b_uuid1", AuthIdentifier: "test_dn_1", UniqueKey: "unique_key_1", AuthType: "x509", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
 	updated := QBinding{Name: "b1", ServiceUUID: "uuid1", Host: "host1", UUID: "b_uuid1", AuthIdentifier: "test_dn_upd", UniqueKey: "unique_key_upd", AuthType: "x509", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
 
-	_, err1 := suite.Mockstore.UpdateBinding(original, updated)
+	_, err1 := suite.mockStore.UpdateBinding(suite.ctx, original, updated)
 
-	expBindings, _ := suite.Mockstore.QueryBindingsByAuthID("test_dn_upd", "uuid1", "host1", "x509")
+	expBindings, _ := suite.mockStore.QueryBindingsByAuthID(suite.ctx, "test_dn_upd", "uuid1", "host1", "x509")
 	expBinding1 := expBindings[0]
 
 	suite.Equal(expBinding1, updated)
@@ -346,9 +349,9 @@ func (suite *StoreTestSuite) TestUpdateServiceType() {
 
 	updated := QServiceType{Name: "s_updated", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"}
 
-	_, err1 := suite.Mockstore.UpdateServiceType(original, updated)
+	_, err1 := suite.mockStore.UpdateServiceType(suite.ctx, original, updated)
 
-	expSVTs, _ := suite.Mockstore.QueryServiceTypesByUUID("uuid1")
+	expSVTs, _ := suite.mockStore.QueryServiceTypesByUUID(suite.ctx, "uuid1")
 	expSVT1 := expSVTs[0]
 
 	suite.Equal(expSVT1, updated)
@@ -367,10 +370,10 @@ func (suite *StoreTestSuite) TestUpdateAuthMethod() {
 	updated := &QApiKeyAuthMethod{AccessKey: "access_key_2"}
 	updated.QBasicAuthMethod = amb2
 
-	uqam1, err1 := suite.Mockstore.UpdateAuthMethod(original, updated)
+	uqam1, err1 := suite.mockStore.UpdateAuthMethod(suite.ctx, original, updated)
 
 	// query the datastore to see if the update was successful
-	apiAms, _ := suite.Mockstore.QueryApiKeyAuthMethods("uuid1", "host1")
+	apiAms, _ := suite.mockStore.QueryApiKeyAuthMethods(suite.ctx, "uuid1", "host1")
 	ambExp := QBasicAuthMethod{ServiceUUID: "uuid1", Host: "host1", Port: 9000, Type: "api-key", UUID: "am_uuid_1", CreatedOn: ""}
 	expApiAms := []QApiKeyAuthMethod{{ambExp, "access_key_2"}}
 
@@ -385,10 +388,10 @@ func (suite *StoreTestSuite) TestDeleteServiceTypeByUUID() {
 
 	suite.SetUpStoreTestSuite()
 
-	err1 := suite.Mockstore.DeleteServiceTypeByUUID("uuid1")
+	err1 := suite.mockStore.DeleteServiceTypeByUUID(suite.ctx, "uuid1")
 
 	// query to check if the service type with uuid1 still exists
-	st, _ := suite.Mockstore.QueryServiceTypesByUUID("uuid1")
+	st, _ := suite.mockStore.QueryServiceTypesByUUID(suite.ctx, "uuid1")
 
 	suite.Nil(err1)
 	suite.Nil(st)
@@ -398,11 +401,11 @@ func (suite *StoreTestSuite) TestDeleteBindingByUUID() {
 
 	suite.SetUpStoreTestSuite()
 
-	err1 := suite.Mockstore.DeleteBindingByServiceUUID("uuid1")
+	err1 := suite.mockStore.DeleteBindingByServiceUUID(suite.ctx, "uuid1")
 
 	// since 3 of the 4 bindings belong to the service with uuid1
 
-	suite.Equal(1, len(suite.Mockstore.Bindings))
+	suite.Equal(1, len(suite.mockStore.Bindings))
 	suite.Nil(err1)
 }
 
@@ -412,7 +415,7 @@ func (suite *StoreTestSuite) TestDeleteBinding() {
 
 	qBinding := QBinding{Name: "b1", ServiceUUID: "uuid1", Host: "host1", UUID: "b_uuid1", AuthIdentifier: "test_dn_1", UniqueKey: "unique_key_1", AuthType: "x509", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
 
-	err1 := suite.Mockstore.DeleteBinding(qBinding)
+	err1 := suite.mockStore.DeleteBinding(suite.ctx, qBinding)
 
 	// check the slice containing the bindings to see if the qBinding was removed
 	expBindings := []QBinding{
@@ -420,7 +423,7 @@ func (suite *StoreTestSuite) TestDeleteBinding() {
 		{Name: "b3", ServiceUUID: "uuid1", Host: "host2", UUID: "b_uuid3", AuthIdentifier: "test_dn_3", UniqueKey: "unique_key_3", AuthType: "x509", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""},
 		{Name: "b4", ServiceUUID: "uuid2", Host: "host3", UUID: "b_uuid4", AuthIdentifier: "test_dn_1", UniqueKey: "unique_key_1", AuthType: "x509", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""},
 	}
-	qBindings, _ := suite.Mockstore.QueryBindings("", "")
+	qBindings, _ := suite.mockStore.QueryBindings(suite.ctx, "", "")
 
 	suite.Equal(expBindings, qBindings)
 
@@ -431,10 +434,10 @@ func (suite *StoreTestSuite) TestDeleteAuthMethodByUUID() {
 
 	suite.SetUpStoreTestSuite()
 
-	err1 := suite.Mockstore.DeleteAuthMethodByServiceUUID("uuid1")
+	err1 := suite.mockStore.DeleteAuthMethodByServiceUUID(suite.ctx, "uuid1")
 
 	suite.Nil(err1)
-	suite.Equal(1, len(suite.Mockstore.AuthMethods))
+	suite.Equal(1, len(suite.mockStore.AuthMethods))
 }
 
 func (suite *StoreTestSuite) TestDeleteAuthMethod() {
@@ -446,9 +449,9 @@ func (suite *StoreTestSuite) TestDeleteAuthMethod() {
 	amb1 := QBasicAuthMethod{ServiceUUID: "ins_uuid", Host: "ins_host", Port: 9000, Type: "api-key", UUID: "am_uuid_1", CreatedOn: ""}
 	am1 := QApiKeyAuthMethod{AccessKey: "access_key"}
 	am1.QBasicAuthMethod = amb1
-	suite.Mockstore.AuthMethods = append(suite.Mockstore.AuthMethods, &am1)
+	suite.mockStore.AuthMethods = append(suite.mockStore.AuthMethods, &am1)
 
-	err1 := suite.Mockstore.DeleteAuthMethod(&am1)
+	err1 := suite.mockStore.DeleteAuthMethod(suite.ctx, &am1)
 
 	amb := QBasicAuthMethod{ServiceUUID: "uuid1", Host: "host1", Port: 9000, Type: "api-key", UUID: "am_uuid_1", CreatedOn: ""}
 	expApiAms := &QApiKeyAuthMethod{amb, "access_key"}
@@ -456,7 +459,7 @@ func (suite *StoreTestSuite) TestDeleteAuthMethod() {
 	expHeaderam := &QHeadersAuthMethod{QBasicAuthMethod: amb2, Headers: map[string]string{"x-api-key": "key-1", "Accept": "application/json"}}
 	expAMS = append(expAMS, expApiAms, expHeaderam)
 
-	suite.Equal(expAMS, suite.Mockstore.AuthMethods)
+	suite.Equal(expAMS, suite.mockStore.AuthMethods)
 	suite.Nil(err1)
 
 }
