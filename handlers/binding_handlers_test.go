@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
 	LOGGER "github.com/sirupsen/logrus"
@@ -887,7 +888,7 @@ func (suite *BindingHandlersSuite) TestBindingUpdate() {
 	router.HandleFunc("/bindings/{name}", WrapConfig(BindingUpdate, mockstore, cfg))
 	router.ServeHTTP(w, req)
 
-	qB, _ := mockstore.QueryBindingsByUUIDAndName("b_uuid1", "updated_name")
+	qB, _ := mockstore.QueryBindingsByUUIDAndName(context.Background(), "b_uuid1", "updated_name")
 	expRespJSON = strings.Replace(expRespJSON, "{{UPDATED_ON}}", qB[0].UpdatedOn, 1)
 	// make sure the updated time is before now
 	updatedTime, _ := time.Parse(utils.ZuluForm, qB[0].UpdatedOn)

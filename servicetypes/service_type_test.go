@@ -1,6 +1,7 @@
 package servicetypes
 
 import (
+	"context"
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/stretchr/testify/suite"
@@ -16,60 +17,62 @@ func (suite *ServiceTestSuite) TestCreateServiceType() {
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
 
+	ctx := context.Background()
+
 	cfg := &config.Config{}
 	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
 
 	// test the normal case with type ams
 	s1 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "ams"}
-	_, err := CreateServiceType(s1, mockstore, *cfg)
-	res1, _ := mockstore.QueryServiceTypes("sCr")
+	_, err := CreateServiceType(ctx, s1, mockstore, *cfg)
+	res1, _ := mockstore.QueryServiceTypes(ctx, "sCr")
 
 	// test the normal case with type web-api
 
 	sWb := ServiceType{"sCr_wb", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "web-api"}
-	_, errWb := CreateServiceType(sWb, mockstore, *cfg)
-	res2, _ := mockstore.QueryServiceTypes("sCr_wb")
+	_, errWb := CreateServiceType(ctx, sWb, mockstore, *cfg)
+	res2, _ := mockstore.QueryServiceTypes(ctx, "sCr_wb")
 
 	// test the normal case with type custom
 	sCustom := ServiceType{"sCr_custom", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "token", "", "custom"}
-	_, errCustom := CreateServiceType(sCustom, mockstore, *cfg)
-	res3, _ := mockstore.QueryServiceTypes("sCr_custom")
+	_, errCustom := CreateServiceType(ctx, sCustom, mockstore, *cfg)
+	res3, _ := mockstore.QueryServiceTypes(ctx, "sCr_custom")
 
 	// test the case where the name already exists
 	s2 := ServiceType{"s1", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "some_uuid", "", "", "ams"}
-	_, err2 := CreateServiceType(s2, mockstore, *cfg)
+	_, err2 := CreateServiceType(ctx, s2, mockstore, *cfg)
 
 	// test the case of unsupported auth type
 	s3 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"unsup_type", "oidc"}, "api-key", "some_uuid", "", "", "ams"}
-	_, err3 := CreateServiceType(s3, mockstore, *cfg)
+	_, err3 := CreateServiceType(ctx, s3, mockstore, *cfg)
 
 	// test the case of empty auth type list
 	s4 := ServiceType{"sCr", []string{"host1", "host2"}, []string{}, "api-key", "some_uuid", "", "", "ams"}
-	_, err4 := CreateServiceType(s4, mockstore, *cfg)
+	_, err4 := CreateServiceType(ctx, s4, mockstore, *cfg)
 
 	// test the case of unsupported auth method
 	s5 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "unsup_method", "some_uuid", "", "", "ams"}
-	_, err5 := CreateServiceType(s5, mockstore, *cfg)
+	_, err5 := CreateServiceType(ctx, s5, mockstore, *cfg)
 
 	// test the case of empty name
 	s6 := ServiceType{"", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "ams"}
-	_, err6 := CreateServiceType(s6, mockstore, *cfg)
+	_, err6 := CreateServiceType(ctx, s6, mockstore, *cfg)
 
 	// test the case of empty auth method
 	s8 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "", "uuid1", "", "", "ams"}
-	_, err8 := CreateServiceType(s8, mockstore, *cfg)
+	_, err8 := CreateServiceType(ctx, s8, mockstore, *cfg)
 
 	// test the case of empty hosts
 	s9 := ServiceType{"sCr", []string{}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "ams"}
-	_, err9 := CreateServiceType(s9, mockstore, *cfg)
+	_, err9 := CreateServiceType(ctx, s9, mockstore, *cfg)
 
 	// test the case of empty type
 	s10 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", ""}
-	_, err10 := CreateServiceType(s10, mockstore, *cfg)
+	_, err10 := CreateServiceType(ctx, s10, mockstore, *cfg)
 
 	// test the case of unsupported type type
 	s11 := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "unsup_type"}
-	_, err11 := CreateServiceType(s11, mockstore, *cfg)
+	_, err11 := CreateServiceType(ctx, s11, mockstore, *cfg)
 
 	suite.Equal(s1.Name, res1[0].Name)
 	suite.Equal(s1.Hosts, res1[0].Hosts)
@@ -106,17 +109,19 @@ func (suite *ServiceTestSuite) TestFindServiceTypeByName() {
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
 
+	ctx := context.Background()
+
 	// normal case
 	expS1 := ServiceType{"s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "uuid1", "2018-05-05T18:04:05Z", "", "ams"}
-	ser1, err1 := FindServiceTypeByName("s1", mockstore)
+	ser1, err1 := FindServiceTypeByName(ctx, "s1", mockstore)
 
 	// not found case
 	var expS2 ServiceType
-	ser2, err2 := FindServiceTypeByName("not_found", mockstore)
+	ser2, err2 := FindServiceTypeByName(ctx, "not_found", mockstore)
 
 	// same name
 	var expS3 ServiceType
-	ser3, err3 := FindServiceTypeByName("same_name", mockstore)
+	ser3, err3 := FindServiceTypeByName(ctx, "same_name", mockstore)
 
 	suite.Equal(expS1, ser1)
 	suite.Equal(expS2, ser2)
@@ -132,20 +137,22 @@ func (suite *ServiceTestSuite) TestFindServiceTypeByUUID() {
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
 
+	ctx := context.Background()
+
 	// normal case
 	expS1 := ServiceType{"s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "uuid1", "2018-05-05T18:04:05Z", "", "ams"}
-	ser1, err1 := FindServiceTypeByUUID("uuid1", mockstore)
+	ser1, err1 := FindServiceTypeByUUID(ctx, "uuid1", mockstore)
 
 	// not found case
 	var expS2 ServiceType
-	ser2, err2 := FindServiceTypeByUUID("wrong_uuid", mockstore)
+	ser2, err2 := FindServiceTypeByUUID(ctx, "wrong_uuid", mockstore)
 
 	// same name
 	var expS3 ServiceType
 	// insert two service s with the same name
-	mockstore.InsertServiceType("s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "same_uuid", "2018-05-05T18:04:05Z", "ams")
-	mockstore.InsertServiceType("s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "same_uuid", "2018-05-05T18:04:05Z", "ams")
-	ser3, err3 := FindServiceTypeByUUID("same_uuid", mockstore)
+	mockstore.InsertServiceType(ctx, "s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "same_uuid", "2018-05-05T18:04:05Z", "ams")
+	mockstore.InsertServiceType(ctx, "s1", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "same_uuid", "2018-05-05T18:04:05Z", "ams")
+	ser3, err3 := FindServiceTypeByUUID(ctx, "same_uuid", mockstore)
 
 	suite.Equal(expS1, ser1)
 	suite.Equal(expS2, ser2)
@@ -161,6 +168,8 @@ func (suite *ServiceTestSuite) TestFindAllServiceTypes() {
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
 
+	ctx := context.Background()
+
 	// normal case outcome - all services
 	expQServicesAll := []ServiceType{
 		{Name: "s1", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid1", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"},
@@ -169,12 +178,12 @@ func (suite *ServiceTestSuite) TestFindAllServiceTypes() {
 		{Name: "same_name"},
 	}
 	expServList := ServiceTypesList{expQServicesAll}
-	serAll1, err1 := FindAllServiceTypes(mockstore)
+	serAll1, err1 := FindAllServiceTypes(ctx, mockstore)
 
 	// normal case outcome - empty list
 	var empServ = ServiceTypesList{ServiceTypes: []ServiceType{}}
 	mockstore.ServiceTypes = []stores.QServiceType{}
-	serAll2, err2 := FindAllServiceTypes(mockstore)
+	serAll2, err2 := FindAllServiceTypes(ctx, mockstore)
 
 	suite.Equal(expServList, serAll1)
 	suite.Equal(empServ, serAll2)
@@ -217,6 +226,8 @@ func (suite *ServiceTestSuite) TestUpdateService() {
 	cfg := &config.Config{}
 	_ = cfg.ConfigSetUp("../config/configuration-test-files/test-conf.json")
 
+	ctx := context.Background()
+
 	// original service type
 	qOriginal := stores.QServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "ams"}
 	original := ServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key", "uuid1", "", "", "ams"}
@@ -224,36 +235,36 @@ func (suite *ServiceTestSuite) TestUpdateService() {
 
 	// test the normal case
 	s1 := TempServiceType{"sCr_upd", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key"}
-	_, err := UpdateServiceType(original, s1, mockstore, *cfg)
-	res1, _ := mockstore.QueryServiceTypes("sCr_upd")
+	_, err := UpdateServiceType(ctx, original, s1, mockstore, *cfg)
+	res1, _ := mockstore.QueryServiceTypes(ctx, "sCr_upd")
 
 	// test the case where the name already exists
 	s2 := TempServiceType{"s1", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key"}
-	_, err2 := UpdateServiceType(original, s2, mockstore, *cfg)
+	_, err2 := UpdateServiceType(ctx, original, s2, mockstore, *cfg)
 
 	// test the case of unsupported auth type
 	s3 := TempServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "unsup_type"}, "api-key"}
-	_, err3 := UpdateServiceType(original, s3, mockstore, *cfg)
+	_, err3 := UpdateServiceType(ctx, original, s3, mockstore, *cfg)
 
 	// test the case of empty auth type list
 	s4 := TempServiceType{"sCr", []string{"host1", "host2"}, []string{}, "api-key"}
-	_, err4 := UpdateServiceType(original, s4, mockstore, *cfg)
+	_, err4 := UpdateServiceType(ctx, original, s4, mockstore, *cfg)
 
 	// test the case of unsupported auth method
 	s5 := TempServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, "unsup_method"}
-	_, err5 := UpdateServiceType(original, s5, mockstore, *cfg)
+	_, err5 := UpdateServiceType(ctx, original, s5, mockstore, *cfg)
 
 	// test the case of empty name
 	s6 := TempServiceType{"", []string{"host1", "host2"}, []string{"x509", "oidc"}, "api-key"}
-	_, err6 := UpdateServiceType(original, s6, mockstore, *cfg)
+	_, err6 := UpdateServiceType(ctx, original, s6, mockstore, *cfg)
 
 	// test the case of empty auth method
 	s8 := TempServiceType{"sCr", []string{"host1", "host2"}, []string{"x509", "oidc"}, ""}
-	_, err8 := UpdateServiceType(original, s8, mockstore, *cfg)
+	_, err8 := UpdateServiceType(ctx, original, s8, mockstore, *cfg)
 
 	// test the case of empty hosts
 	s9 := TempServiceType{"sCr", []string{}, []string{"x509", "oidc"}, "api-key"}
-	_, err9 := UpdateServiceType(original, s9, mockstore, *cfg)
+	_, err9 := UpdateServiceType(ctx, original, s9, mockstore, *cfg)
 
 	suite.Equal(s1.Name, res1[0].Name)
 	suite.Equal(s1.Hosts, res1[0].Hosts)
@@ -276,12 +287,14 @@ func (suite *ServiceTestSuite) TestDeleteServiceType() {
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
 
+	ctx := context.Background()
+
 	stDelete := ServiceType{UUID: "uuid1"}
 
-	err1 := DeleteServiceType(stDelete, mockstore)
+	err1 := DeleteServiceType(ctx, stDelete, mockstore)
 
 	// check if the service type, bindings and auth methods are deleted as well
-	_, errNotFound := FindServiceTypeByUUID("uuid1", mockstore)
+	_, errNotFound := FindServiceTypeByUUID(ctx, "uuid1", mockstore)
 
 	suite.Equal(1, len(mockstore.Bindings))
 	suite.Equal(1, len(mockstore.AuthMethods))

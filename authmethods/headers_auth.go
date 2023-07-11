@@ -2,6 +2,7 @@ package authmethods
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -33,12 +34,12 @@ func NewHeadersAuthMethod() AuthMethod {
 	return new(HeadersAuthMethod)
 }
 
-func (m *HeadersAuthMethod) Validate(store stores.Store) error {
+func (m *HeadersAuthMethod) Validate(ctx context.Context, store stores.Store) error {
 
 	var err error
 
 	// check if the embedded struct is valid
-	if err = m.BasicAuthMethod.Validate(store); err != nil {
+	if err = m.BasicAuthMethod.Validate(ctx, store); err != nil {
 		return err
 	}
 
@@ -114,7 +115,7 @@ func (m *HeadersAuthMethod) Update(r io.ReadCloser) (AuthMethod, error) {
 	return updatedAM, err
 }
 
-func (m *HeadersAuthMethod) RetrieveAuthResource(binding bindings.Binding, serviceType servicetypes.ServiceType, cfg *config.Config) (map[string]interface{}, error) {
+func (m *HeadersAuthMethod) RetrieveAuthResource(ctx context.Context, binding bindings.Binding, serviceType servicetypes.ServiceType, cfg *config.Config) (map[string]interface{}, error) {
 
 	var externalResp map[string]interface{}
 	var err error
@@ -128,6 +129,7 @@ func (m *HeadersAuthMethod) RetrieveAuthResource(binding bindings.Binding, servi
 		err = utils.APIGenericInternalError("Backend error")
 		log.WithFields(
 			log.Fields{
+				"trace_id":     ctx.Value("trace_id"),
 				"type":         "service_log",
 				"service_type": serviceType.Type,
 				"fields":       cfg.ServiceTypesRetrievalFields,
@@ -140,6 +142,7 @@ func (m *HeadersAuthMethod) RetrieveAuthResource(binding bindings.Binding, servi
 		err = utils.APIGenericInternalError("Backend error")
 		log.WithFields(
 			log.Fields{
+				"trace_id":     ctx.Value("trace_id"),
 				"type":         "service_log",
 				"service_type": serviceType.Type,
 				"paths":        cfg.ServiceTypesPaths,
@@ -203,13 +206,13 @@ func (m *HeadersAuthMethod) RetrieveAuthResource(binding bindings.Binding, servi
 
 }
 
-func HeadersAuthFinder(serviceUUID string, host string, store stores.Store) ([]stores.QAuthMethod, error) {
+func HeadersAuthFinder(ctx context.Context, serviceUUID string, host string, store stores.Store) ([]stores.QAuthMethod, error) {
 
 	var err error
 	var qAms []stores.QAuthMethod
 	var qApiAms []stores.QHeadersAuthMethod
 
-	if qApiAms, err = store.QueryHeadersAuthMethods(serviceUUID, host); err != nil {
+	if qApiAms, err = store.QueryHeadersAuthMethods(ctx, serviceUUID, host); err != nil {
 		return qAms, err
 	}
 
