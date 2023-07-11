@@ -1,6 +1,7 @@
 package authmethods
 
 import (
+	"context"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -22,14 +23,16 @@ func (suite *HeadersAuthMethodTestSuite) TestValidate() {
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
 
+	ctx := context.Background()
+
 	// normal case
 	amb2 := BasicAuthMethod{ServiceUUID: "uuid2", Host: "host3", Port: 9000, Type: "headers", UUID: "am_uuid_2", CreatedOn: ""}
 	ham := HeadersAuthMethod{BasicAuthMethod: amb2, Headers: map[string]string{"x-api-key": "headers=key-1", "Accept": "application/json"}}
-	err1 := ham.Validate(mockstore)
+	err1 := ham.Validate(ctx, mockstore)
 
 	// empty headers
 	ham2 := HeadersAuthMethod{BasicAuthMethod: amb2}
-	err2 := ham2.Validate(mockstore)
+	err2 := ham2.Validate(ctx, mockstore)
 
 	suite.Nil(err1)
 	suite.Equal("auth method object contains empty fields. empty value for field: headers", err2.Error())
@@ -42,15 +45,17 @@ func (suite *HeadersAuthMethodTestSuite) TestHeadersAuthFinder() {
 
 	var expectedQams []stores.QAuthMethod
 
+	ctx := context.Background()
+
 	// normal case
 	amb2 := stores.QBasicAuthMethod{ServiceUUID: "uuid2", Host: "host3", Port: 9000, Type: "headers", UUID: "am_uuid_2", CreatedOn: ""}
 	ham := stores.QHeadersAuthMethod{QBasicAuthMethod: amb2, Headers: map[string]string{"x-api-key": "key-1", "Accept": "application/json"}}
 	expectedQams = append(expectedQams, &ham)
 
-	qAms, err1 := HeadersAuthFinder("uuid2", "host3", mockstore)
+	qAms, err1 := HeadersAuthFinder(ctx, "uuid2", "host3", mockstore)
 
 	// nothing found
-	qAms2, err2 := HeadersAuthFinder("unknown_uuid", "host", mockstore)
+	qAms2, err2 := HeadersAuthFinder(ctx, "unknown_uuid", "host", mockstore)
 
 	suite.Equal(expectedQams, qAms)
 	suite.Equal(0, len(qAms2))

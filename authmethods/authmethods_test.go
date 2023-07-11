@@ -2,6 +2,7 @@ package authmethods
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/stretchr/testify/suite"
@@ -42,6 +43,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodConvertToQueryModel() {
 }
 
 func (suite *AuthMethodsTestSuite) TestQueryModelConvertToAuthMethod() {
+	ctx := context.Background()
 
 	// normal case, convert an query model to an api key auth method
 	ba1 := BasicAuthMethod{ServiceUUID: "uuid1", Host: "host2", Port: 9000}
@@ -50,7 +52,7 @@ func (suite *AuthMethodsTestSuite) TestQueryModelConvertToAuthMethod() {
 	qba1 := stores.QBasicAuthMethod{ServiceUUID: "uuid1", Host: "host2", Port: 9000}
 	qapk1 := &stores.QApiKeyAuthMethod{qba1, "access_key"}
 
-	qam, err := QueryModelConvertToAuthMethod(qapk1, "api-key")
+	qam, err := QueryModelConvertToAuthMethod(ctx, qapk1, "api-key")
 
 	suite.Equal(qam, apk1)
 
@@ -58,6 +60,7 @@ func (suite *AuthMethodsTestSuite) TestQueryModelConvertToAuthMethod() {
 }
 
 func (suite *AuthMethodsTestSuite) TestAuthMethodFinder() {
+	ctx := context.Background()
 
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
@@ -66,10 +69,10 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodFinder() {
 	ba1 := BasicAuthMethod{ServiceUUID: "uuid1", Host: "host1", Port: 9000, UUID: "am_uuid_1", Type: "api-key"}
 	expectedApk1 := &ApiKeyAuthMethod{ba1, "access_key"}
 
-	apk1, err1 := AuthMethodFinder("uuid1", "host1", "api-key", mockstore)
+	apk1, err1 := AuthMethodFinder(ctx, "uuid1", "host1", "api-key", mockstore)
 
 	// not found case
-	_, err2 := AuthMethodFinder("uuid_unknown", "unknown", "api-key", mockstore)
+	_, err2 := AuthMethodFinder(ctx, "uuid_unknown", "unknown", "api-key", mockstore)
 
 	// more than 1 found
 	// append a temporary query auth method
@@ -77,7 +80,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodFinder() {
 	am1 := &stores.QApiKeyAuthMethod{AccessKey: "access_key"}
 	am1.QBasicAuthMethod = amb1
 	mockstore.AuthMethods = append(mockstore.AuthMethods, am1)
-	_, err3 := AuthMethodFinder("uuid1", "host1", "api-key", mockstore)
+	_, err3 := AuthMethodFinder(ctx, "uuid1", "host1", "api-key", mockstore)
 	suite.Equal(expectedApk1, apk1)
 
 	suite.Nil(err1)
@@ -87,18 +90,20 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodFinder() {
 }
 
 func (suite *AuthMethodsTestSuite) TestAuthMethodAlreadyExists() {
+	ctx := context.Background()
 
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
 
 	// normal case
-	err1 := AuthMethodAlreadyExists("uuid1", "host1", "api-key", mockstore)
+	err1 := AuthMethodAlreadyExists(ctx, "uuid1", "host1", "api-key", mockstore)
 
 	suite.Equal("Auth method object with host: host1 already exists", err1.Error())
 
 }
 
 func (suite *AuthMethodsTestSuite) TestAuthMethodCreate() {
+	ctx := context.Background()
 
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
@@ -111,8 +116,8 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodCreate() {
 	qam1 := &stores.QApiKeyAuthMethod{AccessKey: "access_key"}
 	qam1.QBasicAuthMethod = qamb1
 
-	err1 := AuthMethodCreate(apk1, mockstore, "api-key")
-	ll, _ := mockstore.QueryApiKeyAuthMethods("uuid1", "host2")
+	err1 := AuthMethodCreate(ctx, apk1, mockstore, "api-key")
+	ll, _ := mockstore.QueryApiKeyAuthMethods(ctx, "uuid1", "host2")
 
 	suite.Equal(apk1.ServiceUUID, ll[0].ServiceUUID)
 	suite.Equal(apk1.Host, ll[0].Host)
@@ -125,6 +130,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodCreate() {
 }
 
 func (suite *AuthMethodsTestSuite) TestAuthMethodFIndAll() {
+	ctx := context.Background()
 
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
@@ -142,7 +148,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodFIndAll() {
 
 	expAmList.AuthMethods = append(expAmList.AuthMethods, apiKeyAm, headersAm)
 
-	aMList, err1 := AuthMethodFindAll(mockstore)
+	aMList, err1 := AuthMethodFindAll(ctx, mockstore)
 	suite.Equal(2, len(aMList.AuthMethods))
 
 	for _, _am := range aMList.AuthMethods {
@@ -158,12 +164,13 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodFIndAll() {
 
 	// empty list
 	mockstore.AuthMethods = []stores.QAuthMethod{}
-	aMList2, err2 := AuthMethodFindAll(mockstore)
+	aMList2, err2 := AuthMethodFindAll(ctx, mockstore)
 	suite.Equal(0, len(aMList2.AuthMethods))
 	suite.Nil(err2)
 }
 
 func (suite *AuthMethodsTestSuite) TestAuthMethodDelete() {
+	ctx := context.Background()
 
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
@@ -173,7 +180,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodDelete() {
 	am1 := &ApiKeyAuthMethod{AccessKey: "access_key"}
 	am1.BasicAuthMethod = amb1
 
-	err1 := AuthMethodDelete(am1, mockstore)
+	err1 := AuthMethodDelete(ctx, am1, mockstore)
 
 	suite.Equal(1, len(mockstore.AuthMethods))
 
@@ -181,6 +188,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodDelete() {
 }
 
 func (suite *AuthMethodsTestSuite) TestAuthMethodUpdate() {
+	ctx := context.Background()
 
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
@@ -194,7 +202,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodUpdate() {
 	amU1 := &ApiKeyAuthMethod{AccessKey: "access_key"}
 	amU1.BasicAuthMethod = ambU1
 	r1 := ConvertAuthMethodToReadCloser(amU1)
-	a1, err1 := AuthMethodUpdate(am1, r1, mockstore)
+	a1, err1 := AuthMethodUpdate(ctx, am1, r1, mockstore)
 	ca1 := a1.(*ApiKeyAuthMethod)
 	amU1.UpdatedOn = ca1.UpdatedOn
 
@@ -203,7 +211,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodUpdate() {
 	amU2 := &ApiKeyAuthMethod{AccessKey: "access_key"}
 	amU2.BasicAuthMethod = ambU2
 	r2 := ConvertAuthMethodToReadCloser(amU2)
-	a2, err2 := AuthMethodUpdate(am1, r2, mockstore)
+	a2, err2 := AuthMethodUpdate(ctx, am1, r2, mockstore)
 	amU2.UpdatedOn = ca1.UpdatedOn
 	am1.UpdatedOn = ca1.UpdatedOn
 
@@ -212,7 +220,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodUpdate() {
 	amU3 := &ApiKeyAuthMethod{AccessKey: "access_key"}
 	amU3.BasicAuthMethod = ambU3
 	r3 := ConvertAuthMethodToReadCloser(amU3)
-	a3, err3 := AuthMethodUpdate(am1, r3, mockstore)
+	a3, err3 := AuthMethodUpdate(ctx, am1, r3, mockstore)
 	amU3.UpdatedOn = ca1.UpdatedOn
 
 	// unknown host
@@ -220,7 +228,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodUpdate() {
 	amU4 := &ApiKeyAuthMethod{AccessKey: "access_key"}
 	amU4.BasicAuthMethod = ambU4
 	r4 := ConvertAuthMethodToReadCloser(amU4)
-	a4, err4 := AuthMethodUpdate(am1, r4, mockstore)
+	a4, err4 := AuthMethodUpdate(ctx, am1, r4, mockstore)
 	amU4.UpdatedOn = ca1.UpdatedOn
 
 	// empty service uuid
@@ -228,7 +236,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodUpdate() {
 	amU6 := &ApiKeyAuthMethod{AccessKey: "access_key"}
 	amU6.BasicAuthMethod = ambU6
 	r6 := ConvertAuthMethodToReadCloser(amU6)
-	a6, err6 := AuthMethodUpdate(am1, r6, mockstore)
+	a6, err6 := AuthMethodUpdate(ctx, am1, r6, mockstore)
 	amU6.UpdatedOn = ca1.UpdatedOn
 
 	// empty host
@@ -236,7 +244,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodUpdate() {
 	amU7 := &ApiKeyAuthMethod{AccessKey: "access_key"}
 	amU7.BasicAuthMethod = ambU7
 	r7 := ConvertAuthMethodToReadCloser(amU7)
-	a7, err7 := AuthMethodUpdate(am1, r7, mockstore)
+	a7, err7 := AuthMethodUpdate(ctx, am1, r7, mockstore)
 	amU7.UpdatedOn = ca1.UpdatedOn
 
 	// empty port
@@ -244,7 +252,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodUpdate() {
 	amU8 := &ApiKeyAuthMethod{AccessKey: "access_key"}
 	amU8.BasicAuthMethod = ambU8
 	r8 := ConvertAuthMethodToReadCloser(amU8)
-	a8, err8 := AuthMethodUpdate(am1, r8, mockstore)
+	a8, err8 := AuthMethodUpdate(ctx, am1, r8, mockstore)
 	amU8.UpdatedOn = ca1.UpdatedOn
 
 	// empty access key
@@ -252,7 +260,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodUpdate() {
 	amU10 := &ApiKeyAuthMethod{AccessKey: ""}
 	amU10.BasicAuthMethod = ambU10
 	r10 := ConvertAuthMethodToReadCloser(amU10)
-	a10, err10 := AuthMethodUpdate(am1, r10, mockstore)
+	a10, err10 := AuthMethodUpdate(ctx, am1, r10, mockstore)
 	amU10.UpdatedOn = ca1.UpdatedOn
 
 	// auth method for host and service already exists
@@ -263,7 +271,7 @@ func (suite *AuthMethodsTestSuite) TestAuthMethodUpdate() {
 	amU11 := &ApiKeyAuthMethod{AccessKey: "access_key"}
 	amU11.BasicAuthMethod = ambU11
 	r11 := ConvertAuthMethodToReadCloser(amU11)
-	a11, err11 := AuthMethodUpdate(am2, r11, mockstore)
+	a11, err11 := AuthMethodUpdate(ctx, am2, r11, mockstore)
 	amU11.UpdatedOn = ca1.UpdatedOn
 
 	suite.Equal(a1, amU1)

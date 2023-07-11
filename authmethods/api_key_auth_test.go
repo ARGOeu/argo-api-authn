@@ -1,6 +1,7 @@
 package authmethods
 
 import (
+	"context"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -19,6 +20,8 @@ func (suite *ApiKeyAuthMethodTestSuite) TestNewApiKeyAuthMethod() {
 
 func (suite *ApiKeyAuthMethodTestSuite) TestValidate() {
 
+	ctx := context.Background()
+
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
 
@@ -27,19 +30,21 @@ func (suite *ApiKeyAuthMethodTestSuite) TestValidate() {
 	apk1.BasicAuthMethod = ba1
 	// normal case
 	apk1.AccessKey = "access_key"
-	err1 := apk1.Validate(mockstore)
+	err1 := apk1.Validate(ctx, mockstore)
 
 	// empty access_key
 	apk1 = ApiKeyAuthMethod{}
 	ba1 = BasicAuthMethod{ServiceUUID: "uuid1", Host: "host1", Port: 9000, Type: "api-key"}
 	apk1.BasicAuthMethod = ba1
-	err2 := apk1.Validate(mockstore)
+	err2 := apk1.Validate(ctx, mockstore)
 
 	suite.Nil(err1)
 	suite.Equal("auth method object contains empty fields. empty value for field: access_key", err2.Error())
 }
 
 func (suite *ApiKeyAuthMethodTestSuite) TestApiKeyAuthFinder() {
+
+	ctx := context.Background()
 
 	mockstore := &stores.Mockstore{Server: "localhost", Database: "test_db"}
 	mockstore.SetUp()
@@ -52,10 +57,10 @@ func (suite *ApiKeyAuthMethodTestSuite) TestApiKeyAuthFinder() {
 	am1.QBasicAuthMethod = amb1
 	expectedQams = append(expectedQams, am1)
 
-	qAms, err1 := ApiKeyAuthFinder("uuid1", "host1", mockstore)
+	qAms, err1 := ApiKeyAuthFinder(ctx, "uuid1", "host1", mockstore)
 
 	// nothing found
-	qAms2, err2 := ApiKeyAuthFinder("unknown_uuid", "host", mockstore)
+	qAms2, err2 := ApiKeyAuthFinder(ctx, "unknown_uuid", "host", mockstore)
 
 	suite.Equal(expectedQams, qAms)
 	suite.Equal(0, len(qAms2))
