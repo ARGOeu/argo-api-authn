@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"github.com/ARGOeu/argo-api-authn/authmethods"
 	"github.com/ARGOeu/argo-api-authn/config"
@@ -816,7 +817,7 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodUpdateOne() {
 	router.HandleFunc("/service-types/{service-type}/hosts/{host}/authm", WrapConfig(AuthMethodUpdateOne, mockstore, cfg))
 	router.ServeHTTP(w, req)
 
-	amU, _ := mockstore.QueryApiKeyAuthMethods("uuid1", "host1")
+	amU, _ := mockstore.QueryApiKeyAuthMethods(context.Background(), "uuid1", "host1")
 	expRespJSON = strings.Replace(expRespJSON, "{{UPDATED_ON}}", amU[0].UpdatedOn, 1)
 	// make sure the updated time is before now
 	updatedTime, _ := time.Parse(utils.ZULU_FORM, amU[0].UpdatedOn)
@@ -861,7 +862,7 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodUpdateOneIllegalFields(
 	router.HandleFunc("/service-types/{service-type}/hosts/{host}/authm", WrapConfig(AuthMethodUpdateOne, mockstore, cfg))
 	router.ServeHTTP(w, req)
 
-	amU, _ := mockstore.QueryApiKeyAuthMethods("uuid1", "host1")
+	amU, _ := mockstore.QueryApiKeyAuthMethods(context.Background(), "uuid1", "host1")
 	expRespJSON = strings.Replace(expRespJSON, "{{UPDATED_ON}}", amU[0].UpdatedOn, 1)
 	// make sure the updated time is before now
 	updatedTime, _ := time.Parse(utils.ZULU_FORM, amU[0].UpdatedOn)

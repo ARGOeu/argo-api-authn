@@ -1,6 +1,7 @@
 package authmethods
 
 import (
+	"context"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -11,11 +12,13 @@ type AuthMethodFactoryTestSuite struct {
 
 func (suite *AuthMethodFactoryTestSuite) TestCreate() {
 
+	ctx := context.Background()
+
 	// tests the normal case
-	am, err1 := NewAuthMethodFactory().Create("api-key")
+	am, err1 := NewAuthMethodFactory().Create(ctx, "api-key")
 
 	// mismatch
-	_, err2 := NewAuthMethodFactory().Create("mis_type")
+	_, err2 := NewAuthMethodFactory().Create(ctx, "mis_type")
 
 	suite.Equal(&ApiKeyAuthMethod{}, am)
 

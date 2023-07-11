@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
@@ -41,7 +42,7 @@ func RespondOk(w http.ResponseWriter, code int, data interface{}) {
 	w.Write(rb)
 }
 
-func RespondError(w http.ResponseWriter, err error) {
+func RespondError(ctx context.Context, w http.ResponseWriter, err error) {
 
 	apiErr := err.(*APIError)
 
@@ -56,9 +57,10 @@ func RespondError(w http.ResponseWriter, err error) {
 	//log the APIError
 	log.WithFields(
 		log.Fields{
-			"type":   "service_log",
-			"code":   apiErr.Code,
-			"status": apiErr.Status,
+			"trace_id": ctx.Value("trace_id"),
+			"type":     "service_log",
+			"code":     apiErr.Code,
+			"status":   apiErr.Status,
 		},
 	).Error(apiErr.Message)
 
