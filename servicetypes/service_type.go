@@ -1,6 +1,7 @@
 package servicetypes
 
 import (
+	"context"
 	"fmt"
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
@@ -33,7 +34,7 @@ type ServiceTypesList struct {
 }
 
 // CreateServiceType creates a new service type after validating the service
-func CreateServiceType(service ServiceType, store stores.Store, cfg config.Config) (ServiceType, error) {
+func CreateServiceType(ctx context.Context, service ServiceType, store stores.Store, cfg config.Config) (ServiceType, error) {
 
 	var qService stores.QServiceType
 	var err error
@@ -44,7 +45,7 @@ func CreateServiceType(service ServiceType, store stores.Store, cfg config.Confi
 	}
 
 	// check that the name of the service type is unique
-	if err = ExistsWithName(service.Name, store); err != nil {
+	if err = ExistsWithName(ctx, service.Name, store); err != nil {
 		return ServiceType{}, err
 	}
 
@@ -52,7 +53,7 @@ func CreateServiceType(service ServiceType, store stores.Store, cfg config.Confi
 	uuid := uuid2.NewV4().String()
 
 	// insert the service type
-	if qService, err = store.InsertServiceType(service.Name, service.Hosts, service.AuthTypes, service.AuthMethod, uuid, utils.ZuluTimeNow(), service.Type); err != nil {
+	if qService, err = store.InsertServiceType(ctx, service.Name, service.Hosts, service.AuthTypes, service.AuthMethod, uuid, utils.ZuluTimeNow(), service.Type); err != nil {
 		return ServiceType{}, err
 	}
 
@@ -100,12 +101,12 @@ func (s *ServiceType) Validate(store stores.Store, cfg config.Config) error {
 }
 
 // ExistsWithName checks if a service type with the given name already exists
-func ExistsWithName(name string, store stores.Store) error {
+func ExistsWithName(ctx context.Context, name string, store stores.Store) error {
 
 	var err error
 	var qServices []stores.QServiceType
 
-	if qServices, err = store.QueryServiceTypes(name); err != nil {
+	if qServices, err = store.QueryServiceTypes(ctx, name); err != nil {
 		return err
 	}
 
@@ -118,13 +119,13 @@ func ExistsWithName(name string, store stores.Store) error {
 }
 
 // FindServiceTypeByName queries the datastore to find a service type associated with the provided argument name
-func FindServiceTypeByName(name string, store stores.Store) (ServiceType, error) {
+func FindServiceTypeByName(ctx context.Context, name string, store stores.Store) (ServiceType, error) {
 
 	var qServices []stores.QServiceType
 	var service ServiceType
 	var err error
 
-	if qServices, err = store.QueryServiceTypes(name); err != nil {
+	if qServices, err = store.QueryServiceTypes(ctx, name); err != nil {
 		return ServiceType{}, err
 	}
 
@@ -147,13 +148,13 @@ func FindServiceTypeByName(name string, store stores.Store) (ServiceType, error)
 }
 
 // FindServiceTypeByUUID queries the datastore to find a service type associated with the provided argument uuid
-func FindServiceTypeByUUID(uuid string, store stores.Store) (ServiceType, error) {
+func FindServiceTypeByUUID(ctx context.Context, uuid string, store stores.Store) (ServiceType, error) {
 
 	var qServices []stores.QServiceType
 	var service ServiceType
 	var err error
 
-	if qServices, err = store.QueryServiceTypesByUUID(uuid); err != nil {
+	if qServices, err = store.QueryServiceTypesByUUID(ctx, uuid); err != nil {
 		return ServiceType{}, err
 	}
 
@@ -176,13 +177,13 @@ func FindServiceTypeByUUID(uuid string, store stores.Store) (ServiceType, error)
 }
 
 // FindAllServiceTypes returns all the service types from the datastore
-func FindAllServiceTypes(store stores.Store) (ServiceTypesList, error) {
+func FindAllServiceTypes(ctx context.Context, store stores.Store) (ServiceTypesList, error) {
 
 	var qServices []stores.QServiceType
 	var services = []ServiceType{}
 	var err error
 
-	if qServices, err = store.QueryServiceTypes(""); err != nil {
+	if qServices, err = store.QueryServiceTypes(ctx, ""); err != nil {
 		return ServiceTypesList{ServiceTypes: services}, err
 	}
 
@@ -291,7 +292,7 @@ func (s *ServiceType) IsOfValidType(cfg config.Config) error {
 }
 
 // UpdateServiceType updates a binding after validating its fields
-func UpdateServiceType(original ServiceType, tempServiceType TempServiceType, store stores.Store, cfg config.Config) (ServiceType, error) {
+func UpdateServiceType(ctx context.Context, original ServiceType, tempServiceType TempServiceType, store stores.Store, cfg config.Config) (ServiceType, error) {
 
 	var err error
 	var updated ServiceType
@@ -316,7 +317,7 @@ func UpdateServiceType(original ServiceType, tempServiceType TempServiceType, st
 
 	// if there is an update happening to the name field, check if its unique
 	if original.Name != tempServiceType.Name {
-		if err = ExistsWithName(tempServiceType.Name, store); err != nil {
+		if err = ExistsWithName(ctx, tempServiceType.Name, store); err != nil {
 			return ServiceType{}, err
 		}
 	}
@@ -336,7 +337,7 @@ func UpdateServiceType(original ServiceType, tempServiceType TempServiceType, st
 	}
 
 	// update the service type
-	if _, err = store.UpdateServiceType(qOriginalSt, qUpdatedSt); err != nil {
+	if _, err = store.UpdateServiceType(ctx, qOriginalSt, qUpdatedSt); err != nil {
 		err = &utils.APIError{Status: "INTERNAL SERVER ERROR", Code: 500, Message: err.Error()}
 		return ServiceType{}, err
 	}
@@ -345,22 +346,22 @@ func UpdateServiceType(original ServiceType, tempServiceType TempServiceType, st
 }
 
 // DeleteServiceType deletes a service from the datastore as well as all of the other entities that are associated with it
-func DeleteServiceType(serviceType ServiceType, store stores.Store) error {
+func DeleteServiceType(ctx context.Context, serviceType ServiceType, store stores.Store) error {
 
 	var err error
 
 	// first delete all the bindings associated with the service type
-	if err = store.DeleteBindingByServiceUUID(serviceType.UUID); err != nil {
+	if err = store.DeleteBindingByServiceUUID(ctx, serviceType.UUID); err != nil {
 		return err
 	}
 
 	// delete all the auth methods associated with the service type
-	if err = store.DeleteAuthMethodByServiceUUID(serviceType.UUID); err != nil {
+	if err = store.DeleteAuthMethodByServiceUUID(ctx, serviceType.UUID); err != nil {
 		return err
 	}
 
 	// finally delete the service type
-	if err = store.DeleteServiceTypeByUUID(serviceType.UUID); err != nil {
+	if err = store.DeleteServiceTypeByUUID(ctx, serviceType.UUID); err != nil {
 		return err
 	}
 

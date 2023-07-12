@@ -23,7 +23,7 @@ type APIRoute struct {
 	Method  string           // GET, POST, PUT string literals
 	Path    string           // API call path with urlVars included
 	Handler http.HandlerFunc // Handler Function to be used
-	Auth    bool             // whether or not it should use the auth handler
+	Auth    bool             // whether it should use the auth handler
 }
 
 // NewRouting creates a new routing object including mux.Router and routes definitions

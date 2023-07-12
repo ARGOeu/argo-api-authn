@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"crypto/x509"
 	"errors"
 	"io/ioutil"
@@ -24,7 +25,7 @@ var NonStandardAttributeNames = map[string]string{
 	"1.2.840.113549.1.9.1":       EmailAddressRDN,
 }
 
-// load_CAs reads the root certificates from a directory within the filesystem, and creates the trusted root CA chain
+// LoadCAs reads the root certificates from a directory within the filesystem, and creates the trusted root CA chain
 func LoadCAs(dir string) (roots *x509.CertPool) {
 
 	log.WithFields(
@@ -141,7 +142,7 @@ func FormatRdnToString(rdn string, rdnValues []string) string {
 }
 
 // ValidateClientCertificate performs a number of different checks to ensure the provided certificate is valid
-func ValidateClientCertificate(cert *x509.Certificate, clientIP string, clientCertHostVerification bool) error {
+func ValidateClientCertificate(ctx context.Context, cert *x509.Certificate, clientIP string, clientCertHostVerification bool) error {
 
 	var err error
 	var hosts []string
@@ -149,9 +150,10 @@ func ValidateClientCertificate(cert *x509.Certificate, clientIP string, clientCe
 
 	log.WithFields(
 		log.Fields{
-			"type":  "service_log",
-			"hosts": hosts,
-			"ip":    clientIP,
+			"trace_id": ctx.Value("trace_id"),
+			"type":     "service_log",
+			"hosts":    hosts,
+			"ip":       clientIP,
 		},
 	).Info("Validating Client Certificate")
 
@@ -192,7 +194,7 @@ func ValidateClientCertificate(cert *x509.Certificate, clientIP string, clientCe
 	}
 
 	// check if the certificate is revoked
-	if err = CRLCheckRevokedCert(cert); err != nil {
+	if err = CRLCheckRevokedCert(ctx, cert); err != nil {
 		return err
 	}
 
