@@ -51,9 +51,13 @@ Before you start, you need to issue a valid certificate.
 
     Inside the project's folder issue the command:
 
-      `go test $(go list ./... | grep -v /vendor/)`
- 
- 8. Install mongoDB
+      `go test ./...`
+
+8. Run integration tests
+    Inside the project's folder issue the command:
+        `go test ./... -tags integration`
+
+9. Install mongoDB
  
  
  ## Configuration

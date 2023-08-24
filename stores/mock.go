@@ -227,7 +227,8 @@ func (mock *Mockstore) InsertServiceType(ctx context.Context, name string, hosts
 	return qService, nil
 }
 
-func (mock *Mockstore) InsertBinding(ctx context.Context, name string, serviceUUID string, host string, uuid string, authID string, uniqueKey string, authType string) (QBinding, error) {
+func (mock *Mockstore) InsertBinding(ctx context.Context, name string, serviceUUID string, host string, uuid string,
+	authID string, uniqueKey string, authType string, createdOn string) (QBinding, error) {
 
 	qBinding := QBinding{
 		Name:           name,
@@ -237,7 +238,7 @@ func (mock *Mockstore) InsertBinding(ctx context.Context, name string, serviceUU
 		AuthIdentifier: authID,
 		UniqueKey:      uniqueKey,
 		AuthType:       authType,
-		CreatedOn:      utils.ZuluTimeNow(),
+		CreatedOn:      createdOn,
 	}
 
 	mock.Bindings = append(mock.Bindings, qBinding)

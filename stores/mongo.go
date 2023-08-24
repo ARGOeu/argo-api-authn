@@ -272,7 +272,8 @@ func (mongo *MongoStore) InsertServiceType(ctx context.Context, name string, hos
 }
 
 // InsertBinding inserts a new binding into the datastore
-func (mongo *MongoStore) InsertBinding(ctx context.Context, name string, serviceUUID string, host string, uuid string, authID string, uniqueKey string, authType string) (QBinding, error) {
+func (mongo *MongoStore) InsertBinding(ctx context.Context, name string, serviceUUID string, host string, uuid string,
+	authID string, uniqueKey string, authType string, createdOn string) (QBinding, error) {
 
 	var qBinding QBinding
 	var err error
@@ -285,7 +286,7 @@ func (mongo *MongoStore) InsertBinding(ctx context.Context, name string, service
 		AuthIdentifier: authID,
 		UniqueKey:      uniqueKey,
 		AuthType:       authType,
-		CreatedOn:      utils.ZuluTimeNow(),
+		CreatedOn:      createdOn,
 	}
 
 	db := mongo.Session.DB(mongo.Database)
