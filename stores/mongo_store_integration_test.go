@@ -39,7 +39,6 @@ type MongoStoreIntegrationTestSuite struct {
 	suite.Suite
 	store        Store
 	ctx          context.Context
-	ss           int
 	serviceTypes []QServiceType
 	apiKeyAms    []QApiKeyAuthMethod
 	headersAms   []QHeadersAuthMethod
@@ -155,13 +154,11 @@ func (suite *MongoStoreIntegrationTestSuite) initDB() {
 }
 
 func (suite *MongoStoreIntegrationTestSuite) SetupSuite() {
-	suite.ss = 4
 	suite.store.SetUp()
 	suite.initDB()
 }
 
 func (suite *MongoStoreIntegrationTestSuite) TearDownSuite() {
-	suite.ss = 4
 	suite.store.Close()
 }
 
@@ -446,14 +443,20 @@ func TestMongoStoreIntegrationTestSuite(t *testing.T) {
 
 	p, _ := container.MappedPort(context.Background(), "27017/tcp")
 
-	mongoDBUri := fmt.Sprintf("mongodb://localhost:%s", p.Port())
+	mongoDBUri := fmt.Sprintf("localhost:%s", p.Port())
 
-	mongoStore := &MongoStore{
+	//mongoStore := &MongoStore{
+	//	Server:   mongoDBUri,
+	//	Database: "argo_ams",
+	//}
+
+	mongoStoreOff := &MongoStoreWithOfficialDriver{
 		Server:   mongoDBUri,
 		Database: "argo_ams",
 	}
+
 	suite.Run(t, &MongoStoreIntegrationTestSuite{
-		store: mongoStore,
+		store: mongoStoreOff,
 		ctx:   context.Background(),
 	})
 }

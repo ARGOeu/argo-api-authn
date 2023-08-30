@@ -23,6 +23,10 @@ type QMockAuthMethod struct {
 	RetrievalField string `json:"retrieval_field"`
 }
 
+func (m *QMockAuthMethod) Uuid() string {
+	return "uuid"
+}
+
 type MockAuthMethod struct {
 	RetrievalField string `json:"retrieval_field"`
 }
