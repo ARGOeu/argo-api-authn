@@ -46,7 +46,7 @@ func LogInfo() {
 			"distro":       Distro,
 			"architecture": "Arch",
 		},
-	).Infof("Running Argo Messaging v%s (%s/%s)", Release, OS, Arch)
+	).Infof("Running Argo-API-Authn v%s (%s/%s)", Release, OS, Arch)
 }
 
 func distro() string {
