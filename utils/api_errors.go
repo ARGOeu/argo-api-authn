@@ -60,7 +60,7 @@ var GenericEmptyRequiredField = func(fieldName string) error {
 	return errors.New(fmt.Sprintf("empty value for field: %v", fieldName))
 }
 
-// also contains struct information
+// StructGenericEmptyRequiredField also contains struct information
 var StructGenericEmptyRequiredField = func(strct string, reason string) error {
 	return errors.New(fmt.Sprintf("%v object contains empty fields. %v", strct, reason))
 }

@@ -20,11 +20,9 @@ func WrapConfig(hfn http.HandlerFunc, store stores.Store, config *config.Config)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// clone the store
-		tempStore := store.Clone()
-		defer tempStore.Close()
 		traceId := uuid.NewV4().String()
 		gorillaContext.Set(r, "trace_id", traceId)
-		gorillaContext.Set(r, "stores", tempStore)
+		gorillaContext.Set(r, "stores", store)
 		gorillaContext.Set(r, "config", *config)
 		gorillaContext.Set(r, "service_token", config.ServiceToken)
 		hfn.ServeHTTP(w, r)
