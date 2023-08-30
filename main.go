@@ -37,7 +37,7 @@ func main() {
 	}
 
 	//configure datastore
-	store := &stores.MongoStore{
+	store := &stores.MongoStoreWithOfficialDriver{
 		Server:   cfg.MongoHost,
 		Database: cfg.MongoDB,
 	}

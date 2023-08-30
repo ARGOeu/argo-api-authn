@@ -29,7 +29,9 @@ type QBinding struct {
 	LastAuth       string `json:"last_auth,omitempty" bson:"last_auth,omitempty"`
 }
 
-type QAuthMethod interface{}
+type QAuthMethod interface {
+	Uuid() string
+}
 
 type QBasicAuthMethod struct {
 	ServiceUUID string `json:"service_uuid" bson:"service_uuid"`
@@ -39,6 +41,10 @@ type QBasicAuthMethod struct {
 	UUID        string `json:"uuid" bson:"uuid"`
 	CreatedOn   string `json:"created_on" bson:"created_on"`
 	UpdatedOn   string `json:"updated_on,omitempty" bson:"updated_on,omitempty"`
+}
+
+func (q QBasicAuthMethod) Uuid() string {
+	return q.UUID
 }
 
 type QApiKeyAuthMethod struct {
