@@ -24,4 +24,6 @@ type Store interface {
 	UpdateAuthMethod(ctx context.Context, original QAuthMethod, updated QAuthMethod) (QAuthMethod, error)
 	DeleteBinding(ctx context.Context, qBinding QBinding) error
 	DeleteBindingByServiceUUID(ctx context.Context, serviceUUID string) error
+	InsertBindingMissingIpSanRecord(ctx context.Context, bindingUUID, bindingAuthId, createdOn string) error
+	QueryBindingMissingIpSanRecord(ctx context.Context, bindingUUID string) ([]QMissingIpSanMetric, error)
 }

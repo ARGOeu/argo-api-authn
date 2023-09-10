@@ -100,7 +100,7 @@ lBlGGSW4gNfL1IYoakRwJiNiqZ+Gb7+6kHDSVneFeO/qJakXzlByjAA6quPbYzSf
 	qSt2 := stores.QServiceType{Name: "s_auth_cert_incorrect", Hosts: []string{"h1_auth_cert", "h1_auth_cert_revoked"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "mock-auth", UUID: "uuid_auth_cert_incorrect", Type: "ams", CreatedOn: "2018-05-05T18:04:05Z"}
 	mockstore.ServiceTypes = append(mockstore.ServiceTypes, qSt, qSt2)
 	// append a binding to be used only in auth via cert tests
-	qB := stores.QBinding{Name: "b_auth_cert", ServiceUUID: "uuid_auth_cert", Host: "h1_auth_cert", AuthIdentifier: "CN=localhost,O=COMODO CA Limited,L=Salford,ST=Greater Manchester,C=GB", AuthType: "x509", UniqueKey: "success", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
+	qB := stores.QBinding{Name: "b_auth_cert", UUID: "b_auth_uuid", ServiceUUID: "uuid_auth_cert", Host: "h1_auth_cert", AuthIdentifier: "CN=localhost,O=COMODO CA Limited,L=Salford,ST=Greater Manchester,C=GB", AuthType: "x509", UniqueKey: "success", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
 	qB2 := stores.QBinding{Name: "b_auth_cert_incorrect", ServiceUUID: "uuid_auth_cert_incorrect", Host: "h1_auth_cert", AuthIdentifier: "CN=localhost,O=COMODO CA Limited,L=Salford,ST=Greater Manchester,C=GB", AuthType: "x509", UniqueKey: "incorrect-retrieval-field", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
 	qB3 := stores.QBinding{Name: "b_auth_cert_revoked", ServiceUUID: "uuid_auth_cert_incorrect", Host: "h1_auth_cert_revoked", AuthIdentifier: "CN=localhost", AuthType: "x509", UniqueKey: "success", CreatedOn: "2018-05-05T15:04:05Z", LastAuth: ""}
 	mockstore.Bindings = append(mockstore.Bindings, qB, qB2, qB3)
@@ -135,12 +135,21 @@ func (suite *CertificateHandlerSuite) TestAuthViaCert() {
 		LOGGER.Error(err.Error())
 	}
 
+	suite.Equal(1, len(mockstore.MissingIpSanRecords))
 	router := mux.NewRouter().StrictSlash(true)
 	w := httptest.NewRecorder()
 	router.HandleFunc("/service-types/{service-type}/hosts/{host}:authx509", WrapConfig(AuthViaCert, mockstore, cfg))
 	router.ServeHTTP(w, req)
 	suite.Equal(200, w.Code)
 	suite.Equal(expRespJSON, w.Body.String())
+	suite.Equal(2, len(mockstore.MissingIpSanRecords))
+
+	// perform the request again but no track should be done
+	w2 := httptest.NewRecorder()
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}:authx509", WrapConfig(AuthViaCert, mockstore, cfg))
+	router.ServeHTTP(w2, req)
+	suite.Equal(2, len(mockstore.MissingIpSanRecords))
+
 }
 
 // TestAuthViaCertUnsupportedX509AuthType tests the case where the specified service type doesn't want to support external authentication via x509
