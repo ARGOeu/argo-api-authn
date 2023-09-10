@@ -82,6 +82,49 @@ func (mongo *MongoStore) logError(ctx context.Context, funcName string, err erro
 	).Error(err.Error())
 }
 
+func (mongo *MongoStore) InsertBindingMissingIpSanRecord(ctx context.Context, bindingUUID, bindingAuthId, createdOn string) error {
+
+	qMetric := QMissingIpSanMetric{
+		BindingUUID:           bindingUUID,
+		BindingAuthIdentifier: bindingAuthId,
+		CreatedOn:             createdOn,
+	}
+
+	db := mongo.Session.DB(mongo.Database)
+	c := db.C("bindings_missing_ip_san")
+
+	if err := c.Insert(qMetric); err != nil {
+		mongo.logError(ctx, "InsertBindingMissingIpSanRecord", err)
+		err = utils.APIErrDatabase(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (mongo *MongoStore) QueryBindingMissingIpSanRecord(ctx context.Context, bindingUUID string) ([]QMissingIpSanMetric, error) {
+
+	var qMetrics []QMissingIpSanMetric
+	var err error
+
+	c := mongo.Session.DB(mongo.Database).C("bindings_missing_ip_san")
+	query := bson.M{}
+
+	if bindingUUID != "" {
+		query = bson.M{"name": bindingUUID}
+	}
+
+	err = c.Find(query).All(&qMetrics)
+
+	if err != nil {
+		mongo.logError(ctx, "QueryBindingMissingIpSanRecord", err)
+		err = utils.APIErrDatabase(err.Error())
+		return []QMissingIpSanMetric{}, err
+	}
+
+	return qMetrics, err
+}
+
 func (mongo *MongoStore) QueryServiceTypes(ctx context.Context, name string) ([]QServiceType, error) {
 
 	var qServices []QServiceType
@@ -539,6 +582,58 @@ func (store *MongoStoreWithOfficialDriver) Close() {
 
 func (store *MongoStoreWithOfficialDriver) Clone() Store {
 	return store
+}
+
+func (store *MongoStoreWithOfficialDriver) InsertBindingMissingIpSanRecord(ctx context.Context, bindingUUID, bindingAuthId, createdOn string) error {
+
+	qMetric := QMissingIpSanMetric{
+		BindingUUID:           bindingUUID,
+		BindingAuthIdentifier: bindingAuthId,
+		CreatedOn:             createdOn,
+	}
+
+	_, err := store.database.Collection("bindings_missing_ip_san").InsertOne(ctx, qMetric)
+	if err != nil {
+		store.logError(ctx, "InsertBindingMissingIpSanRecord", err)
+		err = utils.APIErrDatabase(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (store *MongoStoreWithOfficialDriver) QueryBindingMissingIpSanRecord(ctx context.Context,
+	bindingUUID string) ([]QMissingIpSanMetric, error) {
+
+	var qMetrics []QMissingIpSanMetric
+	query := officialBson.M{}
+
+	if bindingUUID != "" {
+		query["binding_uuid"] = bindingUUID
+	}
+	cursor, err := store.database.Collection("bindings_missing_ip_san").Find(ctx, query)
+	if err != nil {
+		return qMetrics, err
+	}
+
+	for cursor.Next(ctx) {
+		var result QMissingIpSanMetric
+		err := cursor.Decode(&result)
+		if err != nil {
+			store.logError(ctx, "QueryBindingMissingIpSanRecord", err)
+			err = utils.APIErrDatabase(err.Error())
+			return qMetrics, err
+		}
+		qMetrics = append(qMetrics, result)
+	}
+
+	if err := cursor.Err(); err != nil {
+		store.logError(ctx, "QueryBindingMissingIpSanRecord", err)
+		err = utils.APIErrDatabase(err.Error())
+		return qMetrics, err
+	}
+
+	return qMetrics, nil
 }
 
 // ##### CRUD SERVICE TYPES #####

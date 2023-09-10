@@ -7,12 +7,13 @@ import (
 )
 
 type Mockstore struct {
-	Session      bool
-	Server       string
-	Database     string
-	ServiceTypes []QServiceType
-	Bindings     []QBinding
-	AuthMethods  []QAuthMethod
+	Session             bool
+	Server              string
+	Database            string
+	ServiceTypes        []QServiceType
+	Bindings            []QBinding
+	AuthMethods         []QAuthMethod
+	MissingIpSanRecords []QMissingIpSanMetric
 }
 
 // SetUp is used to initialize the mock store
@@ -44,6 +45,14 @@ func (mock *Mockstore) SetUp() {
 	am2.QBasicAuthMethod = amb2
 
 	mock.AuthMethods = append(mock.AuthMethods, am1, am2)
+
+	// Populate missing ip san records
+	r1 := QMissingIpSanMetric{
+		BindingUUID:           "b_uuid1",
+		BindingAuthIdentifier: "b_dn_1",
+		CreatedOn:             "now",
+	}
+	mock.MissingIpSanRecords = append(mock.MissingIpSanRecords, r1)
 }
 
 func (mock *Mockstore) Close() {
@@ -53,14 +62,40 @@ func (mock *Mockstore) Close() {
 func (mock *Mockstore) Clone() Store {
 
 	return &Mockstore{
-		Session:      mock.Session,
-		Server:       mock.Server,
-		Database:     mock.Database,
-		ServiceTypes: mock.ServiceTypes,
-		Bindings:     mock.Bindings,
-		AuthMethods:  mock.AuthMethods,
+		Session:             mock.Session,
+		Server:              mock.Server,
+		Database:            mock.Database,
+		ServiceTypes:        mock.ServiceTypes,
+		Bindings:            mock.Bindings,
+		AuthMethods:         mock.AuthMethods,
+		MissingIpSanRecords: mock.MissingIpSanRecords,
+	}
+}
+
+func (mock *Mockstore) InsertBindingMissingIpSanRecord(ctx context.Context, bindingUUID, bindingAuthId, createdOn string) error {
+	r1 := QMissingIpSanMetric{
+		BindingUUID:           bindingUUID,
+		BindingAuthIdentifier: bindingAuthId,
+		CreatedOn:             createdOn,
+	}
+	mock.MissingIpSanRecords = append(mock.MissingIpSanRecords, r1)
+	return nil
+}
+
+func (mock *Mockstore) QueryBindingMissingIpSanRecord(ctx context.Context, bindingUUID string) ([]QMissingIpSanMetric, error) {
+	var qMetrics []QMissingIpSanMetric
+
+	if bindingUUID != "" {
+		for _, metric := range mock.MissingIpSanRecords {
+			if metric.BindingUUID == bindingUUID {
+				qMetrics = append(qMetrics, metric)
+			}
+		}
+	} else {
+		qMetrics = mock.MissingIpSanRecords
 	}
 
+	return qMetrics, nil
 }
 
 func (mock *Mockstore) QueryServiceTypes(ctx context.Context, name string) ([]QServiceType, error) {
