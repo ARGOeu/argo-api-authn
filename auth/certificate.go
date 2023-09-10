@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"crypto/x509"
+	"encoding/asn1"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -23,6 +24,18 @@ const (
 var NonStandardAttributeNames = map[string]string{
 	"0.9.2342.19200300.100.1.25": DomainComponentRDN,
 	"1.2.840.113549.1.9.1":       EmailAddressRDN,
+}
+
+// IPSANExtensionID is a constant representing the Extension ID for Subject Alternative Name
+var IPSANExtensionID = asn1.ObjectIdentifier{2, 5, 29, 17}
+
+func HasIPSANs(cert *x509.Certificate) bool {
+	for _, ext := range cert.Extensions {
+		if ext.Id.Equal(IPSANExtensionID) {
+			return true
+		}
+	}
+	return false
 }
 
 // LoadCAs reads the root certificates from a directory within the filesystem, and creates the trusted root CA chain
