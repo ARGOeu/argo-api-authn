@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"github.com/ARGOeu/argo-api-authn/metrics"
 	"net/http"
 
 	"github.com/ARGOeu/argo-api-authn/auth"
@@ -79,12 +80,13 @@ func AuthViaCert(w http.ResponseWriter, r *http.Request) {
 
 	log.WithFields(
 		log.Fields{
+			"trace_id":     rCTX.Value("trace_id"),
 			"type":         "service_log",
 			"rdn":          rdnSequence,
 			"service_type": serviceType.Name,
 			"host":         vars["host"],
 		},
-	).Infof("New Certificate request")
+	).Info("New Certificate request")
 
 	if binding, err = bindings.FindBindingByAuthID(rCTX, rdnSequence, serviceType.UUID, vars["host"], "x509", store); err != nil {
 		utils.RespondError(rCTX, w, err)
@@ -96,6 +98,22 @@ func AuthViaCert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.RespondOk(w, 200, dataRes)
+	// keep track of bindings/certificates without the IP SAN extension
+	if !auth.HasIPSANs(r.TLS.PeerCertificates[0]) {
+		err = metrics.TrackMissingCertificateIpSan(rCTX, binding, store)
+		if err != nil {
+			log.WithFields(
+				log.Fields{
+					"trace_id":     rCTX.Value("trace_id"),
+					"type":         "service_log",
+					"rdn":          rdnSequence,
+					"service_type": serviceType.Name,
+					"host":         vars["host"],
+					"error":        err.Error(),
+				},
+			).Error("Error while tracking missing IP SAN extension")
+		}
+	}
 
+	utils.RespondOk(w, 200, dataRes)
 }
