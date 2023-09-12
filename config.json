@@ -1,14 +1,23 @@
 {
-  "service_port":9000,
-  "mongo_host":"test_host",
-  "mongo_db":"test_db",
-  "certificate_authorities":"/path/to/cas",
-  "certificate":"/path/to/cert",
-  "certificate_key":"/path/to/key",
+  "service_port": 9000,
+  "mongo_host": "test_host",
+  "mongo_db": "test_db",
+  "certificate_authorities": "/path/to/cas",
+  "certificate": "/path/to/cert",
+  "certificate_key": "/path/to/key",
   "service_token": "token",
-  "supported_auth_types": ["x509"],
-  "supported_auth_methods": ["api-key", "headers"],
-  "supported_service_types": ["ams", "web-api", "custom"],
+  "supported_auth_types": [
+    "x509"
+  ],
+  "supported_auth_methods": [
+    "api-key",
+    "headers"
+  ],
+  "supported_service_types": [
+    "ams",
+    "web-api",
+    "custom"
+  ],
   "verify_ssl": true,
   "trust_unknown_cas": false,
   "verify_certificate": true,
@@ -20,5 +29,9 @@
     "ams": "token",
     "web-api": "api_key"
   },
-  "syslog_enabled" : false
+  "syslog_enabled": false,
+  "server_read_timeout": 5,
+  "server_header_read_timeout": 5,
+  "server_write_timeout": 15,
+  "server_idle_timeout": 60
 }

@@ -1,19 +1,37 @@
 {
-  "service_port":8081,
-  "mongo_host":"localhost",
-  "mongo_db":"argo_auth",
-  "certificate_authorities":"/etc/grid-security/certificates",
-  "certificate":"/etc/pki/tls/certs/localhost.crt",
-  "certificate_key":"/etc/pki/tls/private/localhost.key",
+  "service_port": 8081,
+  "mongo_host": "localhost",
+  "mongo_db": "argo_auth",
+  "certificate_authorities": "/etc/grid-security/certificates",
+  "certificate": "/etc/pki/tls/certs/localhost.crt",
+  "certificate_key": "/etc/pki/tls/private/localhost.key",
   "service_token": "agelos",
-  "supported_auth_types": ["x509", "oidc"],
-  "supported_auth_methods": ["api-key", "headers"],
-  "supported_service_types": ["ams", "web-api", "custom"],
+  "supported_auth_types": [
+    "x509",
+    "oidc"
+  ],
+  "supported_auth_methods": [
+    "api-key",
+    "headers"
+  ],
+  "supported_service_types": [
+    "ams",
+    "web-api",
+    "custom"
+  ],
   "verify_ssl": false,
   "trust_unknown_cas": true,
   "verify_certificate": false,
-  "service_types_paths": {"ams": "/v1/users:byUUID/{{identifier}}"},
-  "service_types_retrieval_fields": {"ams": "token"},
+  "service_types_paths": {
+    "ams": "/v1/users:byUUID/{{identifier}}"
+  },
+  "service_types_retrieval_fields": {
+    "ams": "token"
+  },
   "syslog_enabled": false,
-  "client_cert_host_verification" : false
+  "client_cert_host_verification": false,
+  "server_read_timeout": 5,
+  "server_header_read_timeout": 5,
+  "server_write_timeout": 15,
+  "server_idle_timeout": 60
 }
