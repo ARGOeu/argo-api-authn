@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gorilla/handlers"
 
@@ -30,7 +31,7 @@ func main() {
 	flag.Parse()
 
 	// initialize the config
-	var cfg = &config.Config{}
+	var cfg = config.WithDefaults()
 	if err := cfg.ConfigSetUp(*cfgPath); err != nil {
 		log.Error(err.Error())
 		panic(err.Error())
@@ -58,9 +59,13 @@ func main() {
 	allowVerbs := handlers.AllowedMethods([]string{"OPTIONS", "POST", "GET", "PUT", "DELETE", "HEAD"})
 
 	server := &http.Server{
-		Addr:      ":" + strconv.Itoa(cfg.ServicePort),
-		Handler:   handlers.CORS(xReqWithConType, allowVerbs)(api.Router),
-		TLSConfig: tlsConfig,
+		Addr:              ":" + strconv.Itoa(cfg.ServicePort),
+		Handler:           handlers.CORS(xReqWithConType, allowVerbs)(api.Router),
+		TLSConfig:         tlsConfig,
+		ReadTimeout:       time.Duration(cfg.ServerReadTimeout) * time.Second,
+		ReadHeaderTimeout: time.Duration(cfg.ServerHeaderReadTimeout) * time.Second,
+		WriteTimeout:      time.Duration(cfg.ServerWriteTimeout) * time.Second,
+		IdleTimeout:       time.Duration(cfg.ServerIdleTimeout) * time.Second,
 	}
 
 	//Start the server
