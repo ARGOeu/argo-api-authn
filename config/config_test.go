@@ -11,6 +11,14 @@ type ConfigTestSuite struct {
 	suite.Suite
 }
 
+func (suite *ConfigTestSuite) TestWithDefaults() {
+	cfg := WithDefaults()
+	suite.Equal(5, cfg.ServerReadTimeout)
+	suite.Equal(5, cfg.ServerHeaderReadTimeout)
+	suite.Equal(15, cfg.ServerWriteTimeout)
+	suite.Equal(60, cfg.ServerIdleTimeout)
+}
+
 func (suite *ConfigTestSuite) TestConfigSetUp() {
 
 	// tests the case of a wrong path to a config file
@@ -18,7 +26,11 @@ func (suite *ConfigTestSuite) TestConfigSetUp() {
 	err1 := cfg1.ConfigSetUp("/wrong/path")
 
 	// tests the case of a normal setup
-	cfg2 := &Config{}
+	cfg2 := WithDefaults()
+	suite.Equal(5, cfg2.ServerReadTimeout)
+	suite.Equal(5, cfg2.ServerHeaderReadTimeout)
+	suite.Equal(15, cfg2.ServerWriteTimeout)
+	suite.Equal(60, cfg2.ServerIdleTimeout)
 	err2 := cfg2.ConfigSetUp("./configuration-test-files/test-conf.json")
 	expCfg2 := &Config{
 		ServicePort:            9000,
@@ -44,6 +56,10 @@ func (suite *ConfigTestSuite) TestConfigSetUp() {
 		},
 		SyslogEnabled:              true,
 		ClientCertHostVerification: true,
+		ServerReadTimeout:          15,
+		ServerHeaderReadTimeout:    15,
+		ServerWriteTimeout:         15,
+		ServerIdleTimeout:          120,
 	}
 
 	//tests the case of a malformed json
