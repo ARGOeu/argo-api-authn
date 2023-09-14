@@ -26,6 +26,7 @@ var NonStandardAttributeNames = map[string]string{
 	"1.2.840.113549.1.9.1":       EmailAddressRDN,
 }
 
+<<<<<<< HEAD
 // IPSANExtensionID is a constant representing the Extension ID for Subject Alternative Name
 var IPSANExtensionID = asn1.ObjectIdentifier{2, 5, 29, 17}
 
@@ -38,6 +39,8 @@ func HasIPSANs(cert *x509.Certificate) bool {
 	return false
 }
 
+=======
+>>>>>>> 5584955 (AM-325 authn:Introduce trace id identifier in logs)
 // LoadCAs reads the root certificates from a directory within the filesystem, and creates the trusted root CA chain
 func LoadCAs(dir string) (roots *x509.CertPool) {
 

@@ -29,7 +29,7 @@ func WrapConfig(hfn http.HandlerFunc, store stores.Store, config *config.Config)
 	})
 }
 
-// WrapAuth authorizes the user
+//WrapAuth authorizes the user
 func WrapAuth(hfn http.HandlerFunc, store stores.Store) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 

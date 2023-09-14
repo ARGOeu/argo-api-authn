@@ -200,7 +200,7 @@ func FindAllServiceTypes(ctx context.Context, store stores.Store) (ServiceTypesL
 
 }
 
-// HasHost returns whether or not a host is associated with a service type
+// hsHost returns whether or not a host is associated with a service type
 func (s *ServiceType) HasHost(host string) bool {
 
 	flag := false

@@ -367,7 +367,7 @@ func (mongo *MongoStore) UpdateBinding(ctx context.Context, original QBinding, u
 	return updated, err
 }
 
-// UpdateServiceType updates the given binding
+//UpdateServiceType updates the given binding
 func (mongo *MongoStore) UpdateServiceType(ctx context.Context, original QServiceType, updated QServiceType) (QServiceType, error) {
 
 	var err error
