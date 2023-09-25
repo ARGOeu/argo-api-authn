@@ -5,6 +5,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type QMissingIpSanMetric struct {
+	BindingUUID           string `bson:"binding_uuid"`
+	BindingAuthIdentifier string `bson:"binding_auth_identifier"`
+	CreatedOn             string `bson:"created_on"`
+}
+
 type QServiceType struct {
 	Name       string   `json:"name" bson:"name"`
 	Hosts      []string `json:"hosts" bson:"hosts"`

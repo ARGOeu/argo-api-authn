@@ -464,6 +464,35 @@ func (suite *StoreTestSuite) TestDeleteAuthMethod() {
 
 }
 
+func (suite *StoreTestSuite) TestRetrieveCreateBindingMissingIpSanRecord() {
+	suite.SetUpStoreTestSuite()
+
+	err1 := suite.mockStore.InsertBindingMissingIpSanRecord(suite.ctx, "in_b_uuid", "in_b_auth", "now")
+	suite.Nil(err1)
+
+	qMetrics, _ := suite.mockStore.QueryBindingMissingIpSanRecord(suite.ctx, "")
+	expectedQmetrics := []QMissingIpSanMetric{
+		{
+			BindingUUID:           "b_uuid1",
+			BindingAuthIdentifier: "b_dn_1",
+			CreatedOn:             "now",
+		},
+		{
+			BindingUUID:           "in_b_uuid",
+			BindingAuthIdentifier: "in_b_auth",
+			CreatedOn:             "now",
+		},
+	}
+	suite.Equal(2, len(qMetrics))
+	suite.Equal(expectedQmetrics, qMetrics)
+
+	// query with binding uuid
+	qMetrics2, _ := suite.mockStore.QueryBindingMissingIpSanRecord(suite.ctx, "b_uuid1")
+	suite.Equal(1, len(qMetrics2))
+	suite.Equal(expectedQmetrics[0], qMetrics2[0])
+
+}
+
 func TestStoreTestSuite(t *testing.T) {
 	suite.Run(t, new(StoreTestSuite))
 }
