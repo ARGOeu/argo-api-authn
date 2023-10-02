@@ -3,14 +3,16 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
 	gorillaContext "github.com/gorilla/context"
 
+	"net/http"
+
 	"github.com/ARGOeu/argo-api-authn/servicetypes"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 func ServiceTypeCreate(w http.ResponseWriter, r *http.Request) {

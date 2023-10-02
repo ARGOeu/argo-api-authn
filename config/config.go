@@ -4,12 +4,13 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"github.com/ARGOeu/argo-api-authn/utils"
-	log "github.com/sirupsen/logrus"
-	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
 	"io/ioutil"
 	"log/syslog"
 	"reflect"
+
+	"github.com/ARGOeu/argo-api-authn/utils"
+	log "github.com/sirupsen/logrus"
+	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
 )
 
 const (

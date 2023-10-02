@@ -3,20 +3,22 @@ package handlers
 import (
 	"bytes"
 	"context"
-	"github.com/ARGOeu/argo-api-authn/utils"
-	LOGGER "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/suite"
 	"net/http"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/ARGOeu/argo-api-authn/utils"
+	LOGGER "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/suite"
+
 	"encoding/json"
+	"net/http/httptest"
+
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/servicetypes"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/gorilla/mux"
-	"net/http/httptest"
 )
 
 type ServiceTypeHandlersSuite struct {

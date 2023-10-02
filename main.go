@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/ARGOeu/argo-api-authn/version"
 	"net/http"
 	"time"
+
+	"github.com/ARGOeu/argo-api-authn/version"
 
 	"github.com/gorilla/handlers"
 

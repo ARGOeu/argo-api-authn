@@ -2,17 +2,18 @@ package handlers
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/version"
 	"github.com/gorilla/mux"
 	LOGGER "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 type GenericHandlerSuite struct {
