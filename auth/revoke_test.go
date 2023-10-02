@@ -4,10 +4,11 @@ import (
 	"context"
 	"crypto/x509"
 	"encoding/pem"
-	LOGGER "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	"testing"
+
+	LOGGER "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/suite"
 )
 
 type RevokeTestSuite struct {
@@ -30,9 +31,7 @@ func ParseCert(pemData string) *x509.Certificate {
 }
 
 // 2014/05/22 14:18:31 Serial number match: intermediate is revoked.
-//
 //	2014/05/22 14:18:31 certificate is revoked via CRL
-//
 // 2014/05/22 14:18:31 Revoked certificate: misc/intermediate_ca/MobileArmorEnterpriseCA.crt
 var revokedCert = `-----BEGIN CERTIFICATE-----
 MIIEEzCCAvugAwIBAgILBAAAAAABGMGjftYwDQYJKoZIhvcNAQEFBQAwcTEoMCYG

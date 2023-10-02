@@ -5,13 +5,14 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
-	"github.com/ARGOeu/argo-api-authn/utils"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math/big"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/ARGOeu/argo-api-authn/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 // CRLCheckRevokedCert checks whether a certificate has been revoked

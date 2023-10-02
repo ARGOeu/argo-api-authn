@@ -3,6 +3,7 @@ package servicetypes
 import (
 	"context"
 	"fmt"
+
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
