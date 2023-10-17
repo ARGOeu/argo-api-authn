@@ -1,7 +1,9 @@
 package bindings
 
 import (
+	"context"
 	"fmt"
+
 	"github.com/ARGOeu/argo-api-authn/servicetypes"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
@@ -36,31 +38,31 @@ type BindingList struct {
 	Bindings []Binding `json:"bindings"`
 }
 
-//CreateBinding creates a new binding after validating its context
-func CreateBinding(binding Binding, store stores.Store) (Binding, error) {
+// CreateBinding creates a new binding after validating its context
+func CreateBinding(ctx context.Context, binding Binding, store stores.Store) (Binding, error) {
 
 	var qBinding stores.QBinding
 	var err error
 
 	// validate the binding
-	if err = binding.Validate(store); err != nil {
+	if err = binding.Validate(ctx, store); err != nil {
 		return binding, err
 	}
 
 	// check if a binding with same auth identifier already exists under the same service type and host
-	if err := ExistsWithAuthID(binding.AuthIdentifier, binding.ServiceUUID, binding.Host, binding.AuthType, store); err != nil {
+	if err := ExistsWithAuthID(ctx, binding.AuthIdentifier, binding.ServiceUUID, binding.Host, binding.AuthType, store); err != nil {
 		return binding, err
 	}
 
 	// check if a binding with the same name exists
-	if err := ExistsWithName(binding.Name, store); err != nil {
+	if err := ExistsWithName(ctx, binding.Name, store); err != nil {
 		return binding, err
 	}
 
 	// generate uuid
 	uuid := uuid2.NewV4().String()
 
-	if qBinding, err = store.InsertBinding(binding.Name, binding.ServiceUUID, binding.Host, uuid, binding.AuthIdentifier, binding.UniqueKey, binding.AuthType); err != nil {
+	if qBinding, err = store.InsertBinding(ctx, binding.Name, binding.ServiceUUID, binding.Host, uuid, binding.AuthIdentifier, binding.UniqueKey, binding.AuthType); err != nil {
 		return binding, err
 	}
 
@@ -73,7 +75,7 @@ func CreateBinding(binding Binding, store stores.Store) (Binding, error) {
 }
 
 // Validate performs various checks on the fields of a binding
-func (binding *Binding) Validate(store stores.Store) error {
+func (binding *Binding) Validate(ctx context.Context, store stores.Store) error {
 
 	var err error
 	var ok bool
@@ -86,7 +88,7 @@ func (binding *Binding) Validate(store stores.Store) error {
 	}
 
 	// check if the ServiceUUID is aligned with an existing service type
-	if serviceType, err = servicetypes.FindServiceTypeByUUID(binding.ServiceUUID, store); err != nil {
+	if serviceType, err = servicetypes.FindServiceTypeByUUID(ctx, binding.ServiceUUID, store); err != nil {
 		return err
 	}
 
@@ -108,13 +110,13 @@ func (binding *Binding) Validate(store stores.Store) error {
 
 // ExistsWithAuthID checks if a binding with the provided auth identifier already exists
 // under the given service type and host
-func ExistsWithAuthID(authID string, serviceUUID string, host string, authType string, store stores.Store) error {
+func ExistsWithAuthID(ctx context.Context, authID string, serviceUUID string, host string, authType string, store stores.Store) error {
 
 	var err error
 
 	// check if the given authID doesn't already exist under the given service type and host
 	// first check for all the other errors regrading bindings
-	if _, err = FindBindingByAuthID(authID, serviceUUID, host, authType, store); err != nil {
+	if _, err = FindBindingByAuthID(ctx, authID, serviceUUID, host, authType, store); err != nil {
 		if err.Error() != "Binding was not found" {
 			return err
 		}
@@ -130,12 +132,12 @@ func ExistsWithAuthID(authID string, serviceUUID string, host string, authType s
 }
 
 // ExistsWithName checks if a binding with the provided name already exists
-func ExistsWithName(name string, store stores.Store) error {
+func ExistsWithName(ctx context.Context, name string, store stores.Store) error {
 
 	var err error
 
 	// check if the given name is taken
-	if _, err = FindBindingByUUIDAndName("", name, store); err != nil {
+	if _, err = FindBindingByUUIDAndName(ctx, "", name, store); err != nil {
 		if err.Error() != "Binding was not found" {
 			return err
 		}
@@ -151,13 +153,13 @@ func ExistsWithName(name string, store stores.Store) error {
 }
 
 // FindBindingByAuthID queries the datastore and returns a binding based on the given auth identifier, service and host
-func FindBindingByAuthID(authID string, serviceUUID string, host string, authType string, store stores.Store) (Binding, error) {
+func FindBindingByAuthID(ctx context.Context, authID string, serviceUUID string, host string, authType string, store stores.Store) (Binding, error) {
 
 	var qBindings []stores.QBinding
 	var err error
 	var binding Binding
 
-	if qBindings, err = store.QueryBindingsByAuthID(authID, serviceUUID, host, authType); err != nil {
+	if qBindings, err = store.QueryBindingsByAuthID(ctx, authID, serviceUUID, host, authType); err != nil {
 		return Binding{}, err
 	}
 
@@ -180,13 +182,13 @@ func FindBindingByAuthID(authID string, serviceUUID string, host string, authTyp
 }
 
 // FindAllBindings returns all the bindings in the service
-func FindAllBindings(store stores.Store) (BindingList, error) {
+func FindAllBindings(ctx context.Context, store stores.Store) (BindingList, error) {
 
 	var err error
 	var qBindings []stores.QBinding
 	var bindings = []Binding{}
 
-	if qBindings, err = store.QueryBindings("", ""); err != nil {
+	if qBindings, err = store.QueryBindings(ctx, "", ""); err != nil {
 		return BindingList{Bindings: []Binding{}}, err
 	}
 
@@ -204,14 +206,14 @@ func FindAllBindings(store stores.Store) (BindingList, error) {
 
 }
 
-//FindBindingsByServiceTypeAndHost returns all the bindings of a specific service type and host
-func FindBindingsByServiceTypeAndHost(serviceUUID string, host string, store stores.Store) (BindingList, error) {
+// FindBindingsByServiceTypeAndHost returns all the bindings of a specific service type and host
+func FindBindingsByServiceTypeAndHost(ctx context.Context, serviceUUID string, host string, store stores.Store) (BindingList, error) {
 
 	var qBindings []stores.QBinding
 	var bindings = []Binding{}
 	var err error
 
-	if qBindings, err = store.QueryBindings(serviceUUID, host); err != nil {
+	if qBindings, err = store.QueryBindings(ctx, serviceUUID, host); err != nil {
 		return BindingList{Bindings: []Binding{}}, err
 	}
 
@@ -228,13 +230,13 @@ func FindBindingsByServiceTypeAndHost(serviceUUID string, host string, store sto
 }
 
 // FindBindingByUUIDAndName returns the binding associated with the provided uuid and/or name
-func FindBindingByUUIDAndName(uuid, name string, store stores.Store) (Binding, error) {
+func FindBindingByUUIDAndName(ctx context.Context, uuid, name string, store stores.Store) (Binding, error) {
 
 	var qBindings []stores.QBinding
 	var err error
 	var binding Binding
 
-	if qBindings, err = store.QueryBindingsByUUIDAndName(uuid, name); err != nil {
+	if qBindings, err = store.QueryBindingsByUUIDAndName(ctx, uuid, name); err != nil {
 		return Binding{}, err
 	}
 
@@ -258,8 +260,8 @@ func FindBindingByUUIDAndName(uuid, name string, store stores.Store) (Binding, e
 	return binding, err
 }
 
-//UpdateBinding updates a binding after validating its fields
-func UpdateBinding(original Binding, tempBind TempUpdateBinding, store stores.Store) (Binding, error) {
+// UpdateBinding updates a binding after validating its fields
+func UpdateBinding(ctx context.Context, original Binding, tempBind TempUpdateBinding, store stores.Store) (Binding, error) {
 
 	var err error
 	var updated Binding
@@ -278,23 +280,23 @@ func UpdateBinding(original Binding, tempBind TempUpdateBinding, store stores.St
 	}
 
 	// validate the updated binding
-	if err = updated.Validate(store); err != nil {
+	if err = updated.Validate(ctx, store); err != nil {
 		return updated, err
 	}
 
-	// if there is a new auth identifier provided, check whether or not it already exists
+	// if there is a new auth identifier provided, check whether it already exists
 	if original.AuthIdentifier != updated.AuthIdentifier {
 		// check if a binding with same authID already exists under the same service type and host
-		if err := ExistsWithAuthID(updated.AuthIdentifier, updated.ServiceUUID, updated.Host, updated.AuthType, store); err != nil {
+		if err := ExistsWithAuthID(ctx, updated.AuthIdentifier, updated.ServiceUUID, updated.Host, updated.AuthType, store); err != nil {
 			return Binding{}, err
 		}
 
 	}
 
-	// if there is a new name provided, check whether or not it already exists
+	// if there is a new name provided, check whether it already exists
 	if original.Name != updated.Name {
 		// check if a binding with same name already exists
-		if err := ExistsWithName(updated.Name, store); err != nil {
+		if err := ExistsWithName(ctx, updated.Name, store); err != nil {
 			return Binding{}, err
 		}
 
@@ -315,7 +317,7 @@ func UpdateBinding(original Binding, tempBind TempUpdateBinding, store stores.St
 	}
 
 	// update the binding
-	if _, err = store.UpdateBinding(qOriginalBinding, qUpdatedBinding); err != nil {
+	if _, err = store.UpdateBinding(ctx, qOriginalBinding, qUpdatedBinding); err != nil {
 		err = &utils.APIError{Status: "INTERNAL SERVER ERROR", Code: 500, Message: err.Error()}
 		return Binding{}, err
 	}
@@ -324,7 +326,7 @@ func UpdateBinding(original Binding, tempBind TempUpdateBinding, store stores.St
 }
 
 // DeleteBinding deletes the given binding from the store
-func DeleteBinding(binding Binding, store stores.Store) error {
+func DeleteBinding(ctx context.Context, binding Binding, store stores.Store) error {
 
 	var err error
 	var qBinding stores.QBinding
@@ -335,7 +337,7 @@ func DeleteBinding(binding Binding, store stores.Store) error {
 		return err
 	}
 
-	if err = store.DeleteBinding(qBinding); err != nil {
+	if err = store.DeleteBinding(ctx, qBinding); err != nil {
 		return err
 	}
 

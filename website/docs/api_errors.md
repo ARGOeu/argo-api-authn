@@ -1,3 +1,9 @@
+---
+id: api_errors
+title: Errors
+sidebar_position: 7
+---
+
 # Errors
 
 In case of an Error during handling a user’s request, the API responds using the following schema:

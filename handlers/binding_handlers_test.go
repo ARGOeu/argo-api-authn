@@ -2,21 +2,24 @@ package handlers
 
 import (
 	"bytes"
-	"github.com/ARGOeu/argo-api-authn/stores"
-	"github.com/ARGOeu/argo-api-authn/utils"
-	LOGGER "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/suite"
+	"context"
 	"net/http"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/ARGOeu/argo-api-authn/stores"
+	"github.com/ARGOeu/argo-api-authn/utils"
+	LOGGER "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/suite"
+
 	"encoding/json"
+	"io/ioutil"
+	"net/http/httptest"
+
 	"github.com/ARGOeu/argo-api-authn/bindings"
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/gorilla/mux"
-	"io/ioutil"
-	"net/http/httptest"
 )
 
 type BindingHandlersSuite struct {
@@ -887,10 +890,10 @@ func (suite *BindingHandlersSuite) TestBindingUpdate() {
 	router.HandleFunc("/bindings/{name}", WrapConfig(BindingUpdate, mockstore, cfg))
 	router.ServeHTTP(w, req)
 
-	qB, _ := mockstore.QueryBindingsByUUIDAndName("b_uuid1", "updated_name")
+	qB, _ := mockstore.QueryBindingsByUUIDAndName(context.Background(), "b_uuid1", "updated_name")
 	expRespJSON = strings.Replace(expRespJSON, "{{UPDATED_ON}}", qB[0].UpdatedOn, 1)
 	// make sure the updated time is before now
-	updatedTime, _ := time.Parse(utils.ZULU_FORM, qB[0].UpdatedOn)
+	updatedTime, _ := time.Parse(utils.ZuluForm, qB[0].UpdatedOn)
 	suite.True(updatedTime.Before(time.Now().UTC()))
 
 	suite.Equal(200, w.Code)

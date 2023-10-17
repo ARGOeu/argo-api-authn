@@ -1,6 +1,7 @@
 package authmethods
 
 import (
+	"context"
 	"github.com/ARGOeu/argo-api-authn/servicetypes"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
@@ -23,7 +24,7 @@ type TempBasicAuthMethod struct {
 	Host        string `json:"host" required:"true"`
 }
 
-func (m *BasicAuthMethod) Validate(store stores.Store) error {
+func (m *BasicAuthMethod) Validate(ctx context.Context, store stores.Store) error {
 
 	var ok bool
 	var err error
@@ -36,7 +37,7 @@ func (m *BasicAuthMethod) Validate(store stores.Store) error {
 	}
 
 	// check if the specified service type exists
-	if serviceType, err = servicetypes.FindServiceTypeByUUID(m.ServiceUUID, store); err != nil {
+	if serviceType, err = servicetypes.FindServiceTypeByUUID(ctx, m.ServiceUUID, store); err != nil {
 		return err
 	}
 

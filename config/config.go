@@ -4,12 +4,20 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"github.com/ARGOeu/argo-api-authn/utils"
-	log "github.com/sirupsen/logrus"
-	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
 	"io/ioutil"
 	"log/syslog"
 	"reflect"
+
+	"github.com/ARGOeu/argo-api-authn/utils"
+	log "github.com/sirupsen/logrus"
+	lSyslog "github.com/sirupsen/logrus/hooks/syslog"
+)
+
+const (
+	DefaultServerReadTimeout       = 5
+	DefaultServerHeaderReadTimeout = 5
+	DefaultServerWriteTimeout      = 15
+	DefaultServerIdleTimeout       = 60
 )
 
 type Config struct {
@@ -30,6 +38,20 @@ type Config struct {
 	ServiceTypesRetrievalFields map[string]string `json:"service_types_retrieval_fields" required:"true"`
 	SyslogEnabled               bool              `json:"syslog_enabled"`
 	ClientCertHostVerification  bool              `json:"client_cert_host_verification"`
+	ServerReadTimeout           int               `json:"server_read_timeout"`
+	ServerHeaderReadTimeout     int               `json:"server_header_read_timeout"`
+	ServerWriteTimeout          int               `json:"server_write_timeout"`
+	ServerIdleTimeout           int               `json:"server_idle_timeout"`
+}
+
+func WithDefaults() *Config {
+	return &Config{
+		ServerReadTimeout:       DefaultServerReadTimeout,
+		ServerHeaderReadTimeout: DefaultServerHeaderReadTimeout,
+		ServerWriteTimeout:      DefaultServerWriteTimeout,
+		ServerIdleTimeout:       DefaultServerIdleTimeout,
+	}
+
 }
 
 // ConfigSetUp unmarshalls a json file specified by the input parameter into the config object
@@ -72,7 +94,7 @@ func (cfg *Config) ConfigSetUp(path string) error {
 	return nil
 }
 
-// ClintAuthPolicy determines, based on the given configuration what client authentication policy should the server follow
+// ClientAuthPolicy determines, based on the given configuration what client authentication policy should the server follow
 func (cfg *Config) ClientAuthPolicy() tls.ClientAuthType {
 
 	var policy = tls.VerifyClientCertIfGiven

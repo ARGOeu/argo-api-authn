@@ -1,20 +1,22 @@
 package auth
 
 import (
+	"context"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
-	"github.com/ARGOeu/argo-api-authn/utils"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math/big"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/ARGOeu/argo-api-authn/utils"
+	log "github.com/sirupsen/logrus"
 )
 
-// CRLCheckRevokedCert checks whether or not a certificate has been revoked
-func CRLCheckRevokedCert(cert *x509.Certificate) error {
+// CRLCheckRevokedCert checks whether a certificate has been revoked
+func CRLCheckRevokedCert(ctx context.Context, cert *x509.Certificate) error {
 
 	var err error
 	var goMaxP, psi, csi int
@@ -43,12 +45,13 @@ func CRLCheckRevokedCert(cert *x509.Certificate) error {
 			// count how much time it takes to fetch a crl
 			t1 := time.Now()
 			// grab the crl
-			if crtList, err = FetchCRL(crlURL); err != nil {
+			if crtList, err = FetchCRL(ctx, crlURL); err != nil {
 				errChan <- err
 			}
 
 			log.WithFields(
 				log.Fields{
+					"trace_id":        ctx.Value("trace_id"),
 					"type":            "backend_log",
 					"backend_service": "crl",
 					"backend_hosts":   crlURL,
@@ -66,6 +69,7 @@ func CRLCheckRevokedCert(cert *x509.Certificate) error {
 			rvkCrtListLen := len(crtList.RevokedCertificates)
 			log.WithFields(
 				log.Fields{
+					"trace_id":        ctx.Value("trace_id"),
 					"type":            "backend_log",
 					"backend_service": "crl",
 					"backend_hosts":   crlURL,
@@ -99,6 +103,7 @@ func CRLCheckRevokedCert(cert *x509.Certificate) error {
 		wg.Wait()
 		log.WithFields(
 			log.Fields{
+				"trace_id":        ctx.Value("trace_id"),
 				"type":            "service_log",
 				"processing_time": time.Since(totalTime),
 			},
@@ -116,6 +121,7 @@ func CRLCheckRevokedCert(cert *x509.Certificate) error {
 
 	log.WithFields(
 		log.Fields{
+			"trace_id":        ctx.Value("trace_id"),
 			"type":            "service_log",
 			"processing_time": time.Since(totalTime),
 		},
@@ -123,7 +129,7 @@ func CRLCheckRevokedCert(cert *x509.Certificate) error {
 	return err
 }
 
-// CheckInCRL checks if a serial number exists within the serial numbers of other revoked certificates
+// SynchronizedCheckInCRL checks if a serial number exists within the serial numbers of other revoked certificates
 func SynchronizedCheckInCRL(doneChan <-chan bool, errChan chan<- error, revokedCerts []pkix.RevokedCertificate, serialNumber *big.Int, wg *sync.WaitGroup) {
 
 loop:
@@ -143,7 +149,7 @@ loop:
 }
 
 // FetchCRL fetches the CRL
-func FetchCRL(url string) (pkix.TBSCertificateList, error) {
+func FetchCRL(ctx context.Context, url string) (pkix.TBSCertificateList, error) {
 
 	var err error
 	var resp *http.Response
@@ -156,6 +162,7 @@ func FetchCRL(url string) (pkix.TBSCertificateList, error) {
 	if resp, err = client.Get(url); err != nil {
 		log.WithFields(
 			log.Fields{
+				"trace_id":        ctx.Value("trace_id"),
 				"type":            "backend_log",
 				"backend_service": "crl",
 				"backend_hosts":   url,
@@ -170,6 +177,7 @@ func FetchCRL(url string) (pkix.TBSCertificateList, error) {
 	if crlBytes, err = ioutil.ReadAll(resp.Body); err != nil {
 		log.WithFields(
 			log.Fields{
+				"trace_id":        ctx.Value("trace_id"),
 				"type":            "backend_log",
 				"backend_service": "crl",
 				"backend_hosts":   url,
@@ -185,6 +193,7 @@ func FetchCRL(url string) (pkix.TBSCertificateList, error) {
 	if crtList, err = x509.ParseCRL(crlBytes); err != nil {
 		log.WithFields(
 			log.Fields{
+				"trace_id":        ctx.Value("trace_id"),
 				"type":            "backend_log",
 				"backend_service": "crl",
 				"backend_hosts":   url,

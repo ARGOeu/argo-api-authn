@@ -1,43 +1,48 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
-	"github.com/gorilla/context"
+	gorillaContext "github.com/gorilla/context"
+
+	"net/http"
 
 	"github.com/ARGOeu/argo-api-authn/servicetypes"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 func ServiceTypeCreate(w http.ResponseWriter, r *http.Request) {
+	traceId := gorillaContext.Get(r, "trace_id").(string)
+	rCTX := context.WithValue(context.Background(), "trace_id", traceId)
 
 	var err error
 	var service servicetypes.ServiceType
 
 	//context references
-	store := context.Get(r, "stores").(stores.Store)
-	cfg := context.Get(r, "config").(config.Config)
+	store := gorillaContext.Get(r, "stores").(stores.Store)
+	cfg := gorillaContext.Get(r, "config").(config.Config)
 
 	// check the validity of the JSON
 	if err = json.NewDecoder(r.Body).Decode(&service); err != nil {
 		err := utils.APIErrBadRequest(err.Error())
-		utils.RespondError(w, err)
+		utils.RespondError(rCTX, w, err)
 		return
 	}
 
 	// check if all required field have been provided
 	if err = utils.ValidateRequired(service); err != nil {
 		err := utils.APIErrEmptyRequiredField("service-type", err.Error())
-		utils.RespondError(w, err)
+		utils.RespondError(rCTX, w, err)
 		return
 	}
 
 	// create the service
-	if service, err = servicetypes.CreateServiceType(service, store, cfg); err != nil {
-		utils.RespondError(w, err)
+	if service, err = servicetypes.CreateServiceType(rCTX, service, store, cfg); err != nil {
+		utils.RespondError(rCTX, w, err)
 		return
 	}
 
@@ -46,19 +51,21 @@ func ServiceTypeCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func ServiceTypesListOne(w http.ResponseWriter, r *http.Request) {
+	traceId := gorillaContext.Get(r, "trace_id").(string)
+	rCTX := context.WithValue(context.Background(), "trace_id", traceId)
 
 	var err error
 	var service servicetypes.ServiceType
 
 	//context references
-	store := context.Get(r, "stores").(stores.Store)
+	store := gorillaContext.Get(r, "stores").(stores.Store)
 
 	// url vars
 	vars := mux.Vars(r)
 
 	// find the service
-	if service, err = servicetypes.FindServiceTypeByName(vars["service-type"], store); err != nil {
-		utils.RespondError(w, err)
+	if service, err = servicetypes.FindServiceTypeByName(rCTX, vars["service-type"], store); err != nil {
+		utils.RespondError(rCTX, w, err)
 		return
 	}
 
@@ -67,16 +74,18 @@ func ServiceTypesListOne(w http.ResponseWriter, r *http.Request) {
 }
 
 func ServiceTypeListAll(w http.ResponseWriter, r *http.Request) {
+	traceId := gorillaContext.Get(r, "trace_id").(string)
+	rCTX := context.WithValue(context.Background(), "trace_id", traceId)
 
 	var err error
 	var servList servicetypes.ServiceTypesList
 
 	//context references
-	store := context.Get(r, "stores").(stores.Store)
+	store := gorillaContext.Get(r, "stores").(stores.Store)
 
 	// find the service
-	if servList, err = servicetypes.FindAllServiceTypes(store); err != nil {
-		utils.RespondError(w, err)
+	if servList, err = servicetypes.FindAllServiceTypes(rCTX, store); err != nil {
+		utils.RespondError(rCTX, w, err)
 		return
 	}
 
@@ -86,6 +95,8 @@ func ServiceTypeListAll(w http.ResponseWriter, r *http.Request) {
 
 // ServiceTypeUpdate updates a service type
 func ServiceTypeUpdate(w http.ResponseWriter, r *http.Request) {
+	traceId := gorillaContext.Get(r, "trace_id").(string)
+	rCTX := context.WithValue(context.Background(), "trace_id", traceId)
 
 	var err error
 	var originalSt servicetypes.ServiceType
@@ -93,32 +104,32 @@ func ServiceTypeUpdate(w http.ResponseWriter, r *http.Request) {
 	var tempST servicetypes.TempServiceType
 
 	//context references
-	store := context.Get(r, "stores").(stores.Store)
-	cfg := context.Get(r, "config").(config.Config)
+	store := gorillaContext.Get(r, "stores").(stores.Store)
+	cfg := gorillaContext.Get(r, "config").(config.Config)
 
 	// url vars
 	vars := mux.Vars(r)
 
-	if originalSt, err = servicetypes.FindServiceTypeByName(vars["service-type"], store); err != nil {
-		utils.RespondError(w, err)
+	if originalSt, err = servicetypes.FindServiceTypeByName(rCTX, vars["service-type"], store); err != nil {
+		utils.RespondError(rCTX, w, err)
 		return
 	}
 
 	// first, fill the temporary binding with the fields of the original binding
 	if err := utils.CopyFields(originalSt, &tempST); err != nil {
 		err = utils.APIGenericInternalError(err.Error())
-		utils.RespondError(w, err)
+		utils.RespondError(rCTX, w, err)
 	}
 
 	// check the validity of the JSON and updated the provided fields
 	if err = json.NewDecoder(r.Body).Decode(&tempST); err != nil {
 		err := utils.APIErrBadRequest(err.Error())
-		utils.RespondError(w, err)
+		utils.RespondError(rCTX, w, err)
 		return
 	}
 
-	if updatedSt, err = servicetypes.UpdateServiceType(originalSt, tempST, store, cfg); err != nil {
-		utils.RespondError(w, err)
+	if updatedSt, err = servicetypes.UpdateServiceType(rCTX, originalSt, tempST, store, cfg); err != nil {
+		utils.RespondError(rCTX, w, err)
 		return
 	}
 
@@ -126,25 +137,27 @@ func ServiceTypeUpdate(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// ServiceTypeDelete deletes a service type
+// ServiceTypeDeleteOne deletes a service type
 func ServiceTypeDeleteOne(w http.ResponseWriter, r *http.Request) {
+	traceId := gorillaContext.Get(r, "trace_id").(string)
+	rCTX := context.WithValue(context.Background(), "trace_id", traceId)
 
 	var err error
 	var serviceType servicetypes.ServiceType
 
 	//context references
-	store := context.Get(r, "stores").(stores.Store)
+	store := gorillaContext.Get(r, "stores").(stores.Store)
 
 	// url vars
 	vars := mux.Vars(r)
 
-	if serviceType, err = servicetypes.FindServiceTypeByName(vars["service-type"], store); err != nil {
-		utils.RespondError(w, err)
+	if serviceType, err = servicetypes.FindServiceTypeByName(rCTX, vars["service-type"], store); err != nil {
+		utils.RespondError(rCTX, w, err)
 		return
 	}
 
-	if err = servicetypes.DeleteServiceType(serviceType, store); err != nil {
-		utils.RespondError(w, err)
+	if err = servicetypes.DeleteServiceType(rCTX, serviceType, store); err != nil {
+		utils.RespondError(rCTX, w, err)
 		return
 	}
 

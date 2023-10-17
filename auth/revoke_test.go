@@ -1,12 +1,14 @@
 package auth
 
 import (
+	"context"
 	"crypto/x509"
 	"encoding/pem"
-	LOGGER "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	"testing"
+
+	LOGGER "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/suite"
 )
 
 type RevokeTestSuite struct {
@@ -95,6 +97,8 @@ lBlGGSW4gNfL1IYoakRwJiNiqZ+Gb7+6kHDSVneFeO/qJakXzlByjAA6quPbYzSf
 
 func (suite *RevokeTestSuite) TestCRLCheckRevokedCert() {
 
+	ctx := context.Background()
+
 	// tests the case where the certificate doesn't contain extra attributes names
 	var crt *x509.Certificate
 
@@ -104,7 +108,7 @@ func (suite *RevokeTestSuite) TestCRLCheckRevokedCert() {
 	// test multiple times to make sure that the function produces a steady result
 	for i := 0; i < 100; i++ {
 
-		err1 := CRLCheckRevokedCert(crt)
+		err1 := CRLCheckRevokedCert(ctx, crt)
 
 		suite.Equal("Your certificate has been revoked", err1.Error())
 	}
@@ -115,7 +119,7 @@ func (suite *RevokeTestSuite) TestCRLCheckRevokedCert() {
 	// test multiple times to make sure that the function produces a steady result
 	for i := 0; i < 100; i++ {
 
-		err2 := CRLCheckRevokedCert(crt)
+		err2 := CRLCheckRevokedCert(ctx, crt)
 
 		suite.Nil(err2)
 	}
@@ -123,14 +127,14 @@ func (suite *RevokeTestSuite) TestCRLCheckRevokedCert() {
 	// tests the case of an empty slice for CRLDPs
 	crt = ParseCert(goodComodoCA)
 	crt.CRLDistributionPoints = []string{}
-	err3 := CRLCheckRevokedCert(crt)
+	err3 := CRLCheckRevokedCert(ctx, crt)
 
 	suite.Equal("Your certificate is invalid. No CRLDistributionPoints found on the certificate", err3.Error())
 
 	// test the case of an invalid CRL URL
 	crt = ParseCert(goodComodoCA)
 	crt.CRLDistributionPoints = []string{"https://unknown/unknown"}
-	err4 := CRLCheckRevokedCert(crt)
+	err4 := CRLCheckRevokedCert(ctx, crt)
 
 	suite.Equal("Could not access CRL https://unknown/unknown", err4.Error())
 }

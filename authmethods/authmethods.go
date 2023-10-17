@@ -1,6 +1,7 @@
 package authmethods
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/ARGOeu/argo-api-authn/bindings"
 	"github.com/ARGOeu/argo-api-authn/config"
@@ -19,8 +20,8 @@ var AuthMethodsTypes = map[string]AuthMethodInit{
 	"headers": NewHeadersAuthMethod,
 }
 
-// A function type that refers to all the query functions for all the respective tuh method types
-type QueryAuthMethodFinder func(serviceUUID string, host string, store stores.Store) ([]stores.QAuthMethod, error)
+// QueryAuthMethodFinder is a function type that refers to all the query functions for all the respective auth method types
+type QueryAuthMethodFinder func(ctx context.Context, serviceUUID string, host string, store stores.Store) ([]stores.QAuthMethod, error)
 
 var QueryAuthMethodFinders = map[string]QueryAuthMethodFinder{
 	"api-key": ApiKeyAuthFinder,
@@ -28,9 +29,9 @@ var QueryAuthMethodFinders = map[string]QueryAuthMethodFinder{
 }
 
 type AuthMethod interface {
-	Validate(store stores.Store) error
+	Validate(ctx context.Context, store stores.Store) error
 	Update(r io.ReadCloser) (AuthMethod, error)
-	RetrieveAuthResource(binding bindings.Binding, serviceType servicetypes.ServiceType, cfg *config.Config) (map[string]interface{}, error)
+	RetrieveAuthResource(ctx context.Context, binding bindings.Binding, serviceType servicetypes.ServiceType, cfg *config.Config) (map[string]interface{}, error)
 }
 
 type AuthMethodsList struct {
@@ -67,14 +68,14 @@ func AuthMethodConvertToQueryModel(fromAM AuthMethod, toType string) (stores.QAu
 }
 
 // QueryModelConvertToAuthMethod converts a query auth method to an auth method
-func QueryModelConvertToAuthMethod(fromQam stores.QAuthMethod, toType string) (AuthMethod, error) {
+func QueryModelConvertToAuthMethod(ctx context.Context, fromQam stores.QAuthMethod, toType string) (AuthMethod, error) {
 
 	var err error
 	var authMethod AuthMethod
 	var qAuthMethodBytes []byte
 
 	// use the query auth method factory
-	if authMethod, err = NewAuthMethodFactory().Create(toType); err != nil {
+	if authMethod, err = NewAuthMethodFactory().Create(ctx, toType); err != nil {
 		return authMethod, err
 	}
 
@@ -95,7 +96,7 @@ func QueryModelConvertToAuthMethod(fromQam stores.QAuthMethod, toType string) (A
 }
 
 // AuthMethodFinder uses the appropriate finder to search for a specific type of auth methods
-func AuthMethodFinder(serviceUUID string, host string, authMethodType string, store stores.Store) (AuthMethod, error) {
+func AuthMethodFinder(ctx context.Context, serviceUUID string, host string, authMethodType string, store stores.Store) (AuthMethod, error) {
 
 	var err error
 	var qAuthMs []stores.QAuthMethod
@@ -108,7 +109,8 @@ func AuthMethodFinder(serviceUUID string, host string, authMethodType string, st
 		err = utils.APIGenericInternalError("Type is supported but not found")
 		log.WithFields(
 			log.Fields{
-				"type": "service_log",
+				"trace_id": ctx.Value("trace_id"),
+				"type":     "service_log",
 			},
 		).Errorf("Type: %v was used to retrieve from AuthMethodsRetrievalFields,"+
 			" but was not found inside the source code(QueryAuthMethodFinders) of despite being supported", authMethodType)
@@ -116,7 +118,7 @@ func AuthMethodFinder(serviceUUID string, host string, authMethodType string, st
 	}
 
 	// execute the finder function
-	if qAuthMs, err = finderFunc(serviceUUID, host, store); err != nil {
+	if qAuthMs, err = finderFunc(ctx, serviceUUID, host, store); err != nil {
 		return am, err
 	}
 
@@ -131,7 +133,7 @@ func AuthMethodFinder(serviceUUID string, host string, authMethodType string, st
 	}
 
 	// convert the query model to an auth method
-	if am, err = QueryModelConvertToAuthMethod(qAuthMs[0], authMethodType); err != nil {
+	if am, err = QueryModelConvertToAuthMethod(ctx, qAuthMs[0], authMethodType); err != nil {
 		return am, err
 	}
 
@@ -140,11 +142,11 @@ func AuthMethodFinder(serviceUUID string, host string, authMethodType string, st
 }
 
 // AuthMethodAlreadyExists checks where or not any type of auth method already exists for the given host and service type
-func AuthMethodAlreadyExists(serviceUUID string, host string, authMethodType string, store stores.Store) error {
+func AuthMethodAlreadyExists(ctx context.Context, serviceUUID string, host string, authMethodType string, store stores.Store) error {
 
 	var err error
 
-	_, err = AuthMethodFinder(serviceUUID, host, authMethodType, store)
+	_, err = AuthMethodFinder(ctx, serviceUUID, host, authMethodType, store)
 
 	// if the err is nil, it means it found an already existing auth method
 	if err == nil {
@@ -161,7 +163,7 @@ func AuthMethodAlreadyExists(serviceUUID string, host string, authMethodType str
 }
 
 // AuthMethodCreate inserts the given auth method to the datastore after performing some checks and enriching its contents
-func AuthMethodCreate(am AuthMethod, store stores.Store, typeOfAuthMethod string) error {
+func AuthMethodCreate(ctx context.Context, am AuthMethod, store stores.Store, typeOfAuthMethod string) error {
 
 	var err error
 	var qAuthM stores.QAuthMethod
@@ -170,7 +172,7 @@ func AuthMethodCreate(am AuthMethod, store stores.Store, typeOfAuthMethod string
 	var ih interface{}
 
 	// validate the auth method
-	if err = am.Validate(store); err != nil {
+	if err = am.Validate(ctx, store); err != nil {
 		return err
 	}
 
@@ -185,7 +187,7 @@ func AuthMethodCreate(am AuthMethod, store stores.Store, typeOfAuthMethod string
 	}
 
 	// check if an auth method already exists
-	if err = AuthMethodAlreadyExists(isu.(string), ih.(string), typeOfAuthMethod, store); err != nil {
+	if err = AuthMethodAlreadyExists(ctx, isu.(string), ih.(string), typeOfAuthMethod, store); err != nil {
 		return err
 	}
 
@@ -203,7 +205,7 @@ func AuthMethodCreate(am AuthMethod, store stores.Store, typeOfAuthMethod string
 		return err
 	}
 
-	if err = store.InsertAuthMethod(qAuthM); err != nil {
+	if err = store.InsertAuthMethod(ctx, qAuthM); err != nil {
 		return err
 	}
 
@@ -211,7 +213,7 @@ func AuthMethodCreate(am AuthMethod, store stores.Store, typeOfAuthMethod string
 }
 
 // AuthMethodFindAll finds and returns all the registered auth methods
-func AuthMethodFindAll(store stores.Store) (AuthMethodsList, error) {
+func AuthMethodFindAll(ctx context.Context, store stores.Store) (AuthMethodsList, error) {
 
 	var err error
 	var am AuthMethod
@@ -221,7 +223,7 @@ func AuthMethodFindAll(store stores.Store) (AuthMethodsList, error) {
 
 	// loop through all the finders and aggregate their results
 	for amType, finderFunc := range QueryAuthMethodFinders {
-		if qams, err = finderFunc("", "", store); err != nil {
+		if qams, err = finderFunc(ctx, "", "", store); err != nil {
 			return amList, err
 		}
 
@@ -229,7 +231,7 @@ func AuthMethodFindAll(store stores.Store) (AuthMethodsList, error) {
 		for _, qam := range qams {
 
 			// convert the query model to an auth method
-			if am, err = QueryModelConvertToAuthMethod(qam, amType); err != nil {
+			if am, err = QueryModelConvertToAuthMethod(ctx, qam, amType); err != nil {
 				return amList, err
 			}
 			// if there is no error, append the converted auth method to the slice
@@ -242,7 +244,7 @@ func AuthMethodFindAll(store stores.Store) (AuthMethodsList, error) {
 }
 
 // AuthMethodDelete deletes the given auth method from the data store
-func AuthMethodDelete(am AuthMethod, store stores.Store) error {
+func AuthMethodDelete(ctx context.Context, am AuthMethod, store stores.Store) error {
 
 	var err error
 	var qam stores.QAuthMethod
@@ -259,7 +261,7 @@ func AuthMethodDelete(am AuthMethod, store stores.Store) error {
 	}
 
 	// delete the query auth method
-	if err = store.DeleteAuthMethod(qam); err != nil {
+	if err = store.DeleteAuthMethod(ctx, qam); err != nil {
 		return err
 	}
 
@@ -267,7 +269,7 @@ func AuthMethodDelete(am AuthMethod, store stores.Store) error {
 }
 
 // AuthMethodUpdate updates the given method with a reader's data
-func AuthMethodUpdate(am AuthMethod, r io.ReadCloser, store stores.Store) (AuthMethod, error) {
+func AuthMethodUpdate(ctx context.Context, am AuthMethod, r io.ReadCloser, store stores.Store) (AuthMethod, error) {
 
 	var err error
 	var updatedAm AuthMethod
@@ -290,7 +292,7 @@ func AuthMethodUpdate(am AuthMethod, r io.ReadCloser, store stores.Store) (AuthM
 	}
 
 	// validate the updated auth method
-	if err = updatedAm.Validate(store); err != nil {
+	if err = updatedAm.Validate(ctx, store); err != nil {
 		return updatedAm, err
 	}
 
@@ -316,7 +318,7 @@ func AuthMethodUpdate(am AuthMethod, r io.ReadCloser, store stores.Store) (AuthM
 	}
 
 	if iSuuidUpdated != iSuuidOriginal || iHostUpdated != iHostOriginal {
-		if err = AuthMethodAlreadyExists(iSuuidUpdated.(string), iHostUpdated.(string), iType.(string), store); err != nil {
+		if err = AuthMethodAlreadyExists(ctx, iSuuidUpdated.(string), iHostUpdated.(string), iType.(string), store); err != nil {
 			return updatedAm, err
 		}
 	}
@@ -331,7 +333,7 @@ func AuthMethodUpdate(am AuthMethod, r io.ReadCloser, store stores.Store) (AuthM
 	}
 
 	// update the auth method
-	if qUpdatedAm, err = store.UpdateAuthMethod(qOriginalAm, qUpdatedAm); err != nil {
+	if qUpdatedAm, err = store.UpdateAuthMethod(ctx, qOriginalAm, qUpdatedAm); err != nil {
 		return updatedAm, err
 	}
 

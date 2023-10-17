@@ -2,6 +2,7 @@ package authmethods
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/ARGOeu/argo-api-authn/bindings"
@@ -22,6 +23,10 @@ type QMockAuthMethod struct {
 	RetrievalField string `json:"retrieval_field"`
 }
 
+func (m *QMockAuthMethod) Uuid() string {
+	return "uuid"
+}
+
 type MockAuthMethod struct {
 	RetrievalField string `json:"retrieval_field"`
 }
@@ -30,7 +35,7 @@ func NewMockAuthMethod() AuthMethod {
 	return new(MockAuthMethod)
 }
 
-func (m *MockAuthMethod) Validate(store stores.Store) error {
+func (m *MockAuthMethod) Validate(ctx context.Context, store stores.Store) error {
 	return nil
 }
 
@@ -42,7 +47,7 @@ func (m *MockAuthMethod) Update(r io.ReadCloser) (AuthMethod, error) {
 	return nil, nil
 }
 
-func (m *MockAuthMethod) RetrieveAuthResource(binding bindings.Binding, serviceType servicetypes.ServiceType, cfg *config.Config) (map[string]interface{}, error) {
+func (m *MockAuthMethod) RetrieveAuthResource(ctx context.Context, binding bindings.Binding, serviceType servicetypes.ServiceType, cfg *config.Config) (map[string]interface{}, error) {
 
 	var resp *http.Response
 	var err error
@@ -94,7 +99,7 @@ func (m *MockAuthMethod) RetrieveAuthResource(binding bindings.Binding, serviceT
 }
 
 // MockKeyAuthFinder returns a MockAuthMethod for testing purposes
-func MockKeyAuthFinder(serviceUUID string, host string, store stores.Store) ([]stores.QAuthMethod, error) {
+func MockKeyAuthFinder(ctx context.Context, serviceUUID string, host string, store stores.Store) ([]stores.QAuthMethod, error) {
 
 	var err error
 	var qAms []stores.QAuthMethod
@@ -113,7 +118,7 @@ var ExternalServiceHandlers = map[string]ExternalServiceHandler{
 	"incorrect-retrieval-field": ExternalServiceHandlerIncorrectRetrievalField,
 }
 
-// MockServiceTypeEndpoint mocks the behavior of a service type endpoint and returns a response containing the requested resource
+// ExternalServiceHandlerSuccess mocks the behavior of a service type endpoint and returns a response containing the requested resource
 func ExternalServiceHandlerSuccess(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 	w.Write([]byte("{\"token\": \"some-value\"}"))

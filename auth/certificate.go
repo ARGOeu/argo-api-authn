@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"context"
 	"crypto/x509"
+	"encoding/asn1"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -24,7 +26,19 @@ var NonStandardAttributeNames = map[string]string{
 	"1.2.840.113549.1.9.1":       EmailAddressRDN,
 }
 
-// load_CAs reads the root certificates from a directory within the filesystem, and creates the trusted root CA chain
+// IPSANExtensionID is a constant representing the Extension ID for Subject Alternative Name
+var IPSANExtensionID = asn1.ObjectIdentifier{2, 5, 29, 17}
+
+func HasIPSANs(cert *x509.Certificate) bool {
+	for _, ext := range cert.Extensions {
+		if ext.Id.Equal(IPSANExtensionID) {
+			return true
+		}
+	}
+	return false
+}
+
+// LoadCAs reads the root certificates from a directory within the filesystem, and creates the trusted root CA chain
 func LoadCAs(dir string) (roots *x509.CertPool) {
 
 	log.WithFields(
@@ -141,7 +155,7 @@ func FormatRdnToString(rdn string, rdnValues []string) string {
 }
 
 // ValidateClientCertificate performs a number of different checks to ensure the provided certificate is valid
-func ValidateClientCertificate(cert *x509.Certificate, clientIP string, clientCertHostVerification bool) error {
+func ValidateClientCertificate(ctx context.Context, cert *x509.Certificate, clientIP string, clientCertHostVerification bool) error {
 
 	var err error
 	var hosts []string
@@ -149,9 +163,10 @@ func ValidateClientCertificate(cert *x509.Certificate, clientIP string, clientCe
 
 	log.WithFields(
 		log.Fields{
-			"type":  "service_log",
-			"hosts": hosts,
-			"ip":    clientIP,
+			"trace_id": ctx.Value("trace_id"),
+			"type":     "service_log",
+			"hosts":    hosts,
+			"ip":       clientIP,
 		},
 	).Info("Validating Client Certificate")
 
@@ -192,7 +207,7 @@ func ValidateClientCertificate(cert *x509.Certificate, clientIP string, clientCe
 	}
 
 	// check if the certificate is revoked
-	if err = CRLCheckRevokedCert(cert); err != nil {
+	if err = CRLCheckRevokedCert(ctx, cert); err != nil {
 		return err
 	}
 

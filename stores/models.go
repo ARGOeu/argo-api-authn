@@ -5,6 +5,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type QMissingIpSanMetric struct {
+	BindingUUID           string `bson:"binding_uuid"`
+	BindingAuthIdentifier string `bson:"binding_auth_identifier"`
+	CreatedOn             string `bson:"created_on"`
+}
+
 type QServiceType struct {
 	Name       string   `json:"name" bson:"name"`
 	Hosts      []string `json:"hosts" bson:"hosts"`
@@ -29,7 +35,9 @@ type QBinding struct {
 	LastAuth       string `json:"last_auth,omitempty" bson:"last_auth,omitempty"`
 }
 
-type QAuthMethod interface{}
+type QAuthMethod interface {
+	Uuid() string
+}
 
 type QBasicAuthMethod struct {
 	ServiceUUID string `json:"service_uuid" bson:"service_uuid"`
@@ -39,6 +47,10 @@ type QBasicAuthMethod struct {
 	UUID        string `json:"uuid" bson:"uuid"`
 	CreatedOn   string `json:"created_on" bson:"created_on"`
 	UpdatedOn   string `json:"updated_on,omitempty" bson:"updated_on,omitempty"`
+}
+
+func (q QBasicAuthMethod) Uuid() string {
+	return q.UUID
 }
 
 type QApiKeyAuthMethod struct {

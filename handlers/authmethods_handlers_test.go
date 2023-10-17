@@ -2,7 +2,14 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/ARGOeu/argo-api-authn/authmethods"
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/stores"
@@ -10,11 +17,6 @@ import (
 	"github.com/gorilla/mux"
 	LOGGER "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
-	"time"
 )
 
 type AuthMethodsHandlersTestSuite struct {
@@ -816,10 +818,10 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodUpdateOne() {
 	router.HandleFunc("/service-types/{service-type}/hosts/{host}/authm", WrapConfig(AuthMethodUpdateOne, mockstore, cfg))
 	router.ServeHTTP(w, req)
 
-	amU, _ := mockstore.QueryApiKeyAuthMethods("uuid1", "host1")
+	amU, _ := mockstore.QueryApiKeyAuthMethods(context.Background(), "uuid1", "host1")
 	expRespJSON = strings.Replace(expRespJSON, "{{UPDATED_ON}}", amU[0].UpdatedOn, 1)
 	// make sure the updated time is before now
-	updatedTime, _ := time.Parse(utils.ZULU_FORM, amU[0].UpdatedOn)
+	updatedTime, _ := time.Parse(utils.ZuluForm, amU[0].UpdatedOn)
 	suite.True(updatedTime.Before(time.Now().UTC()))
 	suite.Equal(200, w.Code)
 	suite.Equal(expRespJSON, w.Body.String())
@@ -861,10 +863,10 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodUpdateOneIllegalFields(
 	router.HandleFunc("/service-types/{service-type}/hosts/{host}/authm", WrapConfig(AuthMethodUpdateOne, mockstore, cfg))
 	router.ServeHTTP(w, req)
 
-	amU, _ := mockstore.QueryApiKeyAuthMethods("uuid1", "host1")
+	amU, _ := mockstore.QueryApiKeyAuthMethods(context.Background(), "uuid1", "host1")
 	expRespJSON = strings.Replace(expRespJSON, "{{UPDATED_ON}}", amU[0].UpdatedOn, 1)
 	// make sure the updated time is before now
-	updatedTime, _ := time.Parse(utils.ZULU_FORM, amU[0].UpdatedOn)
+	updatedTime, _ := time.Parse(utils.ZuluForm, amU[0].UpdatedOn)
 	suite.True(updatedTime.Before(time.Now().UTC()))
 	suite.Equal(200, w.Code)
 	suite.Equal(expRespJSON, w.Body.String())

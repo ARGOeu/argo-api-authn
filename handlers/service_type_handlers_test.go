@@ -2,20 +2,23 @@ package handlers
 
 import (
 	"bytes"
-	"github.com/ARGOeu/argo-api-authn/utils"
-	LOGGER "github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/suite"
+	"context"
 	"net/http"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/ARGOeu/argo-api-authn/utils"
+	LOGGER "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/suite"
+
 	"encoding/json"
+	"net/http/httptest"
+
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/servicetypes"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/gorilla/mux"
-	"net/http/httptest"
 )
 
 type ServiceTypeHandlersSuite struct {
@@ -698,10 +701,10 @@ func (suite *BindingHandlersSuite) TestServiceTypeUpdate() {
 	router.HandleFunc("/service-types/{service-type}", WrapConfig(ServiceTypeUpdate, mockstore, cfg))
 	router.ServeHTTP(w, req)
 
-	qSt, _ := mockstore.QueryServiceTypes("updated_name")
+	qSt, _ := mockstore.QueryServiceTypes(context.Background(), "updated_name")
 	expRespJSON = strings.Replace(expRespJSON, "{{UPDATED_ON}}", qSt[0].UpdatedOn, 1)
 	// make sure the updated time is before now
-	updatedTime, _ := time.Parse(utils.ZULU_FORM, qSt[0].UpdatedOn)
+	updatedTime, _ := time.Parse(utils.ZuluForm, qSt[0].UpdatedOn)
 	suite.True(updatedTime.Before(time.Now().UTC()))
 	suite.Equal(200, w.Code)
 	suite.Equal(expRespJSON, w.Body.String())

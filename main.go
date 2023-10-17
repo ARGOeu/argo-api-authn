@@ -2,6 +2,9 @@ package main
 
 import (
 	"net/http"
+	"time"
+
+	"github.com/ARGOeu/argo-api-authn/version"
 
 	"github.com/gorilla/handlers"
 
@@ -20,6 +23,9 @@ import (
 
 func init() {
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true, DisableColors: true})
+
+	// display binary version information during start up
+	version.LogInfo()
 }
 
 func main() {
@@ -30,14 +36,14 @@ func main() {
 	flag.Parse()
 
 	// initialize the config
-	var cfg = &config.Config{}
+	var cfg = config.WithDefaults()
 	if err := cfg.ConfigSetUp(*cfgPath); err != nil {
 		log.Error(err.Error())
 		panic(err.Error())
 	}
 
 	//configure datastore
-	store := &stores.MongoStore{
+	store := &stores.MongoStoreWithOfficialDriver{
 		Server:   cfg.MongoHost,
 		Database: cfg.MongoDB,
 	}
@@ -58,9 +64,13 @@ func main() {
 	allowVerbs := handlers.AllowedMethods([]string{"OPTIONS", "POST", "GET", "PUT", "DELETE", "HEAD"})
 
 	server := &http.Server{
-		Addr:      ":" + strconv.Itoa(cfg.ServicePort),
-		Handler:   handlers.CORS(xReqWithConType, allowVerbs)(api.Router),
-		TLSConfig: tlsConfig,
+		Addr:              ":" + strconv.Itoa(cfg.ServicePort),
+		Handler:           handlers.CORS(xReqWithConType, allowVerbs)(api.Router),
+		TLSConfig:         tlsConfig,
+		ReadTimeout:       time.Duration(cfg.ServerReadTimeout) * time.Second,
+		ReadHeaderTimeout: time.Duration(cfg.ServerHeaderReadTimeout) * time.Second,
+		WriteTimeout:      time.Duration(cfg.ServerWriteTimeout) * time.Second,
+		IdleTimeout:       time.Duration(cfg.ServerIdleTimeout) * time.Second,
 	}
 
 	//Start the server
