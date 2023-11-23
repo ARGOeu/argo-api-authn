@@ -103,9 +103,8 @@ func MockKeyAuthFinder(ctx context.Context, serviceUUID string, host string, sto
 
 	var err error
 	var qAms []stores.QAuthMethod
-	var qMockAm *QMockAuthMethod
 
-	qMockAm = &QMockAuthMethod{RetrievalField: "token"}
+	qMockAm := &QMockAuthMethod{RetrievalField: "token"}
 
 	qAms = append(qAms, qMockAm)
 

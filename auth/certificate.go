@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"encoding/asn1"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -60,7 +59,7 @@ func LoadCAs(dir string) (roots *x509.CertPool) {
 			return err
 		}
 		if ok, _ := filepath.Match(pattern, info.Name()); ok {
-			bytes, _ := ioutil.ReadFile(filepath.Join(dir, info.Name()))
+			bytes, _ := os.ReadFile(filepath.Join(dir, info.Name()))
 			if ok = roots.AppendCertsFromPEM(bytes); !ok {
 				return errors.New("Something went wrong while parsing certificate: " + filepath.Join(dir, info.Name()))
 			}

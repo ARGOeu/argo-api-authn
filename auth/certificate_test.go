@@ -38,9 +38,7 @@ SoPmZKiBeb+2OQ2n7+FI8ftkqxWw6zjh651brAoy/0zqLTRPh+c=
 `
 
 	// tests the case where the certificate doesn't contain extra attributes names
-	var crt *x509.Certificate
-
-	crt = ParseCert(commonCert)
+	crt := ParseCert(commonCert)
 
 	ers := ExtractEnhancedRDNSequenceToString(crt)
 
@@ -163,6 +161,7 @@ lBlGGSW4gNfL1IYoakRwJiNiqZ+Gb7+6kHDSVneFeO/qJakXzlByjAA6quPbYzSf
 	// normal case
 	crt = ParseCert(commonCert)
 	crt.Subject.CommonName = "localhost"
+	crt.DNSNames = []string{"localhost"}
 
 	err1 := ValidateClientCertificate(ctx, crt, "127.0.0.1:8080", true)
 
@@ -171,6 +170,7 @@ lBlGGSW4gNfL1IYoakRwJiNiqZ+Gb7+6kHDSVneFeO/qJakXzlByjAA6quPbYzSf
 	// mismatch
 	crt = ParseCert(commonCert)
 	crt.Subject.CommonName = "example.com"
+	crt.DNSNames = []string{"example.com"}
 	err2 := ValidateClientCertificate(ctx, crt, "127.0.0.1:8080", true)
 	suite.Equal("x509: certificate is valid for example.com, not localhost", err2.Error())
 
@@ -240,9 +240,7 @@ lBlGGSW4gNfL1IYoakRwJiNiqZ+Gb7+6kHDSVneFeO/qJakXzlByjAA6quPbYzSf
 +AZxAeKCINT+b72x
 -----END CERTIFICATE-----`
 
-	var crt *x509.Certificate
-
-	crt = ParseCert(commonCert)
+	crt := ParseCert(commonCert)
 	crt.Extensions = []pkix.Extension{
 		{
 			Id:    IPSANExtensionID,                           // OID for Subject Alternative Name

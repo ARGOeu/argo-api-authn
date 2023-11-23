@@ -165,6 +165,7 @@ func (m *HeadersAuthMethod) RetrieveAuthResource(ctx context.Context, binding bi
 	req, err := http.NewRequest(http.MethodGet, resourcePath, nil)
 	if err != nil {
 		err = utils.APIGenericInternalError(err.Error())
+		return externalResp, err
 	}
 
 	// populate the request with the headers

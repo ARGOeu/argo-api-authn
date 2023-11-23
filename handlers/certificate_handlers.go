@@ -22,7 +22,6 @@ func AuthViaCert(w http.ResponseWriter, r *http.Request) {
 	rCTX := context.WithValue(context.Background(), "trace_id", traceId)
 
 	var err error
-	var ok bool
 	var dataRes = make(map[string]interface{})
 	var binding bindings.Binding
 	var serviceType servicetypes.ServiceType
@@ -43,8 +42,8 @@ func AuthViaCert(w http.ResponseWriter, r *http.Request) {
 
 	// validate the certificate
 	if cfg.VerifyCertificate {
-		if err = auth.ValidateClientCertificate(rCTX,
-			r.TLS.PeerCertificates[0], r.RemoteAddr, cfg.ClientCertHostVerification); err != nil {
+		err = auth.ValidateClientCertificate(rCTX, r.TLS.PeerCertificates[0], r.RemoteAddr, cfg.ClientCertHostVerification)
+		if err != nil {
 			utils.RespondError(rCTX, w, err)
 			return
 		}
@@ -63,7 +62,7 @@ func AuthViaCert(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if the provided host is associated with the given serviceType type
-	if ok = serviceType.HasHost(vars["host"]); ok == false {
+	if ok := serviceType.HasHost(vars["host"]); !ok {
 		err = utils.APIErrNotFound("Host")
 		utils.RespondError(rCTX, w, err)
 		return

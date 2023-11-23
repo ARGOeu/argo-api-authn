@@ -78,7 +78,6 @@ func CreateBinding(ctx context.Context, binding Binding, store stores.Store) (Bi
 func (binding *Binding) Validate(ctx context.Context, store stores.Store) error {
 
 	var err error
-	var ok bool
 	var serviceType servicetypes.ServiceType
 
 	// check if all required field have been provided
@@ -93,7 +92,7 @@ func (binding *Binding) Validate(ctx context.Context, store stores.Store) error 
 	}
 
 	// check if the provided host is associated with the given service type
-	if ok = serviceType.HasHost(binding.Host); ok == false {
+	if !serviceType.HasHost(binding.Host) {
 		err = utils.APIErrNotFound("Host")
 		return err
 	}

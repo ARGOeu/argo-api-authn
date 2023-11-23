@@ -54,7 +54,7 @@ func (suite *BindingHandlersSuite) TestBindingCreate() {
 	router.ServeHTTP(w, req)
 	suite.Equal(201, w.Code)
 	createdBind := bindings.Binding{}
-	_ = json.Unmarshal([]byte(w.Body.String()), &createdBind)
+	_ = json.Unmarshal(w.Body.Bytes(), &createdBind)
 
 	suite.Equal("uuid1", createdBind.ServiceUUID)
 	suite.Equal("host1", createdBind.Host)
