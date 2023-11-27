@@ -67,7 +67,6 @@ func BindingListAllByServiceTypeAndHost(w http.ResponseWriter, r *http.Request) 
 	rCTX := context.WithValue(context.Background(), "trace_id", traceId)
 
 	var err error
-	var ok bool
 	var bindingsList bindings.BindingList
 	var serviceType servicetypes.ServiceType
 
@@ -84,7 +83,7 @@ func BindingListAllByServiceTypeAndHost(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// check if the provided host is associated with the given service type
-	if ok = serviceType.HasHost(vars["host"]); ok == false {
+	if ok := serviceType.HasHost(vars["host"]); !ok {
 		err = utils.APIErrNotFound("Host")
 		utils.RespondError(rCTX, w, err)
 		return

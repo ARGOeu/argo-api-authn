@@ -18,7 +18,7 @@ Before you start, you need to issue a valid certificate.
 
 ## Set Up
 
-1. Install Golang 1.14
+1. Install Golang 1.19
 2. Create a new work space:
 
    `mkdir ~/go-workspace`

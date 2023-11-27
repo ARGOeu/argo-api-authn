@@ -52,7 +52,7 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodCreate() {
 	suite.Equal(201, w.Code)
 
 	// unmarshal the response
-	json.Unmarshal([]byte(w.Body.String()), expAm)
+	json.Unmarshal(w.Body.Bytes(), expAm)
 	suite.Equal("uuid1", expAm.ServiceUUID)
 	suite.Equal("host2", expAm.Host)
 	suite.Equal(9000, expAm.Port)
@@ -92,7 +92,7 @@ func (suite *AuthMethodsHandlersTestSuite) TestHeadersAuthMethodCreate() {
 	suite.Equal(201, w.Code)
 
 	// unmarshal the response
-	json.Unmarshal([]byte(w.Body.String()), expAm)
+	json.Unmarshal(w.Body.Bytes(), expAm)
 	suite.Equal("uuid2", expAm.ServiceUUID)
 	suite.Equal("host3", expAm.Host)
 	suite.Equal(9000, expAm.Port)
@@ -134,7 +134,7 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodCreateOverrideDefaults(
 	suite.Equal(201, w.Code)
 
 	// unmarshal the response
-	json.Unmarshal([]byte(w.Body.String()), expAm)
+	json.Unmarshal(w.Body.Bytes(), expAm)
 	suite.Equal("uuid1", expAm.ServiceUUID)
 	suite.Equal("host2", expAm.Host)
 	suite.Equal(9000, expAm.Port)
@@ -173,7 +173,7 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodCreateOverrideDefaultsS
 	suite.Equal(201, w.Code)
 
 	// unmarshal the response
-	json.Unmarshal([]byte(w.Body.String()), expAm)
+	json.Unmarshal(w.Body.Bytes(), expAm)
 	suite.Equal("uuid1", expAm.ServiceUUID) //uuid2 is being ignored
 	suite.Equal("host3", expAm.Host)
 	suite.Equal(9000, expAm.Port)

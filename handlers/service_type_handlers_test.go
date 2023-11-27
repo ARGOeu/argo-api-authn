@@ -54,7 +54,7 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeCreate() {
 	router.ServeHTTP(w, req)
 	suite.Equal(201, w.Code)
 	createdSer := servicetypes.ServiceType{}
-	_ = json.Unmarshal([]byte(w.Body.String()), &createdSer)
+	_ = json.Unmarshal(w.Body.Bytes(), &createdSer)
 
 	suite.Equal("service1", createdSer.Name)
 	suite.Equal([]string{"127.0.0.1"}, createdSer.Hosts)
@@ -89,7 +89,7 @@ func (suite *ServiceTypeHandlersSuite) TestServiceTypeCreateWEBAPI() {
 	router.ServeHTTP(w, req)
 	suite.Equal(201, w.Code)
 	createdSer := servicetypes.ServiceType{}
-	_ = json.Unmarshal([]byte(w.Body.String()), &createdSer)
+	_ = json.Unmarshal(w.Body.Bytes(), &createdSer)
 
 	suite.Equal("web-api-devel", createdSer.Name)
 	suite.Equal([]string{"127.0.0.1"}, createdSer.Hosts)
