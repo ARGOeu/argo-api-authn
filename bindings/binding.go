@@ -62,7 +62,8 @@ func CreateBinding(ctx context.Context, binding Binding, store stores.Store) (Bi
 	// generate uuid
 	uuid := uuid2.NewV4().String()
 
-	if qBinding, err = store.InsertBinding(ctx, binding.Name, binding.ServiceUUID, binding.Host, uuid, binding.AuthIdentifier, binding.UniqueKey, binding.AuthType); err != nil {
+	if qBinding, err = store.InsertBinding(ctx, binding.Name, binding.ServiceUUID, binding.Host,
+		uuid, binding.AuthIdentifier, binding.UniqueKey, binding.AuthType, utils.ZuluTimeNow()); err != nil {
 		return binding, err
 	}
 
