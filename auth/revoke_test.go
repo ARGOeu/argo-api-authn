@@ -138,7 +138,7 @@ func (suite *RevokeTestSuite) TestCRLCheckRevokedCert() {
 	crt.CRLDistributionPoints = []string{"https://unknown/unknown"}
 	err4 := CRLCheckRevokedCert(ctx, crt)
 
-	suite.Equal("could not access CRL https://unknown/unknown", err4.Error())
+	suite.Equal("Internal Error: Could not access CRL https://unknown/unknown", err4.Error())
 }
 
 func TestRevokeTestSuite(t *testing.T) {

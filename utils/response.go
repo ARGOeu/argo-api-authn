@@ -44,7 +44,17 @@ func RespondOk(w http.ResponseWriter, code int, data interface{}) {
 
 func RespondError(ctx context.Context, w http.ResponseWriter, err error) {
 
-	apiErr := err.(*APIError)
+	var apiErr *APIError
+	var ok bool
+
+	/*
+	 Safe assertion in case an error that is thrown from inside the codebase
+	 has not been properly wrapped in an APIError
+	*/
+	apiErr, ok = err.(*APIError)
+	if !ok {
+		apiErr = &APIError{"Internal Error: " + err.Error(), 500, "INTERNAL SERVER ERROR"}
+	}
 
 	errResp := ErrResp{APIErr: apiErr}
 
