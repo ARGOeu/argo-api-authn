@@ -177,7 +177,7 @@ func FetchCRL(ctx context.Context, url string) (x509.RevocationList, error) {
 				"details":         err.Error(),
 			},
 		).Error("CRL Request error")
-		err = fmt.Errorf("could not access CRL %v", url)
+		err = utils.APIGenericInternalError(fmt.Sprintf("Could not access CRL %v", url))
 		return x509.RevocationList{}, err
 	}
 
@@ -192,6 +192,7 @@ func FetchCRL(ctx context.Context, url string) (x509.RevocationList, error) {
 				"details":         err.Error(),
 			},
 		).Error("Unable to read CRL data")
+		err = utils.APIGenericInternalError("Unable to read CRL Data")
 		return x509.RevocationList{}, err
 	}
 
@@ -208,6 +209,7 @@ func FetchCRL(ctx context.Context, url string) (x509.RevocationList, error) {
 				"details":         err.Error(),
 			},
 		).Error("Unable to parse CRL data")
+		err = utils.APIGenericInternalError("Unable to parse CRL Data")
 		return x509.RevocationList{}, err
 	}
 
