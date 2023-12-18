@@ -323,7 +323,8 @@ func (mongo *MongoStore) InsertServiceType(ctx context.Context, name string, hos
 }
 
 // InsertBinding inserts a new binding into the datastore
-func (mongo *MongoStore) InsertBinding(ctx context.Context, name string, serviceUUID string, host string, uuid string, authID string, uniqueKey string, authType string) (QBinding, error) {
+func (mongo *MongoStore) InsertBinding(ctx context.Context, name string, serviceUUID string, host string, uuid string,
+	authID string, uniqueKey string, authType string, createdOn string) (QBinding, error) {
 
 	var qBinding QBinding
 	var err error
@@ -336,7 +337,7 @@ func (mongo *MongoStore) InsertBinding(ctx context.Context, name string, service
 		AuthIdentifier: authID,
 		UniqueKey:      uniqueKey,
 		AuthType:       authType,
-		CreatedOn:      utils.ZuluTimeNow(),
+		CreatedOn:      createdOn,
 	}
 
 	db := mongo.Session.DB(mongo.Database)
@@ -481,6 +482,10 @@ func (mongo *MongoStore) DeleteAuthMethodByServiceUUID(ctx context.Context, serv
 	return err
 
 }
+
+const ServiceTypesCollection = "service_types"
+const BindingsCollection = "bindings"
+const AuthMethodsCollection = "auth_methods"
 
 type MongoStoreWithOfficialDriver struct {
 	Server   string
@@ -638,30 +643,17 @@ func (store *MongoStoreWithOfficialDriver) QueryBindingMissingIpSanRecord(ctx co
 
 // ##### CRUD SERVICE TYPES #####
 
-func (store *MongoStoreWithOfficialDriver) executeServiceTypesRetrieveQuery(ctx context.Context, query officialBson.M) ([]QServiceType, error) {
-
-	var qServices []QServiceType
-	c := store.database.Collection("service_types")
-
-	cursor, err := c.Find(ctx, query)
+func executeRetrieveQuery[T any](ctx context.Context, query officialBson.M, col *mongo.Collection) ([]T, error) {
+	var results []T
+	cursor, err := col.Find(ctx, query)
 	if err != nil {
-		return qServices, err
+		return results, err
 	}
-
-	for cursor.Next(ctx) {
-		var result QServiceType
-		err := cursor.Decode(&result)
-		if err != nil {
-			return qServices, err
-		}
-		qServices = append(qServices, result)
+	err = cursor.All(ctx, &results)
+	if err != nil {
+		return results, err
 	}
-
-	if err := cursor.Err(); err != nil {
-		return qServices, err
-	}
-
-	return qServices, nil
+	return results, nil
 }
 
 func (store *MongoStoreWithOfficialDriver) QueryServiceTypes(ctx context.Context, name string) ([]QServiceType, error) {
@@ -672,7 +664,7 @@ func (store *MongoStoreWithOfficialDriver) QueryServiceTypes(ctx context.Context
 		query["name"] = name
 	}
 
-	qServices, err := store.executeServiceTypesRetrieveQuery(ctx, query)
+	qServices, err := executeRetrieveQuery[QServiceType](ctx, query, store.database.Collection(ServiceTypesCollection))
 	if err != nil {
 		store.logError(ctx, "QueryServiceTypes", err)
 		err = utils.APIErrDatabase(err.Error())
@@ -685,7 +677,7 @@ func (store *MongoStoreWithOfficialDriver) QueryServiceTypes(ctx context.Context
 func (store *MongoStoreWithOfficialDriver) QueryServiceTypesByUUID(ctx context.Context, uuid string) ([]QServiceType, error) {
 	query := officialBson.M{"uuid": uuid}
 
-	qServices, err := store.executeServiceTypesRetrieveQuery(ctx, query)
+	qServices, err := executeRetrieveQuery[QServiceType](ctx, query, store.database.Collection(ServiceTypesCollection))
 	if err != nil {
 		store.logError(ctx, "QueryServiceTypesByUUID", err)
 		err = utils.APIErrDatabase(err.Error())
@@ -708,7 +700,7 @@ func (store *MongoStoreWithOfficialDriver) InsertServiceType(ctx context.Context
 		Type:       sType,
 	}
 
-	_, err := store.database.Collection("service_types").InsertOne(ctx, qService)
+	_, err := store.database.Collection(ServiceTypesCollection).InsertOne(ctx, qService)
 	if err != nil {
 		store.logError(ctx, "InsertServiceType", err)
 		err = utils.APIErrDatabase(err.Error())
@@ -720,7 +712,7 @@ func (store *MongoStoreWithOfficialDriver) InsertServiceType(ctx context.Context
 
 func (store *MongoStoreWithOfficialDriver) DeleteServiceTypeByUUID(ctx context.Context, uuid string) error {
 	query := officialBson.M{"uuid": uuid}
-	_, err := store.database.Collection("service_types").DeleteOne(ctx, query)
+	_, err := store.database.Collection(ServiceTypesCollection).DeleteOne(ctx, query)
 	if err != nil {
 		store.logError(ctx, "DeleteServiceTypeByUUID", err)
 		err = utils.APIErrDatabase(err.Error())
@@ -743,7 +735,7 @@ func (store *MongoStoreWithOfficialDriver) UpdateServiceType(ctx context.Context
 			{"updated_on", updated.UpdatedOn},
 			{"type", updated.Type},
 		}}}
-	_, err := store.database.Collection("service_types").UpdateOne(ctx, query, updateQuery)
+	_, err := store.database.Collection(ServiceTypesCollection).UpdateOne(ctx, query, updateQuery)
 	if err != nil {
 		store.logError(ctx, "UpdateServiceType", err)
 		err = utils.APIErrDatabase(err.Error())
@@ -756,8 +748,7 @@ func (store *MongoStoreWithOfficialDriver) UpdateServiceType(ctx context.Context
 
 func (store *MongoStoreWithOfficialDriver) QueryApiKeyAuthMethods(ctx context.Context, serviceUUID string, host string) ([]QApiKeyAuthMethod, error) {
 
-	var qAms []QApiKeyAuthMethod
-	c := store.database.Collection("auth_methods")
+	c := store.database.Collection(AuthMethodsCollection)
 
 	// if there is no serviceUUID and host provided, return all api key auth methods
 	query := officialBson.M{"type": "api-key"}
@@ -765,28 +756,12 @@ func (store *MongoStoreWithOfficialDriver) QueryApiKeyAuthMethods(ctx context.Co
 		query["service_uuid"] = serviceUUID
 		query["host"] = host
 	}
-	cursor, err := c.Find(ctx, query)
+
+	qAms, err := executeRetrieveQuery[QApiKeyAuthMethod](ctx, query, c)
 	if err != nil {
 		store.logError(ctx, "QueryApiKeyAuthMethods", err)
 		err = utils.APIErrDatabase(err.Error())
-		return qAms, err
-	}
-
-	for cursor.Next(ctx) {
-		var result QApiKeyAuthMethod
-		err := cursor.Decode(&result)
-		if err != nil {
-			store.logError(ctx, "QueryApiKeyAuthMethods", err)
-			err = utils.APIErrDatabase(err.Error())
-			return qAms, err
-		}
-		qAms = append(qAms, result)
-	}
-
-	if err := cursor.Err(); err != nil {
-		store.logError(ctx, "QueryApiKeyAuthMethods", err)
-		err = utils.APIErrDatabase(err.Error())
-		return qAms, err
+		return []QApiKeyAuthMethod{}, err
 	}
 
 	return qAms, nil
@@ -794,8 +769,7 @@ func (store *MongoStoreWithOfficialDriver) QueryApiKeyAuthMethods(ctx context.Co
 
 func (store *MongoStoreWithOfficialDriver) QueryHeadersAuthMethods(ctx context.Context, serviceUUID string, host string) ([]QHeadersAuthMethod, error) {
 
-	var qAms []QHeadersAuthMethod
-	c := store.database.Collection("auth_methods")
+	c := store.database.Collection(AuthMethodsCollection)
 
 	// if there is no serviceUUID and host provided, return all api key auth methods
 	query := officialBson.M{"type": "headers"}
@@ -803,35 +777,19 @@ func (store *MongoStoreWithOfficialDriver) QueryHeadersAuthMethods(ctx context.C
 		query["service_uuid"] = serviceUUID
 		query["host"] = host
 	}
-	cursor, err := c.Find(ctx, query)
+
+	qAms, err := executeRetrieveQuery[QHeadersAuthMethod](ctx, query, c)
 	if err != nil {
 		store.logError(ctx, "QueryHeadersAuthMethods", err)
 		err = utils.APIErrDatabase(err.Error())
-		return qAms, err
-	}
-
-	for cursor.Next(ctx) {
-		var result QHeadersAuthMethod
-		err := cursor.Decode(&result)
-		if err != nil {
-			store.logError(ctx, "QueryHeadersAuthMethods", err)
-			err = utils.APIErrDatabase(err.Error())
-			return qAms, err
-		}
-		qAms = append(qAms, result)
-	}
-
-	if err := cursor.Err(); err != nil {
-		store.logError(ctx, "QueryHeadersAuthMethods", err)
-		err = utils.APIErrDatabase(err.Error())
-		return qAms, err
+		return []QHeadersAuthMethod{}, err
 	}
 
 	return qAms, nil
 }
 
 func (store *MongoStoreWithOfficialDriver) InsertAuthMethod(ctx context.Context, am QAuthMethod) error {
-	_, err := store.database.Collection("auth_methods").InsertOne(ctx, am)
+	_, err := store.database.Collection(AuthMethodsCollection).InsertOne(ctx, am)
 	if err != nil {
 		store.logError(ctx, "InsertAuthMethod", err)
 		err = utils.APIErrDatabase(err.Error())
@@ -876,7 +834,7 @@ func (store *MongoStoreWithOfficialDriver) UpdateAuthMethod(ctx context.Context,
 		return original, err
 	}
 
-	_, err := store.database.Collection("auth_methods").UpdateOne(ctx, query, updateQuery)
+	_, err := store.database.Collection(AuthMethodsCollection).UpdateOne(ctx, query, updateQuery)
 	if err != nil {
 		store.logError(ctx, "UpdateAuthMethod", err)
 		err = utils.APIErrDatabase(err.Error())
@@ -888,7 +846,7 @@ func (store *MongoStoreWithOfficialDriver) UpdateAuthMethod(ctx context.Context,
 
 func (store *MongoStoreWithOfficialDriver) DeleteAuthMethod(ctx context.Context, am QAuthMethod) error {
 	query := officialBson.M{"uuid": am.Uuid()}
-	_, err := store.database.Collection("auth_methods").DeleteOne(ctx, query)
+	_, err := store.database.Collection(AuthMethodsCollection).DeleteOne(ctx, query)
 	if err != nil {
 		store.logError(ctx, "DeleteAuthMethod", err)
 		err = utils.APIErrDatabase(err.Error())
@@ -899,7 +857,7 @@ func (store *MongoStoreWithOfficialDriver) DeleteAuthMethod(ctx context.Context,
 
 func (store *MongoStoreWithOfficialDriver) DeleteAuthMethodByServiceUUID(ctx context.Context, serviceUUID string) error {
 	query := officialBson.M{"service_uuid": serviceUUID}
-	_, err := store.database.Collection("auth_methods").DeleteOne(ctx, query)
+	_, err := store.database.Collection(AuthMethodsCollection).DeleteOne(ctx, query)
 	if err != nil {
 		store.logError(ctx, "DeleteAuthMethodByServiceUUID", err)
 		err = utils.APIErrDatabase(err.Error())
@@ -910,32 +868,6 @@ func (store *MongoStoreWithOfficialDriver) DeleteAuthMethodByServiceUUID(ctx con
 
 //	###### CRUD BINDINGS ######
 
-func (store *MongoStoreWithOfficialDriver) executeBindingsRetrieveQuery(ctx context.Context, query officialBson.M) ([]QBinding, error) {
-
-	var qBindings []QBinding
-	c := store.database.Collection("bindings")
-
-	cursor, err := c.Find(ctx, query)
-	if err != nil {
-		return qBindings, err
-	}
-
-	for cursor.Next(ctx) {
-		var result QBinding
-		err := cursor.Decode(&result)
-		if err != nil {
-			return qBindings, err
-		}
-		qBindings = append(qBindings, result)
-	}
-
-	if err := cursor.Err(); err != nil {
-		return qBindings, err
-	}
-
-	return qBindings, nil
-}
-
 func (store *MongoStoreWithOfficialDriver) QueryBindingsByAuthID(ctx context.Context, authID string,
 	serviceUUID string, host string, authType string) ([]QBinding, error) {
 	query := officialBson.M{
@@ -945,7 +877,7 @@ func (store *MongoStoreWithOfficialDriver) QueryBindingsByAuthID(ctx context.Con
 		"auth_type":       authType,
 	}
 
-	qBindings, err := store.executeBindingsRetrieveQuery(ctx, query)
+	qBindings, err := executeRetrieveQuery[QBinding](ctx, query, store.database.Collection(BindingsCollection))
 
 	if err != nil {
 		store.logError(ctx, "QueryBindingsByAuthID", err)
@@ -967,7 +899,7 @@ func (store *MongoStoreWithOfficialDriver) QueryBindingsByUUIDAndName(ctx contex
 		query["name"] = name
 	}
 
-	qBindings, err := store.executeBindingsRetrieveQuery(ctx, query)
+	qBindings, err := executeRetrieveQuery[QBinding](ctx, query, store.database.Collection(BindingsCollection))
 
 	if err != nil {
 		store.logError(ctx, "QueryBindingsByUUIDAndName", err)
@@ -986,7 +918,7 @@ func (store *MongoStoreWithOfficialDriver) QueryBindings(ctx context.Context, se
 		query["host"] = host
 	}
 
-	qBindings, err := store.executeBindingsRetrieveQuery(ctx, query)
+	qBindings, err := executeRetrieveQuery[QBinding](ctx, query, store.database.Collection(BindingsCollection))
 
 	if err != nil {
 		store.logError(ctx, "QueryBindings", err)
@@ -998,7 +930,7 @@ func (store *MongoStoreWithOfficialDriver) QueryBindings(ctx context.Context, se
 }
 
 func (store *MongoStoreWithOfficialDriver) InsertBinding(ctx context.Context, name string, serviceUUID string,
-	host string, uuid string, authID string, uniqueKey string, authType string) (QBinding, error) {
+	host string, uuid string, authID string, uniqueKey string, authType string, createdOn string) (QBinding, error) {
 
 	qBinding := QBinding{
 		Name:           name,
@@ -1008,7 +940,7 @@ func (store *MongoStoreWithOfficialDriver) InsertBinding(ctx context.Context, na
 		AuthIdentifier: authID,
 		UniqueKey:      uniqueKey,
 		AuthType:       authType,
-		CreatedOn:      utils.ZuluTimeNow(),
+		CreatedOn:      createdOn,
 	}
 
 	_, err := store.database.Collection("bindings").InsertOne(ctx, qBinding)

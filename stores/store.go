@@ -13,12 +13,14 @@ type Store interface {
 	QueryBindingsByAuthID(ctx context.Context, authID string, serviceUUID string, host string, authType string) ([]QBinding, error)
 	QueryBindingsByUUIDAndName(ctx context.Context, uuid, name string) ([]QBinding, error)
 	QueryBindings(ctx context.Context, serviceUUID string, host string) ([]QBinding, error)
-	InsertServiceType(ctx context.Context, name string, hosts []string, authTypes []string, authMethod string, uuid string, createdOn string, sType string) (QServiceType, error)
+	InsertServiceType(ctx context.Context, name string, hosts []string, authTypes []string, authMethod string,
+		uuid string, createdOn string, sType string) (QServiceType, error)
 	DeleteServiceTypeByUUID(ctx context.Context, uuid string) error
 	InsertAuthMethod(ctx context.Context, am QAuthMethod) error
 	DeleteAuthMethod(ctx context.Context, am QAuthMethod) error
 	DeleteAuthMethodByServiceUUID(ctx context.Context, serviceUUID string) error
-	InsertBinding(ctx context.Context, name string, serviceUUID string, host string, uuid string, authID string, uniqueKey string, authType string) (QBinding, error)
+	InsertBinding(ctx context.Context, name string, serviceUUID string, host string, uuid string, authID string,
+		uniqueKey string, authType string, createdOn string) (QBinding, error)
 	UpdateBinding(ctx context.Context, original QBinding, updated QBinding) (QBinding, error)
 	UpdateServiceType(ctx context.Context, original QServiceType, updated QServiceType) (QServiceType, error)
 	UpdateAuthMethod(ctx context.Context, original QAuthMethod, updated QAuthMethod) (QAuthMethod, error)
