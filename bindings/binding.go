@@ -62,7 +62,8 @@ func CreateBinding(ctx context.Context, binding Binding, store stores.Store) (Bi
 	// generate uuid
 	uuid := uuid2.NewV4().String()
 
-	if qBinding, err = store.InsertBinding(ctx, binding.Name, binding.ServiceUUID, binding.Host, uuid, binding.AuthIdentifier, binding.UniqueKey, binding.AuthType); err != nil {
+	if qBinding, err = store.InsertBinding(ctx, binding.Name, binding.ServiceUUID, binding.Host,
+		uuid, binding.AuthIdentifier, binding.UniqueKey, binding.AuthType, utils.ZuluTimeNow()); err != nil {
 		return binding, err
 	}
 
@@ -78,7 +79,6 @@ func CreateBinding(ctx context.Context, binding Binding, store stores.Store) (Bi
 func (binding *Binding) Validate(ctx context.Context, store stores.Store) error {
 
 	var err error
-	var ok bool
 	var serviceType servicetypes.ServiceType
 
 	// check if all required field have been provided
@@ -93,7 +93,7 @@ func (binding *Binding) Validate(ctx context.Context, store stores.Store) error 
 	}
 
 	// check if the provided host is associated with the given service type
-	if ok = serviceType.HasHost(binding.Host); ok == false {
+	if !serviceType.HasHost(binding.Host) {
 		err = utils.APIErrNotFound("Host")
 		return err
 	}

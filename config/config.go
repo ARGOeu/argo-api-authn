@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"log/syslog"
+	"os"
 	"reflect"
 
 	"github.com/ARGOeu/argo-api-authn/utils"
@@ -60,7 +60,7 @@ func (cfg *Config) ConfigSetUp(path string) error {
 	var data []byte
 	var err error
 
-	if data, err = ioutil.ReadFile(path); err != nil {
+	if data, err = os.ReadFile(path); err != nil {
 		return err
 	}
 

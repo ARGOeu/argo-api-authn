@@ -31,7 +31,9 @@ func ParseCert(pemData string) *x509.Certificate {
 }
 
 // 2014/05/22 14:18:31 Serial number match: intermediate is revoked.
+//
 //	2014/05/22 14:18:31 certificate is revoked via CRL
+//
 // 2014/05/22 14:18:31 Revoked certificate: misc/intermediate_ca/MobileArmorEnterpriseCA.crt
 var revokedCert = `-----BEGIN CERTIFICATE-----
 MIIEEzCCAvugAwIBAgILBAAAAAABGMGjftYwDQYJKoZIhvcNAQEFBQAwcTEoMCYG
@@ -136,7 +138,7 @@ func (suite *RevokeTestSuite) TestCRLCheckRevokedCert() {
 	crt.CRLDistributionPoints = []string{"https://unknown/unknown"}
 	err4 := CRLCheckRevokedCert(ctx, crt)
 
-	suite.Equal("Could not access CRL https://unknown/unknown", err4.Error())
+	suite.Equal("Internal Error: Could not access CRL https://unknown/unknown", err4.Error())
 }
 
 func TestRevokeTestSuite(t *testing.T) {

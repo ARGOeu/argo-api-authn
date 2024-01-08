@@ -297,7 +297,7 @@ func (suite *StoreTestSuite) TestInsertServiceType() {
 
 	suite.SetUpStoreTestSuite()
 
-	_, err1 := suite.mockStore.InsertServiceType(suite.ctx, "sIns", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "uuid_ins", "2018-05-05T18:04:05Z", "ams")
+	_, _ = suite.mockStore.InsertServiceType(suite.ctx, "sIns", []string{"host1", "host2", "host3"}, []string{"x509", "oidc"}, "api-key", "uuid_ins", "2018-05-05T18:04:05Z", "ams")
 
 	expQServices1 := []QServiceType{{Name: "sIns", Hosts: []string{"host1", "host2", "host3"}, AuthTypes: []string{"x509", "oidc"}, AuthMethod: "api-key", UUID: "uuid_ins", CreatedOn: "2018-05-05T18:04:05Z", Type: "ams"}}
 	qServices1, err1 := suite.mockStore.QueryServiceTypes(suite.ctx, "sIns")
@@ -311,7 +311,7 @@ func (suite *StoreTestSuite) TestInsertBinding() {
 	suite.SetUpStoreTestSuite()
 
 	var expBinding1 QBinding
-	_, err1 := suite.mockStore.InsertBinding(suite.ctx, "bIns", "uuid1", "host1", "b_uuid", "test_dn_ins", "unique_key_ins", "x509")
+	_, err1 := suite.mockStore.InsertBinding(suite.ctx, "bIns", "uuid1", "host1", "b_uuid", "test_dn_ins", "unique_key_ins", "x509", "now")
 	// check if the new binding can be found
 	expBindings, _ := suite.mockStore.QueryBindingsByAuthID(suite.ctx, "test_dn_ins", "uuid1", "host1", "x509")
 	expBinding1 = expBindings[0]
@@ -322,6 +322,7 @@ func (suite *StoreTestSuite) TestInsertBinding() {
 	suite.Equal("b_uuid", expBinding1.UUID)
 	suite.Equal("test_dn_ins", expBinding1.AuthIdentifier)
 	suite.Equal("unique_key_ins", expBinding1.UniqueKey)
+	suite.Equal("now", expBinding1.CreatedOn)
 	suite.Nil(err1)
 }
 

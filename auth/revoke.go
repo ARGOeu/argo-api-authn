@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/big"
 	"net/http"
 	"sync"
@@ -20,7 +20,7 @@ func CRLCheckRevokedCert(ctx context.Context, cert *x509.Certificate) error {
 
 	var err error
 	var goMaxP, psi, csi int
-	var crtList pkix.TBSCertificateList
+	var crtList x509.RevocationList
 	var errChan = make(chan error)
 	var doneChan = make(chan bool, 1)
 
@@ -31,7 +31,11 @@ func CRLCheckRevokedCert(ctx context.Context, cert *x509.Certificate) error {
 	totalTime := time.Now()
 
 	if len(cert.CRLDistributionPoints) == 0 {
-		err := &utils.APIError{Code: 403, Message: "Your certificate is invalid. No CRLDistributionPoints found on the certificate", Status: "ACCESS_FORBIDDEN"}
+		err = &utils.APIError{
+			Code:    403,
+			Message: "Your certificate is invalid. No CRLDistributionPoints found on the certificate",
+			Status:  "ACCESS_FORBIDDEN",
+		}
 		return err
 	}
 
@@ -139,7 +143,11 @@ loop:
 			break loop
 		case errChan <- nil:
 			if serialNumber.Cmp(cert.SerialNumber) == 0 {
-				err := &utils.APIError{Code: 403, Message: "Your certificate has been revoked", Status: "ACCESS_FORBIDDEN"}
+				err := &utils.APIError{
+					Code:    403,
+					Message: "Your certificate has been revoked",
+					Status:  "ACCESS_FORBIDDEN",
+				}
 				errChan <- err
 				break loop
 			}
@@ -149,13 +157,13 @@ loop:
 }
 
 // FetchCRL fetches the CRL
-func FetchCRL(ctx context.Context, url string) (pkix.TBSCertificateList, error) {
+func FetchCRL(ctx context.Context, url string) (x509.RevocationList, error) {
 
 	var err error
 	var resp *http.Response
 	var crlBytes []byte
 
-	var crtList = &pkix.CertificateList{}
+	var crtList = &x509.RevocationList{}
 
 	// initialize the client and perform a get request to grab the crl
 	client := &http.Client{Timeout: time.Duration(30 * time.Second)}
@@ -169,12 +177,12 @@ func FetchCRL(ctx context.Context, url string) (pkix.TBSCertificateList, error) 
 				"details":         err.Error(),
 			},
 		).Error("CRL Request error")
-		err := fmt.Errorf("Could not access CRL %v", url)
-		return pkix.TBSCertificateList{}, err
+		err = utils.APIGenericInternalError(fmt.Sprintf("Could not access CRL %v", url))
+		return x509.RevocationList{}, err
 	}
 
 	// read the response
-	if crlBytes, err = ioutil.ReadAll(resp.Body); err != nil {
+	if crlBytes, err = io.ReadAll(resp.Body); err != nil {
 		log.WithFields(
 			log.Fields{
 				"trace_id":        ctx.Value("trace_id"),
@@ -184,13 +192,14 @@ func FetchCRL(ctx context.Context, url string) (pkix.TBSCertificateList, error) 
 				"details":         err.Error(),
 			},
 		).Error("Unable to read CRL data")
-		return pkix.TBSCertificateList{}, err
+		err = utils.APIGenericInternalError("Unable to read CRL Data")
+		return x509.RevocationList{}, err
 	}
 
 	defer resp.Body.Close()
 
 	// create the crl from the byte slice
-	if crtList, err = x509.ParseCRL(crlBytes); err != nil {
+	if crtList, err = x509.ParseRevocationList(crlBytes); err != nil {
 		log.WithFields(
 			log.Fields{
 				"trace_id":        ctx.Value("trace_id"),
@@ -200,8 +209,9 @@ func FetchCRL(ctx context.Context, url string) (pkix.TBSCertificateList, error) 
 				"details":         err.Error(),
 			},
 		).Error("Unable to parse CRL data")
-		return pkix.TBSCertificateList{}, err
+		err = utils.APIGenericInternalError("Unable to parse CRL Data")
+		return x509.RevocationList{}, err
 	}
 
-	return crtList.TBSCertList, err
+	return *crtList, err
 }

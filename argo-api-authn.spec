@@ -3,13 +3,12 @@
 
 Name: argo-api-authn
 Summary: ARGO Authentication API. Map X509, OICD to token.
-Version: 1.1.0
+Version: 1.2.0
 Release: 1%{?dist}
 License: ASL 2.0
 Buildroot: %{_tmppath}/%{name}-buildroot
 Group: Unspecified
 Source0: %{name}-%{version}.tar.gz
-BuildRequires: golang
 BuildRequires: git
 Requires(pre): /usr/sbin/useradd, /usr/bin/getent
 ExcludeArch: i386
@@ -61,6 +60,8 @@ go install -buildmode=pie -ldflags "-s -w -linkmode=external -extldflags '-z rel
 %attr(0644,root,root) /usr/lib/systemd/system/argo-api-authn.service
 
 %changelog
+* Tue Dec 19 2023 Agelos Tsalapatis  <agelos.tsal@gmail.com> - 1.2.0-1%{?dist}
+- Release of argo-api-authn version 1.1.0
 * Tue Sep 26 2023 Agelos Tsalapatis  <agelos.tsal@gmail.com> - 1.1.0-1%{?dist}
 - Release of argo-api-authn version 1.1.0
 * Mon Oct 10 2022 Agelos Tsalapatis  <agelos.tsal@gmail.com> - 1.0.0-1%{?dist}

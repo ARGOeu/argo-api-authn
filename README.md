@@ -18,7 +18,7 @@ Before you start, you need to issue a valid certificate.
 
 ## Set Up
 
-1. Install Golang 1.14
+1. Install Golang 1.19
 2. Create a new work space:
 
    `mkdir ~/go-workspace`
@@ -52,12 +52,13 @@ Before you start, you need to issue a valid certificate.
    `./argo-api-authn --config /path/to/a/json/config/file`
 
 7. To run the unit-tests:
+   `go test ./...`
 
+8. Run integration tests
    Inside the project's folder issue the command:
+   `go test ./... -tags integration`
 
-   `go test $(go list ./... | grep -v /vendor/)`
-
-8. Install mongoDB
+9. Install mongoDB
 
 ## Configuration
 

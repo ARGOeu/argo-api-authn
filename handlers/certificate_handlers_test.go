@@ -81,7 +81,8 @@ lBlGGSW4gNfL1IYoakRwJiNiqZ+Gb7+6kHDSVneFeO/qJakXzlByjAA6quPbYzSf
 	// avoid expiration
 	crt.NotAfter = time.Now().Add(time.Hour * 24)
 	crt.IPAddresses = append(crt.IPAddresses, net.ParseIP("192.168.62.20"))
-
+	crt.DNSNames = []string{"localhost"}
+	crt.Subject.CommonName = "localhost"
 	// create a new request and add the created certificate
 	if req, err = http.NewRequest("GET", reqPath, nil); err != nil {
 		return req, mockstore, cfg, err
@@ -90,7 +91,6 @@ lBlGGSW4gNfL1IYoakRwJiNiqZ+Gb7+6kHDSVneFeO/qJakXzlByjAA6quPbYzSf
 	req.TLS = &tls.ConnectionState{}
 	req.TLS.PeerCertificates = append(req.TLS.PeerCertificates, crt)
 	req.RemoteAddr = "127.0.0.1:8080"
-	req.TLS.PeerCertificates[0].Subject.CommonName = "localhost"
 
 	// set up the mockstore
 	mockstore = &stores.Mockstore{Server: "localhost", Database: "test_db"}
@@ -264,6 +264,7 @@ jeBHq7OnpWm+ccTOPCE6H4ZN4wWVS7biEBUdop/8HgXBPQHWAdjL
 	crt.NotAfter = time.Now().Add(time.Hour * 24)
 	crt.IPAddresses = append(crt.IPAddresses, net.ParseIP("192.168.62.20"))
 	crt.Subject.CommonName = "localhost"
+	crt.DNSNames = []string{"localhost"}
 
 	expRespJSON := `{
  "error": {
@@ -572,6 +573,7 @@ func (suite *CertificateHandlerSuite) TestAuthViaCertInvalidHost() {
 	}
 
 	req.TLS.PeerCertificates[0].Subject.CommonName = "example.com"
+	req.TLS.PeerCertificates[0].DNSNames = []string{"example.com"}
 
 	router := mux.NewRouter().StrictSlash(true)
 	w := httptest.NewRecorder()
@@ -636,6 +638,38 @@ func (suite *CertificateHandlerSuite) TestAuthViaCertNoNames() {
 	}
 
 	req.TLS.PeerCertificates[0].Subject.CommonName = ""
+	req.TLS.PeerCertificates[0].DNSNames = []string{}
+	router := mux.NewRouter().StrictSlash(true)
+	w := httptest.NewRecorder()
+	router.HandleFunc("/service-types/{service-type}/hosts/{host}:authx509", WrapConfig(AuthViaCert, mockstore, cfg))
+	router.ServeHTTP(w, req)
+	suite.Equal(403, w.Code)
+	suite.Equal(expRespJSON, w.Body.String())
+}
+
+// TestAuthViaCertNoSANExtension
+func (suite *CertificateHandlerSuite) TestAuthViaCertNoSANExtension() {
+
+	var err error
+	var mockstore *stores.Mockstore
+	var cfg *config.Config
+	var req *http.Request
+
+	expRespJSON := `{
+ "error": {
+  "message": "x509: certificate relies on legacy Common Name field, use SANs instead",
+  "code": 403,
+  "status": "ACCESS_FORBIDDEN"
+ }
+}`
+
+	if req, mockstore, cfg, err = AuthViaCertSetUp("http://localhost:8080/service-types/s_auth_cert/hosts/h1_auth_cert:authx509"); err != nil {
+		LOGGER.Error(err.Error())
+	}
+
+	req.TLS.PeerCertificates[0].Subject.CommonName = "localhost"
+	req.TLS.PeerCertificates[0].DNSNames = []string{}
+	req.TLS.PeerCertificates[0].IPAddresses = []net.IP{}
 	router := mux.NewRouter().StrictSlash(true)
 	w := httptest.NewRecorder()
 	router.HandleFunc("/service-types/{service-type}/hosts/{host}:authx509", WrapConfig(AuthViaCert, mockstore, cfg))
