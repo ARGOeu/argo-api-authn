@@ -20,7 +20,7 @@ func CRLCheckRevokedCert(ctx context.Context, cert *x509.Certificate) error {
 
 	var err error
 	var goMaxP, psi, csi int
-	var crtList x509.RevocationList
+	var revokedCertificatesList []pkix.RevokedCertificate
 	var errChan = make(chan error)
 	var doneChan = make(chan bool, 1)
 
@@ -49,7 +49,7 @@ func CRLCheckRevokedCert(ctx context.Context, cert *x509.Certificate) error {
 			// count how much time it takes to fetch a crl
 			t1 := time.Now()
 			// grab the crl
-			if crtList, err = FetchCRL(ctx, crlURL); err != nil {
+			if revokedCertificatesList, err = FetchCRL(ctx, crlURL); err != nil {
 				errChan <- err
 			}
 
@@ -70,7 +70,7 @@ func CRLCheckRevokedCert(ctx context.Context, cert *x509.Certificate) error {
 			// representing the previous index where we sliced the revoked certificate list
 			psi = 0
 
-			rvkCrtListLen := len(crtList.RevokedCertificates)
+			rvkCrtListLen := len(revokedCertificatesList)
 			log.WithFields(
 				log.Fields{
 					"trace_id":        ctx.Value("trace_id"),
@@ -90,13 +90,13 @@ func CRLCheckRevokedCert(ctx context.Context, cert *x509.Certificate) error {
 			for j := 1; j <= goMaxP; j++ {
 
 				csi = psi + rvkCrtListLen/goMaxP
-				if len(crtList.RevokedCertificates[psi:])/goMaxP < 2 {
+				if len(revokedCertificatesList[psi:])/goMaxP < 2 {
 					wg.Add(1)
-					go SynchronizedCheckInCRL(doneChan, errChan, crtList.RevokedCertificates[psi:], cert.SerialNumber, wg)
+					go SynchronizedCheckInCRL(doneChan, errChan, revokedCertificatesList[psi:], cert.SerialNumber, wg)
 					break
 				}
 				wg.Add(1)
-				go SynchronizedCheckInCRL(doneChan, errChan, crtList.RevokedCertificates[psi:csi], cert.SerialNumber, wg)
+				go SynchronizedCheckInCRL(doneChan, errChan, revokedCertificatesList[psi:csi], cert.SerialNumber, wg)
 				psi = csi
 			}
 		}(doneChan, errChan, wg, crlURL)
@@ -156,8 +156,8 @@ loop:
 	defer wg.Done()
 }
 
-// FetchCRL fetches the CRL
-func FetchCRL(ctx context.Context, url string) (x509.RevocationList, error) {
+// FetchCRLV2 fetches the CRL using the V2 x509 version
+func FetchCRLV2(ctx context.Context, url string) ([]pkix.RevokedCertificate, error) {
 
 	var err error
 	var resp *http.Response
@@ -178,7 +178,7 @@ func FetchCRL(ctx context.Context, url string) (x509.RevocationList, error) {
 			},
 		).Error("CRL Request error")
 		err = utils.APIGenericInternalError(fmt.Sprintf("Could not access CRL %v", url))
-		return x509.RevocationList{}, err
+		return []pkix.RevokedCertificate{}, err
 	}
 
 	// read the response
@@ -193,7 +193,7 @@ func FetchCRL(ctx context.Context, url string) (x509.RevocationList, error) {
 			},
 		).Error("Unable to read CRL data")
 		err = utils.APIGenericInternalError("Unable to read CRL Data")
-		return x509.RevocationList{}, err
+		return []pkix.RevokedCertificate{}, err
 	}
 
 	defer resp.Body.Close()
@@ -210,8 +210,68 @@ func FetchCRL(ctx context.Context, url string) (x509.RevocationList, error) {
 			},
 		).Error("Unable to parse CRL data")
 		err = utils.APIGenericInternalError("Unable to parse CRL Data")
-		return x509.RevocationList{}, err
+		return []pkix.RevokedCertificate{}, err
 	}
 
-	return *crtList, err
+	return crtList.RevokedCertificates, err
+}
+
+// FetchCRL fetches the CRL
+func FetchCRL(ctx context.Context, url string) ([]pkix.RevokedCertificate, error) {
+
+	var err error
+	var resp *http.Response
+	var crlBytes []byte
+
+	var crtList = &pkix.CertificateList{}
+
+	// initialize the client and perform a get request to grab the crl
+	client := &http.Client{Timeout: time.Duration(30 * time.Second)}
+	if resp, err = client.Get(url); err != nil {
+		log.WithFields(
+			log.Fields{
+				"trace_id":        ctx.Value("trace_id"),
+				"type":            "backend_log",
+				"backend_service": "crl",
+				"backend_hosts":   url,
+				"details":         err.Error(),
+			},
+		).Error("CRL Request error")
+		err = utils.APIGenericInternalError(fmt.Sprintf("Could not access CRL %v", url))
+		return []pkix.RevokedCertificate{}, err
+	}
+
+	// read the response
+	if crlBytes, err = io.ReadAll(resp.Body); err != nil {
+		log.WithFields(
+			log.Fields{
+				"trace_id":        ctx.Value("trace_id"),
+				"type":            "backend_log",
+				"backend_service": "crl",
+				"backend_hosts":   url,
+				"details":         err.Error(),
+			},
+		).Error("Unable to read CRL data")
+		err = utils.APIGenericInternalError("Unable to read CRL Data")
+		return []pkix.RevokedCertificate{}, err
+	}
+
+	defer resp.Body.Close()
+
+	// create the crl from the byte slice
+	if crtList, err = x509.ParseCRL(crlBytes); err != nil {
+		log.WithFields(
+			log.Fields{
+				"trace_id":        ctx.Value("trace_id"),
+				"type":            "backend_log",
+				"backend_service": "crl",
+				"backend_hosts":   url,
+				"details":         err.Error(),
+			},
+		).Error("Unable to parse CRL data")
+		err = utils.APIGenericInternalError("Unable to parse CRL Data")
+		return []pkix.RevokedCertificate{}, err
+	}
+
+	return crtList.TBSCertList.RevokedCertificates, err
 }
