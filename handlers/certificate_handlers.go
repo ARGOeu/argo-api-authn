@@ -40,6 +40,16 @@ func AuthViaCert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.WithFields(
+		log.Fields{
+			"trace_id":     rCTX.Value("trace_id"),
+			"type":         "service_log",
+			"service_type": serviceType.Name,
+			"host":         vars["host"],
+			"certificate":  r.TLS.PeerCertificates[0].Subject.String(),
+		},
+	).Info("New Certificate request")
+
 	// validate the certificate
 	if cfg.VerifyCertificate {
 		err = auth.ValidateClientCertificate(rCTX, r.TLS.PeerCertificates[0], r.RemoteAddr, cfg.ClientCertHostVerification)
@@ -74,19 +84,10 @@ func AuthViaCert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Find the binding associated with the provided certificate
+	// If all checks have passed, extract the RDN sequence
 	rdnSequence := auth.ExtractEnhancedRDNSequenceToString(r.TLS.PeerCertificates[0])
 
-	log.WithFields(
-		log.Fields{
-			"trace_id":     rCTX.Value("trace_id"),
-			"type":         "service_log",
-			"rdn":          rdnSequence,
-			"service_type": serviceType.Name,
-			"host":         vars["host"],
-		},
-	).Info("New Certificate request")
-
+	// Find the binding associated with the provided certificate
 	if binding, err = bindings.FindBindingByAuthID(rCTX, rdnSequence, serviceType.UUID, vars["host"], "x509", store); err != nil {
 		utils.RespondError(rCTX, w, err)
 		return
