@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	LOGGER "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -853,6 +853,6 @@ func (suite *CertificateHandlerSuite) TestAuthViaCertUnknownDN() {
 }
 
 func TestAuthViaCert(t *testing.T) {
-	LOGGER.SetOutput(ioutil.Discard)
+	LOGGER.SetOutput(io.Discard)
 	suite.Run(t, new(CertificateHandlerSuite))
 }
