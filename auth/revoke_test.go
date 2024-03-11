@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/x509"
 	"encoding/pem"
-	"io/ioutil"
+	"io"
 	"testing"
 
 	LOGGER "github.com/sirupsen/logrus"
@@ -142,6 +142,6 @@ func (suite *RevokeTestSuite) TestCRLCheckRevokedCert() {
 }
 
 func TestRevokeTestSuite(t *testing.T) {
-	LOGGER.SetOutput(ioutil.Discard)
+	LOGGER.SetOutput(io.Discard)
 	suite.Run(t, new(RevokeTestSuite))
 }
