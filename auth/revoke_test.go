@@ -141,6 +141,13 @@ func (suite *RevokeTestSuite) TestCRLCheckRevokedCert() {
 	suite.Equal("Internal Error: Could not access CRL https://unknown/unknown", err4.Error())
 }
 
+func (suite *RevokeTestSuite) TestFetchCRL() {
+	// test cases about consuming various CRL
+	crlUrl := "http://www.gridcanada.ca/ca/bffbd7d0.r0"
+	_, err := FetchCRL(context.Background(), crlUrl)
+	suite.Nil(err)
+}
+
 func TestRevokeTestSuite(t *testing.T) {
 	LOGGER.SetOutput(io.Discard)
 	suite.Run(t, new(RevokeTestSuite))
