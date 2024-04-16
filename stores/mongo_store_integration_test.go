@@ -20,8 +20,8 @@ type mongodbContainer struct {
 func startContainer(ctx context.Context) (*mongodbContainer, error) {
 
 	req := testcontainers.ContainerRequest{
-		Name:         "mongodb-5.0-authn",
-		Image:        "mongo:5.0",
+		Name:         "mongodb-6.0.14-authn",
+		Image:        "mongo:6.0.14",
 		ExposedPorts: []string{"27017/tcp"},
 	}
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
@@ -443,9 +443,9 @@ func TestMongoStoreIntegrationTestSuite(t *testing.T) {
 
 	p, _ := container.MappedPort(context.Background(), "27017/tcp")
 
-	mongoDBUri := fmt.Sprintf("mongodb://localhost:%s", p.Port())
+	mongoDBUri := fmt.Sprintf("localhost:%s", p.Port())
 
-	mongoStore := &MongoStore{
+	mongoStore := &MongoStoreWithOfficialDriver{
 		Server:   mongoDBUri,
 		Database: "argo_authn",
 	}
