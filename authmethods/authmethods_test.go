@@ -7,7 +7,6 @@ import (
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/stretchr/testify/suite"
 	"io"
-	"io/ioutil"
 	"testing"
 )
 
@@ -21,7 +20,7 @@ func ConvertAuthMethodToReadCloser(am AuthMethod) io.ReadCloser {
 
 	reader := bytes.NewReader(bb)
 
-	return ioutil.NopCloser(reader)
+	return io.NopCloser(reader)
 
 }
 

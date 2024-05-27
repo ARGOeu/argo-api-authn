@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -106,6 +106,6 @@ func (suite *GenericHandlerSuite) TestHealthCheck() {
 }
 
 func TestGenericHandlerTestSuite(t *testing.T) {
-	LOGGER.SetOutput(ioutil.Discard)
+	LOGGER.SetOutput(io.Discard)
 	suite.Run(t, new(GenericHandlerSuite))
 }

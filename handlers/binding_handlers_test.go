@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -14,7 +15,6 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"encoding/json"
-	"io/ioutil"
 	"net/http/httptest"
 
 	"github.com/ARGOeu/argo-api-authn/bindings"
@@ -1279,6 +1279,6 @@ func (suite *BindingHandlersSuite) TestBindingDeleteUnknownDN() {
 }
 
 func TestBindingHandlersSuite(t *testing.T) {
-	LOGGER.SetOutput(ioutil.Discard)
+	LOGGER.SetOutput(io.Discard)
 	suite.Run(t, new(BindingHandlersSuite))
 }

@@ -11,8 +11,8 @@ sidebar_position: 8
 | ams-create-users-gocdb.py | Python script that creates ams users and binding.| [Details](#ams-create-users-gocdb) |
 | ams-create-users-cloud-info.py | Python script that creates ams users, binding and topics per site.| [Details](#ams-create-users-cloud-info) |
 
-<a id="ams-create-users-gocdb"></a>
-AMS Create users from goc db script:
+
+## AMS Create users from goc db script {#ams-create-users-gocdb}
 
 
 Python utility script that takes the xml feed from goc db,creates the respective
@@ -27,8 +27,8 @@ and then will look at projects conf folder`
 
 `-verify: If specified all the requests will check the validity of the ssl certificate`
 
-<a id="ams-create-users-cloud-info"></a>
-AMS Create users and topics per site:
+
+## AMS Create users and topics per site {#ams-create-users-cloud-info}
 
 
 Python utility script that takes an xml feed from goc db, creates the respective
