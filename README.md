@@ -18,7 +18,7 @@ Before you start, you need to issue a valid certificate.
 
 ## Set Up
 
-1. Install Golang 1.21
+1. Install Golang 1.25
 2. Create a new work space:
 
    `mkdir ~/go-workspace`
@@ -58,7 +58,7 @@ Before you start, you need to issue a valid certificate.
    Inside the project's folder issue the command:
    `go test ./... -tags integration`
 
-9. Install mongoDB 6.
+9. Install MongoDB 7.
 
 ## Configuration
 
