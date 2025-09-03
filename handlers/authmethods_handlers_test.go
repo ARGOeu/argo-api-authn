@@ -1093,7 +1093,7 @@ func (suite *AuthMethodsHandlersTestSuite) TestAuthMethodUpdateOneInvalidFieldTy
 
 	expRespJSON := `{
  "error": {
-  "message": "Poorly formatted JSON. json: cannot unmarshal string into Go struct field TempApiKeyAuthMethod.port of type int",
+  "message": "Poorly formatted JSON. json: cannot unmarshal string into Go struct field TempApiKeyAuthMethod.TempBasicAuthMethod.port of type int",
   "code": 400,
   "status": "BAD REQUEST"
  }
