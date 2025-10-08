@@ -20,8 +20,8 @@ type mongodbContainer struct {
 func startContainer(ctx context.Context) (*mongodbContainer, error) {
 
 	req := testcontainers.ContainerRequest{
-		Name:         "mongodb-6.0.14-authn",
-		Image:        "mongo:6.0.14",
+		Name:         "mongodb-7.0.23-authn",
+		Image:        "mongo:7.0.23",
 		ExposedPorts: []string{"27017/tcp"},
 	}
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
