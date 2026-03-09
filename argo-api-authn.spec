@@ -60,6 +60,8 @@ go install -buildmode=pie -ldflags "-s -w -linkmode=external -extldflags '-z rel
 %attr(0644,root,root) /usr/lib/systemd/system/argo-api-authn.service
 
 %changelog
+* Mon Mar 9 2026 Agelos Tsalapatis  <agelos.tsal@gmail.com> - 1.3.0-1%{?dist}
+- Release of argo-api-authn version 1.5.0
 * Mon May 27 2024 Agelos Tsalapatis  <agelos.tsal@gmail.com> - 1.3.0-1%{?dist}
 - Release of argo-api-authn version 1.4.0
 * Wed Jan 24 2024 Agelos Tsalapatis  <agelos.tsal@gmail.com> - 1.3.0-1%{?dist}
