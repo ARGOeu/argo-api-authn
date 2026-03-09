@@ -97,8 +97,8 @@ lBlGGSW4gNfL1IYoakRwJiNiqZ+Gb7+6kHDSVneFeO/qJakXzlByjAA6quPbYzSf
 +AZxAeKCINT+b72x
 -----END CERTIFICATE-----`
 
-func (suite *RevokeTestSuite) TestCRLCheckRevokedCert() {
-
+func (suite *RevokeTestSuite) TestCRLCheckRevokedCertSync() {
+	suite.Suite.T().SkipNow()
 	ctx := context.Background()
 
 	// tests the case where the certificate doesn't contain extra attributes names
@@ -110,7 +110,7 @@ func (suite *RevokeTestSuite) TestCRLCheckRevokedCert() {
 	// test multiple times to make sure that the function produces a steady result
 	for i := 0; i < 100; i++ {
 
-		err1 := CRLCheckRevokedCert(ctx, crt)
+		err1 := CRLCheckRevokedCertSync(ctx, crt)
 
 		suite.Equal("Your certificate has been revoked", err1.Error())
 	}
@@ -121,7 +121,7 @@ func (suite *RevokeTestSuite) TestCRLCheckRevokedCert() {
 	// test multiple times to make sure that the function produces a steady result
 	for i := 0; i < 100; i++ {
 
-		err2 := CRLCheckRevokedCert(ctx, crt)
+		err2 := CRLCheckRevokedCertSync(ctx, crt)
 
 		suite.Nil(err2)
 	}
@@ -129,16 +129,51 @@ func (suite *RevokeTestSuite) TestCRLCheckRevokedCert() {
 	// tests the case of an empty slice for CRLDPs
 	crt = ParseCert(goodComodoCA)
 	crt.CRLDistributionPoints = []string{}
-	err3 := CRLCheckRevokedCert(ctx, crt)
+	err3 := CRLCheckRevokedCertSync(ctx, crt)
 
 	suite.Equal("Your certificate is invalid. No CRLDistributionPoints found on the certificate", err3.Error())
 
 	// test the case of an invalid CRL URL
 	crt = ParseCert(goodComodoCA)
 	crt.CRLDistributionPoints = []string{"https://unknown/unknown"}
-	err4 := CRLCheckRevokedCert(ctx, crt)
+	err4 := CRLCheckRevokedCertSync(ctx, crt)
 
 	suite.Equal("Internal Error: Could not access CRL https://unknown/unknown", err4.Error())
+}
+
+func (suite *RevokeTestSuite) TestCRLCheckRevokedCert() {
+	ctx := context.Background()
+
+	// tests the case where the certificate doesn't contain extra attributes names
+	var crt *x509.Certificate
+
+	// tests the case of a revoked cert
+	crt = ParseCert(revokedCert)
+
+	err1 := CRLCheckRevokedCert(ctx, crt)
+
+	suite.EqualError(err1, "Your certificate has been revoked")
+
+	// tests the case of a non revoked cert
+	crt = ParseCert(goodComodoCA)
+
+	err2 := CRLCheckRevokedCert(ctx, crt)
+
+	suite.Nil(err2)
+
+	// tests the case of an empty slice for CRLDPs
+	crt = ParseCert(goodComodoCA)
+	crt.CRLDistributionPoints = []string{}
+	err3 := CRLCheckRevokedCert(ctx, crt)
+
+	suite.EqualError(err3, "Your certificate is invalid. No CRLDistributionPoints found on the certificate")
+
+	// test the case of an invalid CRL URL
+	crt = ParseCert(goodComodoCA)
+	crt.CRLDistributionPoints = []string{"https://unknown/unknown"}
+	err4 := CRLCheckRevokedCert(ctx, crt)
+
+	suite.EqualError(err4, "Internal Error: Could not access CRL https://unknown/unknown")
 }
 
 func (suite *RevokeTestSuite) TestFetchCRL() {

@@ -18,6 +18,69 @@ import (
 // CRLCheckRevokedCert checks whether a certificate has been revoked
 func CRLCheckRevokedCert(ctx context.Context, cert *x509.Certificate) error {
 
+	totalTime := time.Now()
+
+	if len(cert.CRLDistributionPoints) == 0 {
+		return &utils.APIError{
+			Code:    403,
+			Message: "Your certificate is invalid. No CRLDistributionPoints found on the certificate",
+			Status:  "ACCESS_FORBIDDEN",
+		}
+	}
+
+	for _, crlURL := range cert.CRLDistributionPoints {
+
+		// count how much time it takes to fetch a crl
+		t1 := time.Now()
+
+		revokedCertificatesList, err := FetchCRL(ctx, crlURL)
+		if err != nil {
+			return err
+		}
+
+		log.WithFields(
+			log.Fields{
+				"trace_id":        ctx.Value("trace_id"),
+				"type":            "backend_log",
+				"backend_service": "crl",
+				"backend_hosts":   crlURL,
+				"processing_time": time.Since(t1),
+			},
+		).Info("CRL REQUEST")
+
+		log.WithFields(
+			log.Fields{
+				"trace_id":        ctx.Value("trace_id"),
+				"type":            "backend_log",
+				"backend_service": "crl",
+				"backend_hosts":   crlURL,
+			},
+		).Infof("Request to CRL returned %v elements", len(revokedCertificatesList))
+
+		for _, revokedCert := range revokedCertificatesList {
+			if cert.SerialNumber.Cmp(revokedCert.SerialNumber) == 0 {
+				return &utils.APIError{
+					Code:    403,
+					Message: "Your certificate has been revoked",
+					Status:  "ACCESS_FORBIDDEN",
+				}
+			}
+		}
+		log.WithFields(
+			log.Fields{
+				"trace_id":        ctx.Value("trace_id"),
+				"type":            "service_log",
+				"processing_time": time.Since(totalTime),
+			},
+		).Info("PERFORMANCE for examining certificate revocation")
+		return err
+	}
+	return nil
+}
+
+// CRLCheckRevokedCertSync checks whether a certificate has been revoked
+func CRLCheckRevokedCertSync(ctx context.Context, cert *x509.Certificate) error {
+
 	var err error
 	var goMaxP, psi, csi int
 	var revokedCertificatesList []pkix.RevokedCertificate
@@ -134,9 +197,7 @@ func CRLCheckRevokedCert(ctx context.Context, cert *x509.Certificate) error {
 }
 
 // SynchronizedCheckInCRL checks if a serial number exists within the serial numbers of other revoked certificates
-func SynchronizedCheckInCRL(doneChan <-chan bool, errChan chan<- error, revokedCerts []pkix.RevokedCertificate,
-	serialNumber *big.Int, wg *sync.WaitGroup) {
-
+func SynchronizedCheckInCRL(doneChan <-chan bool, errChan chan<- error, revokedCerts []pkix.RevokedCertificate, serialNumber *big.Int, wg *sync.WaitGroup) {
 loop:
 	for _, cert := range revokedCerts {
 		select {
@@ -211,7 +272,7 @@ func FetchCRL(ctx context.Context, url string) ([]pkix.RevokedCertificate, error
 			).Error("Could not close response body")
 		}
 	}(resp.Body)
-	
+
 	// create the crl from the byte slice
 	if crtList, err = x509.ParseCRL(crlBytes); err != nil {
 		log.WithFields(
