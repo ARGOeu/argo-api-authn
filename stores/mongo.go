@@ -8,10 +8,10 @@ import (
 
 	"github.com/ARGOeu/argo-api-authn/utils"
 	log "github.com/sirupsen/logrus"
-	officialBson "go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
+	officialBson "go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 )
 
 const (
@@ -44,7 +44,6 @@ func (store *MongoStoreWithOfficialDriver) SetUp() {
 	mongoDBUri := fmt.Sprintf("mongodb://%s", store.Server)
 
 	for {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		log.WithFields(
 			log.Fields{
 				"type":            "backend_log",
@@ -52,7 +51,19 @@ func (store *MongoStoreWithOfficialDriver) SetUp() {
 				"backend_hosts":   store.Server,
 			},
 		).Info("Trying to connect to Mongo")
-		client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoDBUri))
+		clientOptions := options.Client().ApplyURI(mongoDBUri)
+		err := clientOptions.Validate()
+		if err != nil {
+			log.WithFields(
+				log.Fields{
+					"type":            "backend_log",
+					"backend_service": "mongo",
+					"backend_hosts":   store.Server,
+				},
+			).Error(err.Error())
+			continue
+		}
+		client, err := mongo.Connect(options.Client().ApplyURI(mongoDBUri))
 		if err != nil {
 			log.WithFields(
 				log.Fields{
@@ -64,7 +75,6 @@ func (store *MongoStoreWithOfficialDriver) SetUp() {
 			continue
 		}
 		store.client = client
-		cancel()
 		break
 	}
 
