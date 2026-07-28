@@ -88,7 +88,7 @@ The service depends on a configuration file in order to be able to run.This file
   "trust_unknown_cas": false,
   "verify_certificate": true,
   "service_types_paths": {
-    "ams": "/v1/users:byUUID/{{identifier}}",
+    "ams": "/v1/users:refreshTokenByUUID/{{identifier}}",
     "web-api": "/api/v2/users:byID/{{identifier}}?export=flat"
   },
   "service_types_retrieval_fields": {

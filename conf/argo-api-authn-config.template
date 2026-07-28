@@ -23,7 +23,7 @@
   "trust_unknown_cas": true,
   "verify_certificate": false,
   "service_types_paths": {
-    "ams": "/v1/users:byUUID/{{identifier}}"
+    "ams": "/v1/users:refreshTokenByUUID/{{identifier}}"
   },
   "service_types_retrieval_fields": {
     "ams": "token"
