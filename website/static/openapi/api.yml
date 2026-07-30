@@ -6,10 +6,6 @@ info:
     to store additional user info or implement new functionalities.The AUTH service
     typetypeholds various information about a service’s users, hosts, API urls, etc,
     and leverages them to provide its function.
-  contact:
-    name: ARGO Developers
-    url: http://argoeu.github.io/
-    email: argo-dev@lists.grnet.gr
   version: v1
 servers:
   - url: https://localhost/v1
