@@ -6,17 +6,18 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/ARGOeu/argo-api-authn/bindings"
 	"github.com/ARGOeu/argo-api-authn/config"
 	"github.com/ARGOeu/argo-api-authn/servicetypes"
 	"github.com/ARGOeu/argo-api-authn/stores"
 	"github.com/ARGOeu/argo-api-authn/utils"
 	log "github.com/sirupsen/logrus"
-	"io"
-	"net/http"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type HeadersAuthMethod struct {
@@ -162,7 +163,7 @@ func (m *HeadersAuthMethod) RetrieveAuthResource(ctx context.Context, binding bi
 
 	client := &http.Client{Transport: transCfg, Timeout: time.Duration(30 * time.Second)}
 
-	req, err := http.NewRequest(http.MethodGet, resourcePath, nil)
+	req, err := http.NewRequest(http.MethodPost, resourcePath, nil)
 	if err != nil {
 		err = utils.APIGenericInternalError(err.Error())
 		return externalResp, err

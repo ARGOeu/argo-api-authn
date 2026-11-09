@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"crypto/tls"
+
 	"github.com/stretchr/testify/suite"
 )
 
@@ -47,7 +48,7 @@ func (suite *ConfigTestSuite) TestConfigSetUp() {
 		TrustUnknownCAs:        false,
 		VerifyCertificate:      true,
 		ServiceTypesPaths: map[string]string{
-			"ams":     "/v1/users:byUUID/{{identifier}}",
+			"ams":     "/v1/users:refreshTokenByUUID/{{identifier}}",
 			"web-api": "/api/v2/admin/users:byID/{{identifier}}?export=flat",
 		},
 		ServiceTypesRetrievalFields: map[string]string{

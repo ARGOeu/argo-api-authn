@@ -5,11 +5,16 @@ package stores
 import (
 	"context"
 	"fmt"
+	"testing"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
-	"testing"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
+
+const mongoDBPort = "27017/tcp"
 
 // mongodbContainer represents the mongodb container type used in the module
 type mongodbContainer struct {
@@ -22,7 +27,8 @@ func startContainer(ctx context.Context) (*mongodbContainer, error) {
 	req := testcontainers.ContainerRequest{
 		Name:         "mongodb-7.0.23-authn",
 		Image:        "mongo:7.0.23",
-		ExposedPorts: []string{"27017/tcp"},
+		ExposedPorts: []string{mongoDBPort},
+		WaitingFor:   wait.ForListeningPort(mongoDBPort).WithStartupTimeout(60 * time.Second),
 	}
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
@@ -440,8 +446,7 @@ func TestMongoStoreIntegrationTestSuite(t *testing.T) {
 	if err != nil {
 		panic("Could not start container for mongodb integration tests. " + err.Error())
 	}
-
-	p, _ := container.MappedPort(context.Background(), "27017/tcp")
+	p, _ := container.MappedPort(context.Background(), mongoDBPort)
 
 	mongoDBUri := fmt.Sprintf("localhost:%s", p.Port())
 
